@@ -24,6 +24,12 @@ stat_fail() {
   echo " FAILED ]"
 }
 
+stat_die() {
+  deltext
+  echo " FAILED ]"
+  exit 1
+}
+
 checkret() {
   $* >/dev/null 2>&1
   if [ $? -gt 0 ]; then
