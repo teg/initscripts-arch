@@ -9,8 +9,8 @@ ifup()
   eval new_ifline=$varname
   if [ "$new_ifline" = "dhcp" ]; then
     # remove the .pid file if it exists
-    rm -f /etc/dhcpc/dhcpcd-${1}.pid >/dev/null 2>&1
-    /usr/sbin/dhcpcd -h $HOSTNAME $1
+    rm -f /etc/dhcpc/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
+    /usr/sbin/dhcpcd -t 10 -h $HOSTNAME $1
   else
     /sbin/ifconfig $new_ifline
   fi
