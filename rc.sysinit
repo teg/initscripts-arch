@@ -52,9 +52,12 @@ status "Activating Swap" /sbin/swapon -a
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
+FORCEFSCK=
+[ -f /forcefsck ] && FORCEFSCK="-- -f"
+
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
-	/sbin/fsck -A -T -C -a
+	/sbin/fsck -A -T -C -a $FORCEFSCK
 	if [ $? -gt 1 ]; then
 		stat_fail
 		echo
@@ -105,12 +108,13 @@ fi
 stat_done
 
 stat_busy "Removing Leftover Files"
-/bin/rm -f /etc/nologin &> /dev/null
-/bin/rm -f /etc/shutdownpid &> /dev/null
-/bin/rm -f /var/locks/* &> /dev/null
-/bin/rm -f /var/run/*.pid &> /dev/null
+/bin/rm -f /etc/nologin &>/dev/null
+/bin/rm -f /etc/shutdownpid &>/dev/null
+/bin/rm -f /var/locks/* &>/dev/null
+/bin/rm -f /var/run/*.pid &>/dev/null
 /bin/rm -f /var/run/daemons/* &>/dev/null
-/bin/rm -rf /tmp/* /tmp/.* &> /dev/null
+/bin/rm -rf /tmp/* /tmp/.* &>/dev/null
+/bin/rm -f /forcefsck &>/dev/null
 : > /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
 mkdir /tmp/.ICE-unix && chmod 1777 /tmp/.ICE-unix
