@@ -64,14 +64,18 @@ stat_busy "Unmounting Filesystems"
 /bin/umount -a
 stat_done
 
-if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
-	stat_busy "Deactivating LVM1 groups"
-	/sbin/vgchange -a n
-	stat_done
-elif [ -d /etc/lvm -a -x /sbin/lvm ]; then
-	stat_busy "Deactivating LVM2 groups"
-	/sbin/lvm vgchange --ignorelockingfailure -a n
-	stat_done
+if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
+	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
+		stat_busy "Deactivating LVM1 groups"
+		/sbin/vgchange -a n
+		stat_done
+	elif [ -d /etc/lvm -a -x /sbin/lvm ]; then
+		/bin/mount -n -t sysfs none /sys
+		stat_busy "Deactivating LVM2 groups"
+		/sbin/lvm vgchange --ignorelockingfailure -a n
+		stat_done
+		umount /sys
+	fi
 fi
 
 stat_busy "Remounting Root Filesystem Read-only"
