@@ -50,7 +50,11 @@ stat_busy "Mounting Local Filesystems"
 stat_done
 
 stat_busy "Configuring System Clock"
-/sbin/hwclock --hctosys
+if [ $HARDWARECLOCK = "UTC" ]; then
+  /sbin/hwclock --utc --hctosys
+else
+  /sbin/hwclock --localtime --hctosys
+fi
 if [ ! -f /etc/adjtime ]; then
   echo "0.0 0 0.0" > /etc/adjtime
 fi

@@ -44,7 +44,11 @@ stat_busy "Saving Random Seed"
 stat_done
 
 stat_busy "Saving System Clock"
-/sbin/hwclock --systohc
+if [ $HARDWARECLOCK = "UTC" ]; then
+    /sbin/hwclock --utc --systohc
+else
+    /sbin/hwclock --localtime --systohc
+fi
 stat_done
 
 # Write to wtmp file before unmounting
