@@ -31,29 +31,31 @@ status "Activating Swap" /sbin/swapon -a
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
-stat_busy "Checking Filesystems"
-/sbin/fsck -A -T -C -a
-if [ $? -gt 1 ]; then
-	stat_fail
-	echo
-	echo "*****************  FILESYSTEM CHECK FAILED  ****************"
-	echo "*                                                          *"
-	echo "*  Please repair manually and reboot. Note that the root   *"
-	echo "*  file system is currently mounted read-only. To remount  *"
-	echo "*  it read-write type: mount -n -o remount,rw /            *"
-	echo "*  When you exit the maintainance shell the system will    *"
-	echo "*  reboot automatically.                                   *"
-	echo "*                                                          *"
-	echo "************************************************************"
-	echo
-	/sbin/sulogin -p
-	echo "Automatic reboot in progress..."
-	/bin/umount -a
-	/bin/mount -n -o remount,ro /
-	/sbin/reboot -f
-	exit 0
+if [ -x /sbin/fsck ]; then
+	stat_busy "Checking Filesystems"
+	/sbin/fsck -A -T -C -a
+	if [ $? -gt 1 ]; then
+		stat_fail
+		echo
+		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+		echo "*                                                          *"
+		echo "*  Please repair manually and reboot. Note that the root   *"
+		echo "*  file system is currently mounted read-only. To remount  *"
+		echo "*  it read-write type: mount -n -o remount,rw /            *"
+		echo "*  When you exit the maintainance shell the system will    *"
+		echo "*  reboot automatically.                                   *"
+		echo "*                                                          *"
+		echo "************************************************************"
+		echo
+		/sbin/sulogin -p
+		echo "Automatic reboot in progress..."
+		/bin/umount -a
+		/bin/mount -n -o remount,ro /
+		/sbin/reboot -f
+		exit 0
+	fi
+	stat_done
 fi
-stat_done
 
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
