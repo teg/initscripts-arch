@@ -132,7 +132,11 @@ if [ "$KEYMAP" != "" ]; then
 fi
 
 if [ "$CONSOLEFONT" != "" ]; then
-	status "Loading Console Font: $CONSOLEFONT" /usr/bin/setfont $CONSOLEFONT
+	stat_busy "Loading Console Font: $CONSOLEFONT" 
+	for i in `seq 1 12`; do 
+		/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}; 
+	done
+	stat_done
 fi
 
 # Load modules from the MODULES array defined in rc.conf
