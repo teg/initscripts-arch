@@ -8,11 +8,14 @@
 
 # Start daemons
 for daemon in "${DAEMONS[@]}"; do
-  /etc/rc.d/$daemon start
+  if [[ `echo $daemon | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+    /etc/rc.d/$daemon start
+  fi
 done
 
 if [ -x /etc/rc.local ]; then
     /etc/rc.local
 fi
+read
 
 # End of file
