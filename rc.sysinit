@@ -9,7 +9,7 @@
 echo " "
 printhl "Arch Linux v0.7 $C_OTHER(${C_H2}Wombat$C_OTHER)\n"
 printhl "${C_H2}http://www.archlinux.org"
-printhl "Copyright 2002-2004 Judd Vinet"
+printhl "Copyright 2002-2005 Judd Vinet"
 printhl "Distributed under the GNU General Public License (GPL)"
 printsep
 
