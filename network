@@ -22,7 +22,8 @@ ifdown()
   varname="\$${1}"
   eval new_ifline=$varname
   if [ "$new_ifline" = "dhcp" ]; then
-    /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+    [ -f /etc/dhcpc/dhcpcd-${1}.pid ] && \
+      /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
   else
     /sbin/ifconfig $new_ifline down
   fi
