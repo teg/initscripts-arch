@@ -25,8 +25,7 @@ stat_fail() {
 }
 
 stat_die() {
-  deltext
-  echo " FAILED ]"
+  stat_fail
   exit 1
 }
 
