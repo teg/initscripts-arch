@@ -18,7 +18,7 @@ else
 	echo "|"
 	echo "|  http://www.archlinux.org"
 	echo "|  Copyright 2002-2003 Judd Vinet"
-	echo "| Distributed under the GNU Public License (GPL)"
+	echo "|  Distributed under the GNU Public License (GPL)"
 	echo "|"
 fi
 
