@@ -15,6 +15,16 @@ echo    "                              ]"
 
 status "Starting DevFS Daemon" /sbin/devfsd /dev
 
+# /proc is temporarily mounted to check for LVM support - it is re-mounted
+# later from /etc/fstab
+/bin/mount -t proc none /proc
+if [ -f /proc/lvm/global -a -x /sbin/vgscan ]; then
+	stat_busy "Scanning for LVM groups"
+	/sbin/vgchange -a y
+	stat_done
+fi
+umount /proc
+
 status "Activating Swap" /sbin/swapon -a
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
@@ -22,24 +32,24 @@ status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 stat_busy "Checking Filesystems"
 /sbin/fsck -A -T -C -a
 if [ $? -gt 1 ]; then
-  stat_fail
-  echo
-  echo "*****************  FILESYSTEM CHECK FAILED  ****************"
-  echo "*                                                          *"
-  echo "*  Please repair manually and reboot. Note that the root   *"
-  echo "*  file system is currently mounted read-only. To remount  *"
-  echo "*  it read-write type: mount -n -o remount,rw /            *"
-  echo "*  When you exit the maintainance shell the system will    *"
-  echo "*  reboot automatically.                                   *"
-  echo "*                                                          *"
-  echo "************************************************************"
-  echo
-  /sbin/sulogin -p
-  echo "Automatic reboot in progress..."
-  /bin/umount -a
-  /bin/mount -n -o remount,ro /
-  /sbin/reboot -f
-  exit 0
+	stat_fail
+	echo
+	echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+	echo "*                                                          *"
+	echo "*  Please repair manually and reboot. Note that the root   *"
+	echo "*  file system is currently mounted read-only. To remount  *"
+	echo "*  it read-write type: mount -n -o remount,rw /            *"
+	echo "*  When you exit the maintainance shell the system will    *"
+	echo "*  reboot automatically.                                   *"
+	echo "*                                                          *"
+	echo "************************************************************"
+	echo
+	/sbin/sulogin -p
+	echo "Automatic reboot in progress..."
+	/bin/umount -a
+	/bin/mount -n -o remount,ro /
+	/sbin/reboot -f
+	exit 0
 fi
 stat_done
 
@@ -51,15 +61,15 @@ stat_done
 
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
-  /sbin/hwclock --utc --hctosys
+	/sbin/hwclock --utc --hctosys
 else
-  /sbin/hwclock --localtime --hctosys
+	/sbin/hwclock --localtime --hctosys
 fi
 if [ ! -f /var/lib/hwclock/adjtime ]; then
   echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
 fi
 if [ "$TIMEZONE" != "" ]; then
-  /bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+	/bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 fi
 stat_done
 
@@ -76,7 +86,7 @@ stat_done
 status "Updating Shared Library Links" /sbin/ldconfig
 
 if [ "$HOSTNAME" != "" ]; then
-  status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
+	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
 fi
 
 status "Starting System Logger" /usr/sbin/syslogd -m 0
@@ -85,12 +95,12 @@ status "Starting Kernel Logger" /usr/sbin/klogd -c 4
 
 kernel_version=`uname -r`
 if [ -e "/lib/modules/$kernel_version/modules.dep" ]; then
-  new_mods=`/usr/bin/find /lib/modules/$kernel_version -type f -newer /lib/modules/$kernel_version/modules.dep`
-  if [ ! -z "$new_mods" ]; then
-    status "Updating Module Dependencies" /sbin/depmod -a
-  fi
+	new_mods=`/usr/bin/find /lib/modules/$kernel_version -type f -newer /lib/modules/$kernel_version/modules.dep`
+	if [ ! -z "$new_mods" ]; then
+		status "Updating Module Dependencies" /sbin/depmod -a
+	fi
 else
-  status "Updating Module Dependencies" /sbin/depmod -a
+	status "Updating Module Dependencies" /sbin/depmod -a
 fi
 
 if [ -f /var/run/random-seed ]; then
@@ -98,15 +108,15 @@ if [ -f /var/run/random-seed ]; then
 fi
 
 if [ "$KEYMAP" != "" ]; then
-  status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
+	status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
 fi
 
 # Load modules from the MODULES array defined in rc.conf
 stat_busy "Loading Modules"
 for mod in "${MODULES[@]}"; do
-  if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-    /sbin/modprobe $mod
-  fi
+	if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+		/sbin/modprobe $mod
+	fi
 done
 stat_done
 
