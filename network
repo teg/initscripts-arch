@@ -29,9 +29,8 @@ ifdown()
   fi
   varname="\$${1}"
   eval new_ifline=$varname
-  if [ "$new_ifline" = "dhcp" ]; then
-    [ -f /etc/dhcpc/dhcpcd-${1}.pid ] && \
-      /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+  if [ "$new_ifline" = "dhcp" -a -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
+    /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
   else
     /sbin/ifconfig $new_ifline down
   fi
@@ -40,15 +39,15 @@ ifdown()
 
 iflist()
 {
-    for ifline in ${INTERFACES[@]}; do
-      if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
-        echo -en " $ifline:\t"
-      else
-        echo -en "$ifline:\t"
-      fi
-      eval real_ifline=\$${ifline#!}
-      echo $real_ifline
-    done
+  for ifline in ${INTERFACES[@]}; do
+    if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+      echo -en " $ifline:\t"
+    else
+      echo -en "$ifline:\t"
+    fi
+    eval real_ifline=\$${ifline#!}
+    echo $real_ifline
+  done
 }
 
 rtup()
@@ -77,15 +76,15 @@ rtdown()
 
 rtlist()
 {
-    for rtline in ${ROUTES[@]}; do
-      if echo $rtline | grep '^[^\!]' >/dev/null 2>&1; then
-        echo -en " $rtline:\t"
-      else
-        echo -en "$rtline:\t"
-      fi
-      eval real_rtline=\$${rtline#!}
-      echo $real_rtline
-    done
+  for rtline in ${ROUTES[@]}; do
+    if echo $rtline | grep '^[^\!]' >/dev/null 2>&1; then
+      echo -en " $rtline:\t"
+    else
+      echo -en "$rtline:\t"
+    fi
+    eval real_rtline=\$${rtline#!}
+    echo $real_rtline
+  done
 }
 
 case "$1" in
