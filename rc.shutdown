@@ -82,7 +82,7 @@ stat_done
 if [ "$RUNLEVEL" = "0" ]; then
 	printsep
 	printhl "${C_H2}POWER OFF"
-	/sbin/poweroff -d -f -i
+	/sbin/poweroff -d -f -h -i
 else
 	printsep
 	printhl "${C_H2}REBOOTING.."
