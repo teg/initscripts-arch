@@ -123,15 +123,7 @@ if [ "$HOSTNAME" != "" ]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
 fi
 
-kernel_version=`uname -r`
-if [ -e "/lib/modules/$kernel_version/modules.dep" ]; then
-	new_mods=`/usr/bin/find /lib/modules/$kernel_version -type f -newer /lib/modules/$kernel_version/modules.dep`
-	if [ ! -z "$new_mods" ]; then
-		status "Updating Module Dependencies" /sbin/depmod -a
-	fi
-else
-	status "Updating Module Dependencies" /sbin/depmod -a
-fi
+status "Updating Module Dependencies" /sbin/depmod -A
 
 if [ -f /var/run/random-seed ]; then
 	stat_busy "Initializing Random Seed"
