@@ -6,7 +6,7 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-if [ "$PREVLEVEL" = "2" ]; then
+if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
   # Shutdown daemons
   if [ -d /var/run/daemons ]; then
     for daemon in `ls /var/run/daemons`; do
@@ -15,12 +15,7 @@ if [ "$PREVLEVEL" = "2" ]; then
   fi
 
   # Shutdown network
-  stat_busy "Shutting Down Network"
-  /sbin/ifconfig lo down
-  if [ "$IPADDR" != "" -a "$NETMASK" != "" ]; then
-    /sbin/ifconfig eth0 down
-  fi
-  stat_done
+  /etc/rc.d/network stop
 
   # Shutdown pcmcia
   if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then

@@ -12,7 +12,7 @@
 echo -n "[                               Shutting Down    "
 echo    "                              ]"
 
-if [ "$PREVLEVEL" = "2" ]; then
+if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
   # Shutdown daemons
   if [ -d /var/run/daemons ]; then
     for daemon in `ls /var/run/daemons`; do
