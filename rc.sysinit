@@ -18,7 +18,7 @@ status "Starting DevFS Daemon" /sbin/devfsd /dev
 # /proc is temporarily mounted to check for LVM support - it is re-mounted
 # later from /etc/fstab
 /bin/mount -t proc none /proc
-if [ -f /proc/lvm/global -a -x /sbin/vgscan ]; then
+if [ -f /proc/lvm/global -a -x /sbin/vgchange ]; then
 	stat_busy "Scanning for LVM groups"
 	/sbin/vgchange -a y
 	stat_done
