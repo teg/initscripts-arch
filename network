@@ -1,0 +1,42 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    stat_busy "Starting Network"
+    /sbin/ifconfig lo 127.0.0.1 netmask 255.255.255.255
+    ret=$?
+    if [ "$IPADDR" != "" -a "$NETMASK" != "" ]; then
+      /sbin/ifconfig eth0 $IPADDR netmask $NETMASK
+      ret=$?
+      if [ "$GATEWAY" != "" ]; then
+        /sbin/route add default gw $GATEWAY
+      fi
+    fi
+    if [ $? -gt 0 -o $ret -gt 0 ]; then
+      stat_fail
+    else
+      stat_done
+    fi
+    ;;
+  stop)
+    stat_busy "Stopping Network"
+    /sbin/ifconfig lo down
+    if [ ! `/sbin/ifconfig eth0 | egrep '^ *UP' &>/dev/null` ]; then
+      /sbin/ifconfig eth0 down
+    fi
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      stat_done
+    fi
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"  
+esac
