@@ -5,7 +5,7 @@
 
 echo -n "[                                                "
 echo    "                              ]"
-echo -n "[                         Booting Proto Linux 0.1"
+echo -n "[                         Booting Arch Linux #VERSION#"
 echo    "                              ]"
 echo -n "[                                                "
 echo    "                              ]"
