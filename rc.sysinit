@@ -86,7 +86,7 @@ status "Starting Kernel Logger" /usr/sbin/klogd -c 4
 kernel_version=`uname -r`
 if [ -e "/lib/modules/$kernel_version/modules.dep" ]; then
   new_mods=`/usr/bin/find /lib/modules/$kernel_version -type f -newer /lib/modules/$kernel_version/modules.dep`
-  if [ ! -z $new_mods ]; then
+  if [ ! -z "$new_mods" ]; then
     status "Updating Module Dependencies" /sbin/depmod -a
   fi
 else
