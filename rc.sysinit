@@ -101,6 +101,13 @@ if [ "$KEYMAP" != "" ]; then
   status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
 fi
 
+# Load modules from the MODULES array defined in rc.conf
+for mod in "${MODULES[@]}"; do
+  if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+    /sbin/modprobe $mod
+  fi
+done
+
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
 
