@@ -15,7 +15,7 @@ case "$1" in
         if [ "$new_ifline" = "dhcp" ]; then
           # remove the .pid file if it exists
           rm -f /etc/dhcpc/dhcpcd-${ifline}.pid >/dev/null 2>&1
-          /usr/sbin/dhcpcd $ifline || stat_die
+          /usr/sbin/dhcpcd -D -H -h $HOSTNAME $ifline || stat_die
         else
           /sbin/ifconfig $new_ifline || stat_die
         fi
