@@ -87,7 +87,7 @@ stat_busy "Mounting Local Filesystems"
 umount /proc && mount -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && umount /sys && mount -t sysfs none /sys
 # now mount all the local filesystems
-/bin/mount -a -t nonfs,nosmbfs,noncpfs,nosysfs
+/bin/mount -a -t nonfs,nosmbfs,noncpfs,nosysfs,nousbfs
 stat_done
 
 stat_busy "Configuring System Clock"
@@ -151,6 +151,9 @@ for mod in "${MODULES[@]}"; do
 	fi
 done
 stat_done
+
+# Now that modules are loaded, try to mount /proc/bus/usb
+[ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
 
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15

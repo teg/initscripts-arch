@@ -3,153 +3,167 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
+# look for wireless settings
+[ -f /etc/conf.d/wireless ] && . /etc/conf.d/wireless
+
+# look for dhcpcd settings
+[ -f /etc/conf.d/dhcpcd ] && . /etc/conf.d/dhcpcd
+
 ifup()
 {
-  if [ "$1" = "" ]; then
-    echo "usage: $0 ifup <interface_name>"
-    return 1
-  fi
-  varname="\$${1}"
-  eval new_ifline=$varname
-  if [ "$new_ifline" = "dhcp" ]; then
-    # remove the .pid file if it exists
-    rm -f /etc/dhcpc/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
-    /usr/sbin/dhcpcd -t 10 -h $HOSTNAME $1
-  else
-    /sbin/ifconfig $new_ifline
-  fi
-  return $?
+	if [ "$1" = "" ]; then
+		echo "usage: $0 ifup <interface_name>"
+		return 1
+	fi
+	for wif in ${WLAN_INTERFACES[@]}; do
+		if [ "$wif" = "${1}" ]; then
+			wvarname="\$wlan_${1}"
+			eval wif_line=$wvarname
+			/usr/sbin/iwconfig $wif_line
+			/usr/bin/sleep 2
+		fi
+	done
+	varname="\$${1}"
+	eval new_ifline=$varname
+	if [ "$new_ifline" = "dhcp" ]; then
+		# remove the .pid file if it exists
+		rm -f /etc/dhcpc/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
+		/usr/sbin/dhcpcd $DHCPCD_ARGS $1
+	else
+		/sbin/ifconfig $new_ifline
+	fi
+	return $?
 }
 
 ifdown()
 {
-  if [ "$1" = "" ]; then
-    echo "usage: $0 ifdown <interface_name>"
-    return 1
-  fi
-  varname="\$${1}"
-  eval new_ifline=$varname
-  if [ "$new_ifline" = "dhcp" ]; then
-    if [ -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
-      /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
-    else
-      # No .pid file, just bring the interface itself down
-      /sbin/ifconfig $1 down
-    fi
-  else
-    /sbin/ifconfig $new_ifline down
-  fi
-  return $?
+	if [ "$1" = "" ]; then
+		echo "usage: $0 ifdown <interface_name>"
+		return 1
+	fi
+	varname="\$${1}"
+	eval new_ifline=$varname
+	if [ "$new_ifline" = "dhcp" ]; then
+		if [ -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
+			/bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+		else
+			# No .pid file, just bring the interface itself down
+			/sbin/ifconfig $1 down
+		fi
+	else
+		/sbin/ifconfig $new_ifline down
+	fi
+	return $?
 }
 
 iflist()
 {
-  for ifline in ${INTERFACES[@]}; do
-    if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
-      echo -en " $ifline:\t"
-    else
-      echo -en "$ifline:\t"
-    fi
-    eval real_ifline=\$${ifline#!}
-    echo $real_ifline
-  done
+	for ifline in ${INTERFACES[@]}; do
+		if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+			echo -en " $ifline:\t"
+		else
+			echo -en "$ifline:\t"
+		fi
+		eval real_ifline=\$${ifline#!}
+		echo $real_ifline
+	done
 }
 
 rtup()
 {
-  if [ "$1" = "" ]; then
-    echo "usage: $0 rtup <route_name>"
-    return 1
-  fi
-  varname="\$${1}"
-  eval new_rtline=$varname
-  /sbin/route add $new_rtline
-  return $?
+	if [ "$1" = "" ]; then
+		echo "usage: $0 rtup <route_name>"
+		return 1
+	fi
+	varname="\$${1}"
+	eval new_rtline=$varname
+	/sbin/route add $new_rtline
+	return $?
 }
 
 rtdown()
 {
-  if [ "$1" = "" ]; then
-    echo "usage: $0 rtdown <route_name>"
-    return 1
-  fi
-  varname="\$${1}"
-  eval new_rtline=$varname
-  /sbin/route del $new_rtline
-  return $?
+	if [ "$1" = "" ]; then
+		echo "usage: $0 rtdown <route_name>"
+		return 1
+	fi
+	varname="\$${1}"
+	eval new_rtline=$varname
+	/sbin/route del $new_rtline
+	return $?
 }
 
 rtlist()
 {
-  for rtline in ${ROUTES[@]}; do
-    if echo $rtline | grep '^[^\!]' >/dev/null 2>&1; then
-      echo -en " $rtline:\t"
-    else
-      echo -en "$rtline:\t"
-    fi
-    eval real_rtline=\$${rtline#!}
-    echo $real_rtline
-  done
+	for rtline in ${ROUTES[@]}; do
+		if echo $rtline | grep '^[^\!]' >/dev/null 2>&1; then
+			echo -en " $rtline:\t"
+		else
+			echo -en "$rtline:\t"
+		fi
+		eval real_rtline=\$${rtline#!}
+		echo $real_rtline
+	done
 }
 
 case "$1" in
-  start)
-    if ! ck_daemon network; then
-      echo "Network is already running.  Try 'network restart'"
-      exit
-    fi
-    stat_busy "Starting Network"
-    error=0
-    for ifline in ${INTERFACES[@]}; do
-      if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
-        ifup $ifline || error=1
-      fi
-    done
-    for rtline in "${ROUTES[@]}"; do
-      if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
-        rtup $rtline || error=1
-      fi
-    done
-    if [ $error -eq 0 ]; then
-      add_daemon network
-      stat_done
-    else
-      stat_fail
-    fi
-    ;;
-  stop)
-    if ck_daemon network; then
-      echo "Network is not running.  Try 'network start'"
-      exit
-    fi
-    stat_busy "Stopping Network"
-    rm_daemon network
-    error=0
-    for rtline in "${ROUTES[@]}"; do
-      if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
-        rtdown $rtline || error=1
-      fi
-    done
-    for ifline in ${INTERFACES[@]}; do
-      if echo $ifline | grep '^[^\!]' 2>&1 >/dev/null; then
-        ifdown $ifline || error=1
-      fi
-    done
-    if [ $error -eq 0 ]; then
-      stat_done
-    else
-      stat_fail
-    fi
-    ;;
-  restart)
-    $0 stop
-    sleep 2
-    $0 start
-    ;;
-  ifup|ifdown|iflist|rtup|rtdown|rtlist)
-    $1 $2
-    ;;
-  *)
-    echo "usage: $0 {start|stop|restart}"  
-    echo "       $0 {ifup|ifdown|iflist|rtup|rtdown|rtlist}"
+	start)
+	if ! ck_daemon network; then
+		echo "Network is already running.  Try 'network restart'"
+		exit
+	fi
+	stat_busy "Starting Network"
+	error=0
+	for ifline in ${INTERFACES[@]}; do
+		if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+			ifup $ifline || error=1
+		fi
+	done
+	for rtline in "${ROUTES[@]}"; do
+		if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+			rtup $rtline || error=1
+		fi
+	done
+	if [ $error -eq 0 ]; then
+		add_daemon network
+		stat_done
+	else
+		stat_fail
+	fi
+	;;
+	stop)
+	if ck_daemon network; then
+		echo "Network is not running.  Try 'network start'"
+		exit
+	fi
+	stat_busy "Stopping Network"
+	rm_daemon network
+	error=0
+	for rtline in "${ROUTES[@]}"; do
+		if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+			rtdown $rtline || error=1
+		fi
+	done
+	for ifline in ${INTERFACES[@]}; do
+		if echo $ifline | grep '^[^\!]' 2>&1 >/dev/null; then
+			ifdown $ifline || error=1
+		fi
+	done
+	if [ $error -eq 0 ]; then
+		stat_done
+	else
+		stat_fail
+	fi
+	;;
+	restart)
+	$0 stop
+	/usr/bin/sleep 2
+	$0 start
+	;;
+	ifup|ifdown|iflist|rtup|rtdown|rtlist)
+	$1 $2
+	;;
+	*)
+	echo "usage: $0 {start|stop|restart}"  
+	echo "       $0 {ifup|ifdown|iflist|rtup|rtdown|rtlist}"
 esac
