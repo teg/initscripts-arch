@@ -34,10 +34,24 @@ if [ "$PREVLEVEL" != "N" ]; then
 	/usr/bin/sleep 1
 	stat_done
 
-	status "Starting DevFS Daemon" /sbin/devfsd /dev
+	if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
+		# Looks like devfs is running, use it
+		status "Starting DevFS Daemon" /sbin/devfsd /dev
+	elif [ -x /etc/start_udev -a -d /sys/block ]; then
+		# We have a start_udev script and /sys appears to be mounted, use UDev
+		status "Starting UDev Daemon" /etc/start_udev          
+	else                                                           
+		# Static /dev, our last resort
+		status "Using static /dev filesystem" /bin/true
+	fi
 
-	[ -x /etc/rc.d/syslogd ] && /etc/rc.d/syslogd start
-	[ -x /etc/rc.d/klogd ] && /etc/rc.d/klogd start
+	# try syslog-NG first, then fall back to good ol' syslogd
+	if [ -x /etc/rc.d/syslog-ng ]; then
+		/etc/rc.d/syslog-ng start
+	elif [ -x /etc/rc.d/syslogd ]; then
+		/etc/rc.d/syslogd start
+		[ -x /etc/rc.d/klogd ] && /etc/rc.d/klogd start
+	fi
 fi
 
 if [ "$RUNLEVEL" = "1" ]; then
