@@ -45,8 +45,18 @@ stat_done
 
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
-/bin/rm -f /etc/mtab* 
+/bin/rm -f /etc/mtab*
 /bin/mount -a -t nonfs
+stat_done
+
+stat_busy "Configuring System Clock"
+/sbin/hwclock --hctosys
+if [ ! -f /etc/adjtime ]; then
+  echo "0.0 0 0.0" > /etc/adjtime
+fi
+if [ "$TIMEZONE" != "" ]; then
+  /bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+fi
 stat_done
 
 stat_busy "Removing Leftover Files"
@@ -69,21 +79,19 @@ status "Starting System Logger" /usr/sbin/syslogd -m 0
 
 status "Starting Kernel Logger" /usr/sbin/klogd -c 4
 
-status "Updating Module Dependencies" /sbin/depmod -a
+kernel_version=`uname -r`
+if [ -e "/lib/modules/$kernel_version/modules.dep" ]; then
+  new_mods=`/usr/bin/find /lib/modules/$kernel_version -type f -newer /lib/modules/$kernel_version/modules.dep`
+  if [ ! -z $new_mods ]; then
+    status "Updating Module Dependencies" /sbin/depmod -a
+  fi
+else
+  status "Updating Module Dependencies" /sbin/depmod -a
+fi
 
 if [ -f /var/run/random-seed ]; then
 	status "Initializing Random Seed" /bin/cat /var/run/random-seed > /dev/urandom
 fi
-
-stat_busy "Configuring System Clock"
-if [ ! -f /etc/adjtime ]; then
-  echo "0.0 0 0.0" > /etc/adjtime
-fi
-if [ "$TIMEZONE" != "" ]; then
-  /bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
-fi
-/sbin/hwclock --hctosys
-stat_done
 
 if [ "$KEYMAP" != "" ]; then
   status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
