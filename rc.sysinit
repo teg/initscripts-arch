@@ -111,8 +111,6 @@ if [ "$HOSTNAME" != "" ]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
 fi
 
-# syslog
-
 kernel_version=`uname -r`
 if [ -e "/lib/modules/$kernel_version/modules.dep" ]; then
 	new_mods=`/usr/bin/find /lib/modules/$kernel_version -type f -newer /lib/modules/$kernel_version/modules.dep`
