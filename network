@@ -10,10 +10,11 @@ ifup()
   if [ "$new_ifline" = "dhcp" ]; then
     # remove the .pid file if it exists
     rm -f /etc/dhcpc/dhcpcd-${1}.pid >/dev/null 2>&1
-    /usr/sbin/dhcpcd -h $HOSTNAME $1 || stat_die
+    /usr/sbin/dhcpcd -h $HOSTNAME $1
   else
-    /sbin/ifconfig $new_ifline || stat_die
+    /sbin/ifconfig $new_ifline
   fi
+  return $?
 }
 
 ifdown()
@@ -23,22 +24,25 @@ ifdown()
   if [ "$new_ifline" = "dhcp" ]; then
     /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
   else
-    /sbin/ifconfig $new_ifline down || stat_die
+    /sbin/ifconfig $new_ifline down
   fi
+  return $?
 }
 
 rtup()
 {
   varname="\$${1}"
   eval new_rtline=$varname
-  /sbin/route add $new_rtline || stat_die
+  /sbin/route add $new_rtline
+  return $?
 }
 
 rtdown()
 {
   varname="\$${1}"
   eval new_rtline=$varname
-  /sbin/route del $new_rtline || stat_fail
+  /sbin/route del $new_rtline
+  return $?
 }
 
 case "$1" in
@@ -48,18 +52,23 @@ case "$1" in
       exit
     fi
     stat_busy "Starting Network"
+    error=0
     for ifline in ${INTERFACES[@]}; do
       if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
-        ifup $ifline
+        ifup $ifline || error=1
       fi
     done
     for rtline in "${ROUTES[@]}"; do
       if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
-        rtup $rtline
+        rtup $rtline || error=1
       fi
     done
-    add_daemon network
-    stat_done
+    if [ $error -eq 0 ]; then
+      add_daemon network
+      stat_done
+    else
+      stat_fail
+    fi
     ;;
   stop)
     if ck_daemon network; then
@@ -68,17 +77,22 @@ case "$1" in
     fi
     stat_busy "Stopping Network"
     rm_daemon network
+    error=0
     for rtline in "${ROUTES[@]}"; do
       if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
-        rtdown $rtline
+        rtdown $rtline || error=1
       fi
     done
     for ifline in ${INTERFACES[@]}; do
       if echo $ifline | grep '^[^\!]' 2>&1 >/dev/null; then
-        ifdown $ifline
+        ifdown $ifline || error=1
       fi
     done
-    stat_done
+    if [ $error -eq 0 ]; then
+      stat_done
+    else
+      stat_fail
+    fi
     ;;
   restart)
     $0 stop
