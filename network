@@ -11,7 +11,11 @@ case "$1" in
       if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
         varname="\$${ifline}"
         eval new_ifline=$varname
-        /sbin/ifconfig $new_ifline || stat_die
+        if [ "$new_ifline" = "dhcp" ]; then
+          /usr/sbin/dhcpcd $ifline || stat_die
+        else
+          /sbin/ifconfig $new_ifline || stat_die
+	fi
       fi
     done
     for rtline in "${ROUTES[@]}"; do
@@ -36,9 +40,15 @@ case "$1" in
       if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
         varname="\$${ifline}"
         eval new_ifline=$varname
-        /sbin/ifconfig $new_ifline down || stat_die
+	if [ "$new_ifline" = "dhcp" ]; then
+	  # do nothing - we kill dhcpcd later
+	  /bin/true
+	else
+          /sbin/ifconfig $new_ifline down || stat_die
+	fi
       fi
     done
+    /usr/bin/killall -q dhcpcd
     stat_done
     ;;
   restart)
