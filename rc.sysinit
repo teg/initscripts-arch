@@ -113,6 +113,10 @@ if [ "$KEYMAP" != "" ]; then
 	status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
 fi
 
+if [ "$CONSOLEFONT" != "" ]; then
+	status "Loading Console Font: $CONSOLEFONT" /usr/bin/setfont $CONSOLEFONT
+fi
+
 # Load modules from the MODULES array defined in rc.conf
 stat_busy "Loading Modules"
 for mod in "${MODULES[@]}"; do
