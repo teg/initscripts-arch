@@ -16,6 +16,5 @@ done
 if [ -x /etc/rc.local ]; then
     /etc/rc.local
 fi
-read
 
 # End of file
