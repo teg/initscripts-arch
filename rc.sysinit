@@ -20,8 +20,8 @@ printsep
 /bin/dmesg -n 3
 
 # mount /proc and /sys
-mount -n -t sysfs none /sys 2>/dev/null
 mount -n -t proc none /proc
+[ "`grep sysfs /proc/filesystems`" ] && mount -n -t sysfs none /sys
 
 if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
 	# Looks like devfs is running, use it

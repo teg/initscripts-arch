@@ -29,8 +29,13 @@ ifdown()
   fi
   varname="\$${1}"
   eval new_ifline=$varname
-  if [ "$new_ifline" = "dhcp" -a -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
-    /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+  if [ "$new_ifline" = "dhcp" ]; then
+    if [ -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
+      /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+    else
+      # No .pid file, just bring the interface itself down
+      /sbin/ifconfig $1 down
+    fi
   else
     /sbin/ifconfig $new_ifline down
   fi
