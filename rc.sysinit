@@ -102,11 +102,13 @@ if [ "$KEYMAP" != "" ]; then
 fi
 
 # Load modules from the MODULES array defined in rc.conf
+stat_busy "Loading Modules"
 for mod in "${MODULES[@]}"; do
   if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
     /sbin/modprobe $mod
   fi
 done
+stat_done
 
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
