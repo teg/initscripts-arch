@@ -3,62 +3,86 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
+ifup()
+{
+  varname="\$${1}"
+  eval new_ifline=$varname
+  if [ "$new_ifline" = "dhcp" ]; then
+    # remove the .pid file if it exists
+    rm -f /etc/dhcpc/dhcpcd-${1}.pid >/dev/null 2>&1
+    /usr/sbin/dhcpcd -h $HOSTNAME $1 || stat_die
+  else
+    /sbin/ifconfig $new_ifline || stat_die
+  fi
+}
+
+ifdown()
+{
+  varname="\$${1}"
+  eval new_ifline=$varname
+  if [ "$new_ifline" = "dhcp" ]; then
+    /bin/kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+  else
+    /sbin/ifconfig $new_ifline down || stat_die
+  fi
+}
+
+rtup()
+{
+  varname="\$${1}"
+  eval new_rtline=$varname
+  /sbin/route add $new_rtline || stat_die
+}
+
+rtdown()
+{
+  varname="\$${1}"
+  eval new_rtline=$varname
+  /sbin/route del $new_rtline || stat_fail
+}
 
 case "$1" in
   start)
-    ck_daemon network || exit
+    if ! ck_daemon network; then
+      echo "Network is already running.  Try 'network restart'"
+      exit
+    fi
     stat_busy "Starting Network"
     for ifline in ${INTERFACES[@]}; do
       if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
-        varname="\$${ifline}"
-        eval new_ifline=$varname
-        if [ "$new_ifline" = "dhcp" ]; then
-          # remove the .pid file if it exists
-          rm -f /etc/dhcpc/dhcpcd-${ifline}.pid >/dev/null 2>&1
-          /usr/sbin/dhcpcd -D -H -h $HOSTNAME $ifline || stat_die
-        else
-          /sbin/ifconfig $new_ifline || stat_die
-        fi
+        ifup $ifline
       fi
     done
     for rtline in "${ROUTES[@]}"; do
-      if echo $rtline | grep '^[^\!]' 2>&1 > /dev/null; then
-        varname="\$${rtline}"
-        eval new_rtline=$varname
-        /sbin/route add $new_rtline || stat_die
+      if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+        rtup $rtline
       fi
     done
     add_daemon network
     stat_done
     ;;
   stop)
-    ck_daemon network && exit
+    if ck_daemon network; then
+      echo "Network is not running.  Try 'network start'"
+      exit
+    fi
     stat_busy "Stopping Network"
     rm_daemon network
     for rtline in "${ROUTES[@]}"; do
-      if echo $rtline | grep '^[^\!]' 2>&1 > /dev/null; then
-        varname="\$${rtline}"
-        eval new_rtline=$varname
-        /sbin/route del $new_rtline || stat_die
+      if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+        rtdown $rtline
       fi
     done
     for ifline in ${INTERFACES[@]}; do
-      if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
-        varname="\$${ifline}"
-        eval new_ifline=$varname
-        if [ "$new_ifline" = "dhcp" ]; then
-          # do nothing - we kill dhcpcd later
-          /bin/true
-        else
-          /sbin/ifconfig $new_ifline down || stat_die
-        fi
+      if echo $ifline | grep '^[^\!]' 2>&1 >/dev/null; then
+        ifdown $ifline
       fi
     done
-    /usr/bin/killall -q dhcpcd
     stat_done
     ;;
   restart)
     $0 stop
+    sleep 2
     $0 start
     ;;
   *)
