@@ -1,0 +1,11 @@
+.PKGINFO
+etc/
+etc/rc.d/
+etc/rc.d/functions
+etc/inittab
+etc/rc.conf
+etc/rc.local
+etc/rc.multi
+etc/rc.shutdown
+etc/rc.single
+etc/rc.sysinit

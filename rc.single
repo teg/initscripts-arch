@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# /etc/rc.single
+#
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+if [ "$PREVLEVEL" = "2" ]; then
+  # Shutdown daemons
+  stat_busy "Shutting Down Daemons"
+  stat_done
+
+  # Shutdown network
+  stat_busy "Shutting Down Network"
+  stat_done
+fi
+
+if [ "$PREVLEVEL" != "N" ]; then
+  stat_busy "Sending SIGTERM To Processes"
+  /sbin/killall5 -15 &> /dev/null
+  /usr/bin/sleep 5
+  stat_done
+	
+  stat_busy "Sending SIGKILL To Processes"
+  /sbin/killall5 -9 &> /dev/null
+  stat_done
+
+  stat_busy "Starting DevFS Daemon"
+  /sbin/devfsd /dev
+  stat_done
+    
+  stat_busy "Starting Log Daemons"
+  /usr/sbin/syslogd -m 0
+  /usr/sbin/klogd -c 4
+  stat_done
+fi
+
+if [ "$RUNLEVEL" = "1" ]; then
+  echo "Entering single-user mode..."
+  exec /sbin/init -t1 S
+fi
+
+# End of file

@@ -1,0 +1,108 @@
+#!/bin/sh
+#
+# /etc/rc.sysinit
+#
+
+echo -n "[                                                "
+echo    "                              ]"
+echo -n "[                         Booting Proto Linux 0.1"
+echo    "                              ]"
+echo -n "[                                                "
+echo    "                              ]"
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+stat_busy "Starting DevFS Daemon"
+checkret /sbin/devfsd /dev
+
+stat_busy "Activating Swap"
+checkret /sbin/swapon -a
+
+stat_busy "Mounting Root Read-only"
+checkret /bin/mount -n -o remount,ro /
+
+stat_busy "Checking Filesystems"
+/sbin/fsck -A -T -C -a
+if [ $? -gt 1 ]; then
+  stat_fail
+  echo
+  echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+  echo "*                                                          *"
+  echo "*  Please repair manually and reboot. Note that the root   *"
+  echo "*  file system is currently mounted read-only. To remount  *"
+  echo "*  it read-write type: mount -n -o remount,rw /            *"
+  echo "*  When you exit the maintainance shell the system will    *"
+  echo "*  reboot automatically.                                   *"
+  echo "*                                                          *"
+  echo "************************************************************"
+  echo
+  /sbin/sulogin -p
+  echo "Automatic reboot in progress..."
+  /bin/umount -a
+  /bin/mount -n -o remount,ro /
+  /sbin/reboot -f
+  exit 0
+fi
+stat_done
+
+stat_busy "Mounting Local Filesystems"
+/bin/mount -n -o remount,rw /
+/bin/rm -f /etc/mtab* 
+/bin/mount -a -t nonfs
+stat_done
+
+stat_busy "Removing Leftover Files"
+/bin/rm -f /etc/nologin &> /dev/null
+/bin/rm -f /etc/shutdownpid &> /dev/null
+/bin/rm -f /var/locks/* &> /dev/null
+/bin/rm -f /var/run/*.pid &> /dev/null
+/bin/rm -rf /tmp/* /tmp/.* &> /dev/null
+: > /var/run/utmp
+stat_done
+
+stat_busy "Updating Shared Library Links"
+/sbin/ldconfig
+stat_done
+
+if [ "$HOSTNAME" != "" ]; then
+  stat_busy "Setting Hostname: $HOSTNAME"
+  /bin/hostname $HOSTNAME
+  stat_done
+fi
+
+stat_busy "Starting System Logger"
+checkret /usr/sbin/syslogd -m 0
+
+stat_busy "Starting Kernel Logger"
+checkret /usr/sbin/klogd -c 4
+
+stat_busy "Updating Module Dependencies"
+checkret /sbin/depmod -a
+
+stat_busy "Initializing Random Seed"
+if [ -f /var/run/random-seed ]; then
+  /bin/cat /var/run/random-seed > /dev/urandom
+fi
+stat_done
+
+stat_busy "Configuring System Clock"
+if [ ! -f /etc/adjtime ]; then
+  echo "0.0 0 0.0" > /etc/adjtime
+fi
+if [ "$TIMEZONE" != "" ]; then
+  /bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+fi
+/sbin/hwclock --hctosys
+stat_done
+
+if [ "$KEYMAP" != "" ]; then
+  stat_busy "Loading Keyboard Map: $KEYMAP"
+  /bin/loadkeys -q $KEYMAP
+  stat_done
+fi
+
+# Screen blanks after 15 minutes idle time
+/usr/bin/setterm -blank 15
+
+# End of file

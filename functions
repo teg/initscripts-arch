@@ -1,0 +1,45 @@
+#
+# functions
+#
+
+STAT_COL=68
+
+deltext() {
+  echo -ne "\033[$(($STAT_COL+4))G"
+}
+
+stat_busy() {
+  echo -n "[ $1 "
+  awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
+  echo -n "   BUSY ]"
+}
+
+stat_done() {
+  deltext
+  echo "   DONE ]"
+}
+
+stat_fail() {
+  deltext
+  echo " FAILED ]"
+}
+
+checkret() {
+  $* >/dev/null 2>&1
+  if [ $? -gt 0 ]; then
+    stat_fail
+  else
+    stat_done
+  fi
+}
+
+add_daemon() {
+  [ -d /var/run/daemons ] || mkdir -p /var/run/daemons
+  touch /var/run/daemons/$1
+}
+
+rm_daemon() {
+  rm -f /var/run/daemons/$1
+}
+
+# End of file

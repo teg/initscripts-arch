@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# /etc/rc.multi
+#
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+# Start pcmcia
+if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then
+  /etc/rc.d/pcmcia start
+fi
+
+stat_busy "Starting Network"
+stat_done
+
+# Start daemons
+for daemon in "${DAEMONS[@]}"; do
+  /etc/rc.d/$daemon start
+done
+
+if [ -x /etc/rc.local ]; then
+    /etc/rc.local
+fi
+
+# End of file

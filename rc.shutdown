@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+# /etc/rc.shutdown
+#
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+# avoid staircase effect
+/bin/stty onlcr
+
+echo -n "[                               Shutting Down    "
+echo    "                              ]"
+
+if [ "$PREVLEVEL" = "2" ]; then
+  # Shutdown daemons
+  if [ -d /var/run/daemons ]; then
+    for daemon in `ls /var/run/daemons`; do
+      /etc/rc.d/$daemon stop
+    done
+  fi
+
+  # Shutdown network
+  stat_busy "Shutting Down Network"
+  stat_done
+
+  # Shutdown pcmcia
+  if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then
+    /etc/rc.d/pcmcia stop
+  fi
+fi
+
+# Terminate all processes
+stat_busy "Sending SIGTERM To Processes"
+/sbin/killall5 -15 &> /dev/null
+/usr/bin/sleep 5
+stat_done
+
+stat_busy "Sending SIGKILL To Processes"
+/sbin/killall5 -9 &> /dev/null
+stat_done
+
+stat_busy "Saving Random Seed"
+/bin/dd if=/dev/urandom of=/var/run/random-seed count=1 bs=512 2> /dev/null
+stat_done
+
+stat_busy "Saving System Clock"
+/sbin/hwclock --systohc
+stat_done
+
+# Write to wtmp file before unmounting
+/sbin/halt -w
+
+stat_busy "Deactivating Swap"
+/sbin/swapoff -a
+stat_done
+
+stat_busy "Unmounting Filesystems"
+/bin/umount -a
+stat_done
+
+stat_busy "Remounting Root Filesystem Read-only"
+/bin/mount -n -o remount,ro /
+stat_done
+echo ""
+
+# Power off or reboot
+if [ "$RUNLEVEL" = "0" ]; then
+  echo -n "[                                 POWER OFF      "
+  echo    "                              ]"
+  /sbin/poweroff -d -f -i
+else
+  echo -n "[                                 REBOOTING      "
+  echo    "                              ]"
+  /sbin/reboot -d -f -i
+fi
+
+# End of file
