@@ -9,24 +9,29 @@
 # avoid staircase effect
 /bin/stty onlcr
 
-echo -n "[                               Shutting Down    "
-echo    "                              ]"
+if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+	echo -e "\033[1;32m| \033[1;37mInitiating Shutdown...\033[1;0m"
+	echo -e "\033[1;32m|\033[1;0m"
+else
+	echo "| Initiating Shutdown..."
+	echo "|"
+fi
 
 if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
-  # Shutdown daemons
-  let i=${#DAEMONS[@]}
-  while [[ i -gt 0 ]]; do
-    if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-      /etc/rc.d/${DAEMONS[$i]} stop
-    fi
-    let i=i-1
-  done
-  # find any leftover daemons and shut them down
-  if [ -d /var/run/daemons ]; then
-    for daemon in `ls /var/run/daemons`; do
-      /etc/rc.d/$daemon stop
-    done
-  fi
+	# Shutdown daemons
+	let i=${#DAEMONS[@]}
+	while [[ i -ge 0 ]]; do
+		if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+			/etc/rc.d/${DAEMONS[$i]} stop
+		fi
+		let i=i-1
+	done
+	# find any leftover daemons and shut them down
+	if [ -d /var/run/daemons ]; then
+		for daemon in `ls /var/run/daemons`; do
+			/etc/rc.d/$daemon stop
+		done
+	fi
 fi
 
 # Terminate all processes
@@ -45,9 +50,9 @@ stat_done
 
 stat_busy "Saving System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
-    /sbin/hwclock --utc --systohc
+	/sbin/hwclock --utc --systohc
 else
-    /sbin/hwclock --localtime --systohc
+	/sbin/hwclock --localtime --systohc
 fi
 stat_done
 
@@ -69,13 +74,19 @@ echo ""
 
 # Power off or reboot
 if [ "$RUNLEVEL" = "0" ]; then
-  echo -n "[                                 POWER OFF      "
-  echo    "                              ]"
-  /sbin/poweroff -d -f -i
+	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+		echo -e ">>> \033[1;33mPOWER OFF\033[1;0m"
+	else
+		echo ">>> POWER OFF"
+	fi
+	/sbin/poweroff -d -f -i
 else
-  echo -n "[                                 REBOOTING      "
-  echo    "                              ]"
-  /sbin/reboot -d -f -i
+	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+		echo -e ">>> \033[1;33mREBOOTING\033[1;0m"
+	else
+		echo ">>> REBOOTING"
+	fi
+	/sbin/reboot -d -f -i
 fi
 
 # End of file

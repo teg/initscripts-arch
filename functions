@@ -3,26 +3,40 @@
 # functions
 #
 
-STAT_COL=68
+STAT_COL=$[`stty size | awk 'BEGIN { RS=" " }; END { print $1 }'` - 12]
 
 deltext() {
 	echo -ne "\033[$(($STAT_COL+4))G"
 }
 
 stat_busy() {
-	echo -n "[ $1 "
-	awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
-	echo -n "   BUSY ]"
+	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+		echo -ne "\033[1;32m| \033[1;37m$1\033[1;0m "
+		awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
+		echo -ne "   \033[1;34m[\033[1;33mbusy\033[1;34m]\033[1;0m"
+	else
+		echo -n "| $1 "
+		awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
+		echo -n "   [busy]"
+	fi
 }
 
 stat_done() {
 	deltext
-	echo "   DONE ]"
+	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+		echo -e "   \033[1;34m[\033[1;32mdone\033[1;34m]\033[1;0m"
+	else
+		echo "   [done]"
+	fi
 }
 
 stat_fail() {
 	deltext
-	echo " FAILED ]"
+	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+		echo -e "   \033[1;34m[\033[1;31mfail\033[1;34m]\033[1;0m"
+	else
+		echo "   [fail]"
+	fi
 }
 
 stat_die() {

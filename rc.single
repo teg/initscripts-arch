@@ -7,45 +7,45 @@
 . /etc/rc.d/functions
 
 if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
-  # Shutdown daemons
-  let i=${#DAEMONS[@]}
-  while [[ i -gt 0 ]]; do
-    if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-      /etc/rc.d/${DAEMONS[$i]} stop
-    fi
-    let i=i-1
-  done
-  # find any leftover daemons and shut them down
-  if [ -d /var/run/daemons ]; then
-    for daemon in `ls /var/run/daemons`; do
-      /etc/rc.d/$daemon stop
-    done
-  fi
+	# Shutdown daemons
+	let i=${#DAEMONS[@]}
+	while [[ i -gt 0 ]]; do
+		if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+			/etc/rc.d/${DAEMONS[$i]} stop
+		fi
+		let i=i-1
+	done
+	# find any leftover daemons and shut them down
+	if [ -d /var/run/daemons ]; then
+		for daemon in `ls /var/run/daemons`; do
+			/etc/rc.d/$daemon stop
+		done
+	fi
 fi
 
 if [ "$PREVLEVEL" != "N" ]; then
-  stat_busy "Sending SIGTERM To Processes"
-  /sbin/killall5 -15 &> /dev/null
-  /usr/bin/sleep 5
-  stat_done
-	
-  stat_busy "Sending SIGKILL To Processes"
-  /sbin/killall5 -9 &> /dev/null
-  stat_done
+	stat_busy "Sending SIGTERM To Processes"
+	/sbin/killall5 -15 &> /dev/null
+	/usr/bin/sleep 5
+	stat_done
 
-  stat_busy "Starting DevFS Daemon"
-  /sbin/devfsd /dev
-  stat_done
-    
-  stat_busy "Starting Log Daemons"
-  /usr/sbin/syslogd -m 0
-  /usr/sbin/klogd -c 4
-  stat_done
+	stat_busy "Sending SIGKILL To Processes"
+	/sbin/killall5 -9 &> /dev/null
+	stat_done
+
+	stat_busy "Starting DevFS Daemon"
+	/sbin/devfsd /dev
+	stat_done
+
+	stat_busy "Starting Log Daemons"
+	/usr/sbin/syslogd -m 0
+	/usr/sbin/klogd -c 4
+	stat_done
 fi
 
 if [ "$RUNLEVEL" = "1" ]; then
-  echo "Entering single-user mode..."
-  exec /sbin/init -t1 S
+	echo "Entering single-user mode..."
+	exec /sbin/init -t1 S
 fi
 
 # End of file
