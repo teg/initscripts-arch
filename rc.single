@@ -8,18 +8,18 @@
 
 if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
   # Shutdown daemons
+  let i=${#DAEMONS[@]}
+  while [[ i -gt 0 ]]; do
+    if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+      /etc/rc.d/${DAEMONS[$i]} stop
+    fi
+    let i=i-1
+  done
+  # find any leftover daemons and shut them down
   if [ -d /var/run/daemons ]; then
     for daemon in `ls /var/run/daemons`; do
       /etc/rc.d/$daemon stop
     done
-  fi
-
-  # Shutdown network
-  /etc/rc.d/network stop
-
-  # Shutdown pcmcia
-  if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then
-    /etc/rc.d/pcmcia stop
   fi
 fi
 
