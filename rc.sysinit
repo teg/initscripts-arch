@@ -5,7 +5,7 @@
 
 echo -n "[                                                "
 echo    "                              ]"
-echo -n "[                         Booting Arch Linux #VERSION#"
+echo -n "[                         Booting Arch Linux #VERSION# "
 echo    "                              ]"
 echo -n "[                                                "
 echo    "                              ]"

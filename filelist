@@ -2,10 +2,10 @@
 etc/
 etc/rc.d/
 etc/rc.d/functions
+etc/rc.single
+etc/rc.shutdown
 etc/inittab
-etc/rc.conf
+etc/rc.sysinit
 etc/rc.local
 etc/rc.multi
-etc/rc.shutdown
-etc/rc.single
-etc/rc.sysinit
+etc/rc.conf
