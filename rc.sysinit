@@ -81,8 +81,6 @@ stat_busy "Mounting Local Filesystems"
 /bin/mount -a -t nonfs
 stat_done
 
-/usr/bin/logger "LOGGER TEST!"
-
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	/sbin/hwclock --utc --hctosys
