@@ -67,8 +67,7 @@ stat_done
 
 if [ "$HOSTNAME" != "" ]; then
   stat_busy "Setting Hostname: $HOSTNAME"
-  /bin/hostname $HOSTNAME
-  stat_done
+  checkret /bin/hostname $HOSTNAME
 fi
 
 stat_busy "Starting System Logger"
