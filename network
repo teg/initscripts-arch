@@ -9,10 +9,12 @@ case "$1" in
     ck_daemon network || exit
     stat_busy "Starting Network"
     for ifline in ${INTERFACES[@]}; do
-      if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
+      if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
         varname="\$${ifline}"
         eval new_ifline=$varname
         if [ "$new_ifline" = "dhcp" ]; then
+          # remove the .pid file if it exists
+          rm -f /etc/dhcpc/dhcpcd-${ifline}.pid >/dev/null 2>&1
           /usr/sbin/dhcpcd $ifline || stat_die
         else
           /sbin/ifconfig $new_ifline || stat_die
