@@ -7,28 +7,36 @@
 case "$1" in
   start)
     stat_busy "Starting Network"
-    for ifline in "${IF_UP[@]}"; do
-      if [[ `echo $ifline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-        /sbin/ifconfig $ifline || stat_die
+    for ifline in ${INTERFACES[@]}; do
+      if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
+        varname="\$${ifline}"
+        eval new_ifline=$varname
+        /sbin/ifconfig $new_ifline || stat_die
       fi
     done
-    for rtline in "${ROUTE_UP[@]}"; do
-      if [[ `echo $rtline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-        /sbin/route $rtline || stat_die
+    for rtline in "${ROUTES[@]}"; do
+      if echo $rtline | grep '^[^\!]' 2>&1 > /dev/null; then
+        varname="\$${rtline}"
+        eval new_rtline=$varname
+        /sbin/route add $new_rtline || stat_die
       fi
     done
     stat_done
     ;;
   stop)
     stat_busy "Stopping Network"
-    for rtline in "${ROUTE_DN[@]}"; do
-      if [[ `echo $rtline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-        /sbin/route $rtline || stat_die
+    for rtline in "${ROUTES[@]}"; do
+      if echo $rtline | grep '^[^\!]' 2>&1 > /dev/null; then
+        varname="\$${rtline}"
+        eval new_rtline=$varname
+        /sbin/route del $new_rtline || stat_die
       fi
     done
-    for ifline in "${IF_DN[@]}"; do
-      if [[ `echo $ifline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-        /sbin/ifconfig $ifline || stat_die
+    for ifline in ${INTERFACES[@]}; do
+      if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
+        varname="\$${ifline}"
+        eval new_ifline=$varname
+        /sbin/ifconfig $new_ifline down || stat_die
       fi
     done
     stat_done
