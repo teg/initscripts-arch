@@ -62,6 +62,8 @@ stat_done
 
 stat_busy "Unmounting Filesystems"
 /bin/umount -a
+# for LVM:
+#/sbin/vgchange --ignorelockingfailure -a n
 stat_done
 
 stat_busy "Remounting Root Filesystem Read-only"

@@ -69,6 +69,9 @@ stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
 /bin/rm -f /etc/mtab*
 /bin/mount /proc
+# for LVM:
+#/sbin/vgscan
+#/sbin/vgchange -a y
 /bin/mount -a -t nonfs,nosmbfs,noncpfs
 stat_done
 
