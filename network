@@ -6,20 +6,20 @@
 case "$1" in
   start)
     stat_busy "Starting Network"
-    for ifline in ${IF_UP[@]}; do
+    for ifline in "${IF_UP[@]}"; do
       /sbin/ifconfig $ifline || stat_fail && exit 1
     done
-    for rtline in ${ROUTE_UP[@]}; do
+    for rtline in "${ROUTE_UP[@]}"; do
       /sbin/route $rtline || stat_fail && exit 1
     done
     stat_done
     ;;
   stop)
     stat_busy "Stopping Network"
-    for rtline in ${ROUTE_DN[@]}; do
+    for rtline in "${ROUTE_DN[@]}"; do
       /sbin/route $rtline || stat_fail && exit 1
     done
-    for ifline in ${IF_DN[@]}; do
+    for ifline in "${IF_DN[@]}"; do
       /sbin/ifconfig $ifline || stat_fail && exit 1
     done
     stat_done
