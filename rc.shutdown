@@ -18,7 +18,7 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	let i=${#DAEMONS[@]}
 	while [[ i -ge 0 ]]; do
 		if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-			/etc/rc.d/${DAEMONS[$i]} stop
+			/etc/rc.d/${DAEMONS[$i]#@} stop
 		fi
 		let i=i-1
 	done

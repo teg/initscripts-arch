@@ -121,7 +121,7 @@ mkdir /tmp/.ICE-unix && chmod 1777 /tmp/.ICE-unix
 mkdir /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 stat_done
 
-status "Updating Shared Library Links" /sbin/ldconfig
+#status "Updating Shared Library Links" /sbin/ldconfig
 
 if [ "$HOSTNAME" != "" ]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
@@ -140,9 +140,13 @@ if [ "$KEYMAP" != "" ]; then
 fi
 
 if [ "$CONSOLEFONT" != "" ]; then
-	stat_busy "Loading Console Font: $CONSOLEFONT" 
+	stat_busy "Loading Console Font: $CONSOLEFONT"
 	for i in `seq 1 12`; do 
-		/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}; 
+		if [ "$CONSOLEMAP" != "" ]; then
+			/usr/bin/setfont -m $CONSOLEMAP $CONSOLEFONT -C /dev/vc/${i}; 
+		else
+			/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}; 
+		fi
 	done
 	stat_done
 fi

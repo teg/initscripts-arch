@@ -16,6 +16,7 @@ if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	C_BUSY="\033[0;36m"		# busy
 	C_FAIL="\033[1;31m"		# failed
 	C_DONE="\033[1;37m"		# completed
+	C_BKGD="\033[1;35m"		# backgrounded
 	
 	C_H1="\033[1;37m"		# highlight text 1
 	C_H2="\033[1;36m"		# highlight text 2
@@ -40,6 +41,12 @@ printhl() {
 
 printsep() {
 	echo -e "\n$C_SEPARATOR   ------------------------------\n"
+}
+
+stat_bkgd() {
+	echo -ne "$C_OTHER$PREFIX_REG $C_MAIN$1$C_CLEAR "
+	deltext
+	echo -ne "   $C_OTHER[${C_BKGD}BKGD$C_OTHER]$C_CLEAR "
 }
 
 stat_busy() {
