@@ -23,18 +23,20 @@ if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
 	status "Starting DevFS Daemon" /sbin/devfsd /dev
 fi
 
-if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
-	/bin/mount -n -t proc none /proc
-	stat_busy "Activating LVM1 groups"
-	/sbin/vgchange -a y
-	stat_done
-	umount /proc
-elif [ -d /etc/lvm -a -x /sbin/lvm ]; then
-	/bin/mount -n -t proc none /proc
-	stat_busy "Activating LVM2 groups"
-	/sbin/lvm vgchange --ignorelockingfailure -a y
-	stat_done
-	umount /proc
+if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
+	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
+		/bin/mount -n -t proc none /proc
+		stat_busy "Activating LVM1 groups"
+		/sbin/vgchange -a y
+		stat_done
+		umount /proc
+	elif [ -x /sbin/lvm ]; then
+		/bin/mount -n -t proc none /proc
+		stat_busy "Activating LVM2 groups"
+		/sbin/lvm vgchange --ignorelockingfailure -a y
+		stat_done
+		umount /proc
+	fi
 fi
 
 status "Activating Swap" /sbin/swapon -a
