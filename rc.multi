@@ -6,14 +6,6 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-# Start pcmcia
-if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then
-  /etc/rc.d/pcmcia start
-fi
-
-# Start network
-/etc/rc.d/network start
-
 # Start daemons
 for daemon in "${DAEMONS[@]}"; do
   /etc/rc.d/$daemon start
