@@ -30,21 +30,24 @@ if [ "$PREVLEVEL" != "N" ]; then
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-	/sbin/killall5 -9 &> /dev/null
+	/sbin/killall5 -9
+	/usr/bin/sleep 1
 	stat_done
 
-	stat_busy "Starting DevFS Daemon"
-	/sbin/devfsd /dev
-	stat_done
+	status "Starting DevFS Daemon" /sbin/devfsd /dev
 
-	stat_busy "Starting Log Daemons"
-	/usr/sbin/syslogd -m 0
-	/usr/sbin/klogd -c 4
-	stat_done
+	[ -x /etc/rc.d/syslogd ] && /etc/rc.d/syslogd start
+	[ -x /etc/rc.d/klogd ] && /etc/rc.d/klogd start
 fi
 
 if [ "$RUNLEVEL" = "1" ]; then
-	echo "Entering single-user mode..."
+	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+		echo -e "\033[1;32m|\033[1;0m"
+		echo -e "\033[1;31m| \033[1;33mEntering single-user mode...\033[1;0m"
+	else
+		echo "|"
+		echo "| Entering single-user mode..."
+	fi
 	exec /sbin/init -t1 S
 fi
 

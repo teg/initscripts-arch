@@ -42,6 +42,7 @@ stat_done
 
 stat_busy "Sending SIGKILL To Processes"
 /sbin/killall5 -9 &> /dev/null
+/usr/bin/sleep 1
 stat_done
 
 stat_busy "Saving Random Seed"
@@ -70,21 +71,24 @@ stat_done
 stat_busy "Remounting Root Filesystem Read-only"
 /bin/mount -n -o remount,ro /
 stat_done
-echo ""
 
 # Power off or reboot
 if [ "$RUNLEVEL" = "0" ]; then
 	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-		echo -e ">>> \033[1;33mPOWER OFF\033[1;0m"
+		echo -e "\033[1;32m|\033[1;0m"
+		echo -e "\033[1;31m| \033[1;33mPOWER OFF\033[1;0m"
 	else
-		echo ">>> POWER OFF"
+		echo "|"
+		echo "| POWER OFF"
 	fi
 	/sbin/poweroff -d -f -i
 else
 	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-		echo -e ">>> \033[1;33mREBOOTING\033[1;0m"
+		echo -e "\033[1;32m|\033[1;0m"
+		echo -e "\033[1;31m| \033[1;33mREBOOTING\033[1;0m"
 	else
-		echo ">>> REBOOTING"
+		echo "|"
+		echo "| REBOOTING"
 	fi
 	/sbin/reboot -d -f -i
 fi

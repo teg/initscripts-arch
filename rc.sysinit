@@ -7,22 +7,30 @@
 . /etc/rc.d/functions
 
 if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-	echo -e "\n\033[1;32mArch Linux v0.5 \033[1;37m(\033[1;33mNova\033[1;37m)"
+	echo -e "\n\033[1;32mArch Linux v0.6 \033[1;37m(\033[1;33mWidget\033[1;37m)"
 	echo -e "\033[1;32m|\033[1;0m"
 	echo -e "\033[1;32m|\033[1;37m  http://www.archlinux.org\033[1;0m"
 	echo -e "\033[1;32m|\033[1;0m  Copyright 2002-2003 Judd Vinet"
 	echo -e "\033[1;32m|\033[1;0m  Distributed under the GNU General Public License (GPL)"
 	echo -e "\033[1;32m|\033[1;0m"
 else
-	echo -e "\nArch Linux v0.5 (Nova)"
+	echo -e "\nArch Linux v0.6 (Widget)"
 	echo "|"
 	echo "|  http://www.archlinux.org"
 	echo "|  Copyright 2002-2003 Judd Vinet"
-	echo "|  Distributed under the GNU Public License (GPL)"
+	echo "|  Distributed under the GNU General Public License (GPL)"
 	echo "|"
 fi
 
-status "Starting DevFS Daemon" /sbin/devfsd /dev
+# start up our mini logger until syslog takes over
+/sbin/minilogd
+
+# anything more serious than KERN_WARNING goes to the console
+/bin/dmesg -n 3
+
+if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
+	status "Starting DevFS Daemon" /sbin/devfsd /dev
+fi
 
 if [ -f /etc/lvmtab ]; then
 	# /proc is temporarily mounted to check for LVM support - it is
@@ -40,35 +48,40 @@ status "Activating Swap" /sbin/swapon -a
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
-stat_busy "Checking Filesystems"
-/sbin/fsck -A -T -C -a
-if [ $? -gt 1 ]; then
-	stat_fail
-	echo
-	echo "*****************  FILESYSTEM CHECK FAILED  ****************"
-	echo "*                                                          *"
-	echo "*  Please repair manually and reboot. Note that the root   *"
-	echo "*  file system is currently mounted read-only. To remount  *"
-	echo "*  it read-write type: mount -n -o remount,rw /            *"
-	echo "*  When you exit the maintainance shell the system will    *"
-	echo "*  reboot automatically.                                   *"
-	echo "*                                                          *"
-	echo "************************************************************"
-	echo
-	/sbin/sulogin -p
-	echo "Automatic reboot in progress..."
-	/bin/umount -a
-	/bin/mount -n -o remount,ro /
-	/sbin/reboot -f
-	exit 0
+if [ -x /sbin/fsck ]; then
+	stat_busy "Checking Filesystems"
+	/sbin/fsck -A -T -C -a
+	if [ $? -gt 1 ]; then
+		stat_fail
+		echo
+		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+		echo "*                                                          *"
+		echo "*  Please repair manually and reboot. Note that the root   *"
+		echo "*  file system is currently mounted read-only. To remount  *"
+		echo "*  it read-write type: mount -n -o remount,rw /            *"
+		echo "*  When you exit the maintenance shell the system will     *"
+		echo "*  reboot automatically.                                   *"
+		echo "*                                                          *"
+		echo "************************************************************"
+		echo
+		/sbin/sulogin -p
+		echo "Automatic reboot in progress..."
+		/bin/umount -a
+		/bin/mount -n -o remount,ro /
+		/sbin/reboot -f
+		exit 0
+	fi
+	stat_done
 fi
-stat_done
 
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
 /bin/rm -f /etc/mtab*
+/bin/mount /proc
 /bin/mount -a -t nonfs
 stat_done
+
+/usr/bin/logger "LOGGER TEST!"
 
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
@@ -77,7 +90,7 @@ else
 	/sbin/hwclock --localtime --hctosys
 fi
 if [ ! -f /var/lib/hwclock/adjtime ]; then
-  echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
+	echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
 fi
 if [ "$TIMEZONE" != "" ]; then
 	/bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
@@ -100,9 +113,7 @@ if [ "$HOSTNAME" != "" ]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
 fi
 
-status "Starting System Logger" /usr/sbin/syslogd -m 0
-
-status "Starting Kernel Logger" /usr/sbin/klogd -c 4
+# syslog
 
 kernel_version=`uname -r`
 if [ -e "/lib/modules/$kernel_version/modules.dep" ]; then
@@ -115,7 +126,9 @@ else
 fi
 
 if [ -f /var/run/random-seed ]; then
-	status "Initializing Random Seed" /bin/cat /var/run/random-seed > /dev/urandom
+	stat_busy "Initializing Random Seed"
+	/bin/cat /var/run/random-seed >/dev/urandom
+	stat_done
 fi
 
 if [ "$KEYMAP" != "" ]; then
