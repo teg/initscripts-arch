@@ -5,38 +5,57 @@
 
 STAT_COL=$[`stty size | awk 'BEGIN { RS=" " }; END { print $1 }'` - 13]
 
+# colors:
+
+if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+
+	C_MAIN="\033[1;37m"       # main text
+	C_OTHER="\033[1;34m"      # prefix & brackets
+	C_SEPARATOR="\033[1;30m"  # separator
+	
+	C_BUSY="\033[0;36m"		# busy
+	C_FAIL="\033[1;31m"		# failed
+	C_DONE="\033[1;37m"		# completed
+	
+	C_H1="\033[1;37m"		# highlight text 1
+	C_H2="\033[1;36m"		# highlight text 2
+	
+	C_CLEAR="\033[1;0m"
+fi
+
+# prefixes:
+
+PREFIX_REG="::"
+PREFIX_HL=" >"
+
+# functions:
+
 deltext() {
 	echo -ne "\033[$(($STAT_COL+4))G"
 }
 
+printhl() {
+	echo -e "$C_OTHER$PREFIX_HL $C_H1$1$C_CLEAR "
+}
+
+printsep() {
+	echo -e "\n$C_SEPARATOR   ------------------------------\n"
+}
+
 stat_busy() {
-	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-		echo -ne "\033[1;32m| \033[1;37m$1\033[1;0m "
-		awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
-		echo -ne "   \033[1;34m[\033[1;33mbusy\033[1;34m]\033[1;0m "
-	else
-		echo -n "| $1 "
-		awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
-		echo -n "   [busy] "
-	fi
+	echo -ne "$C_OTHER$PREFIX_REG $C_MAIN$1$C_CLEAR "
+	deltext
+	echo -ne "   $C_OTHER[${C_BUSY}BUSY$C_OTHER]$C_CLEAR "
 }
 
 stat_done() {
 	deltext
-	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-		echo -e "   \033[1;34m[\033[1;32mdone\033[1;34m] \033[1;0m"
-	else
-		echo "   [done] "
-	fi
+	echo -e "   $C_OTHER[${C_DONE}DONE$C_OTHER]$C_CLEAR "
 }
 
 stat_fail() {
 	deltext
-	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-		echo -e "   \033[1;34m[\033[1;31mfail\033[1;34m] \033[1;0m"
-	else
-		echo "   [fail] "
-	fi
+	echo -e "   $C_OTHER[${C_FAIL}FAIL$C_OTHER]$C_CLEAR "
 }
 
 stat_die() {
@@ -44,20 +63,6 @@ stat_die() {
 	[ "$1" = "" ] || retval=$1
 	stat_fail
 	exit $retval
-}
-
-#
-# here for legcay reasons: use 'status' instead
-#
-checkret() {
-	$* >/dev/null 2>&1
-	if [ $? -gt 0 ]; then
-		stat_fail
-		return 0
-	else
-		stat_done
-		return 1
-	fi
 }
 
 status() {
@@ -73,6 +78,8 @@ status() {
 	fi
 }
 
+# daemons:
+
 add_daemon() {
 	[ -d /var/run/daemons ] || mkdir -p /var/run/daemons
 	touch /var/run/daemons/$1
@@ -83,11 +90,8 @@ rm_daemon() {
 }
 
 ck_daemon() {
-	if [ -f /var/run/daemons/$1 ]; then
-		return 1
-	else
-		return 0
-	fi
+	[ -f /var/run/daemons/$1 ] && return 1
+	return 0
 }
 
 # End of file

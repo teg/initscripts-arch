@@ -41,13 +41,8 @@ if [ "$PREVLEVEL" != "N" ]; then
 fi
 
 if [ "$RUNLEVEL" = "1" ]; then
-	if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-		echo -e "\033[1;32m|\033[1;0m"
-		echo -e "\033[1;31m| \033[1;33mEntering single-user mode...\033[1;0m"
-	else
-		echo "|"
-		echo "| Entering single-user mode..."
-	fi
+	printsep
+	printhl "Entering single-user mode..."
 	exec /sbin/init -t1 S
 fi
 

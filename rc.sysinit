@@ -6,21 +6,12 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-	echo -e "\n\033[1;32mArch Linux v0.6 \033[1;37m(\033[1;33mWidget\033[1;37m)"
-	echo -e "\033[1;32m|\033[1;0m"
-	echo -e "\033[1;32m|\033[1;37m  http://www.archlinux.org\033[1;0m"
-	echo -e "\033[1;32m|\033[1;0m  Copyright 2002-2004 Judd Vinet"
-	echo -e "\033[1;32m|\033[1;0m  Distributed under the GNU General Public License (GPL)"
-	echo -e "\033[1;32m|\033[1;0m"
-else
-	echo -e "\nArch Linux v0.6 (Widget)"
-	echo "|"
-	echo "|  http://www.archlinux.org"
-	echo "|  Copyright 2002-2003 Judd Vinet"
-	echo "|  Distributed under the GNU General Public License (GPL)"
-	echo "|"
-fi
+echo " "
+printhl "Arch Linux v0.6 $C_OTHER(${C_H2}Widget$C_OTHER)\n"
+printhl "${C_H2}http://www.archlinux.org"
+printhl "Copyright 2002-2004 Judd Vinet"
+printhl "Distributed under the GNU General Public License (GPL)"
+printsep
 
 # start up our mini logger until syslog takes over
 /sbin/minilogd
