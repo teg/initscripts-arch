@@ -3,24 +3,33 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
+
 case "$1" in
   start)
     stat_busy "Starting Network"
     for ifline in "${IF_UP[@]}"; do
-      /sbin/ifconfig $ifline || stat_die
+      if [[ `echo $ifline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+        /sbin/ifconfig $ifline || stat_die
+      fi
     done
     for rtline in "${ROUTE_UP[@]}"; do
-      /sbin/route $rtline || stat_die
+      if [[ `echo $rtline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+        /sbin/route $rtline || stat_die
+      fi
     done
     stat_done
     ;;
   stop)
     stat_busy "Stopping Network"
     for rtline in "${ROUTE_DN[@]}"; do
-      /sbin/route $rtline || stat_die
+      if [[ `echo $rtline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+        /sbin/route $rtline || stat_die
+      fi
     done
     for ifline in "${IF_DN[@]}"; do
-      /sbin/ifconfig $ifline || stat_die
+      if [[ `echo $ifline | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+        /sbin/ifconfig $ifline || stat_die
+      fi
     done
     stat_done
     ;;
