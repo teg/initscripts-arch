@@ -50,7 +50,7 @@ stat_busy "Mounting Local Filesystems"
 stat_done
 
 stat_busy "Configuring System Clock"
-if [ $HARDWARECLOCK = "UTC" ]; then
+if [ "$HARDWARECLOCK" = "UTC" ]; then
   /sbin/hwclock --utc --hctosys
 else
   /sbin/hwclock --localtime --hctosys
