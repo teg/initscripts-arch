@@ -70,11 +70,13 @@ if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 		/sbin/vgchange -a n
 		stat_done
 	elif [ -d /etc/lvm -a -x /sbin/lvm ]; then
-		/bin/mount -n -t sysfs none /sys
-		stat_busy "Deactivating LVM2 groups"
-		/sbin/lvm vgchange --ignorelockingfailure -a n
-		stat_done
-		umount /sys
+		/bin/mount -n -t sysfs none /sys 2>/dev/null
+		if [ -d /sys/block ]; then
+			stat_busy "Deactivating LVM2 groups"
+			/sbin/lvm vgchange --ignorelockingfailure -a n
+			stat_done
+			umount /sys
+		fi
 	fi
 fi
 

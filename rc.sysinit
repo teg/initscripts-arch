@@ -7,7 +7,7 @@
 . /etc/rc.d/functions
 
 echo " "
-printhl "Arch Linux v0.6 $C_OTHER(${C_H2}Widget$C_OTHER)\n"
+printhl "Arch Linux v0.7 $C_OTHER(${C_H2}Wombat$C_OTHER)\n"
 printhl "${C_H2}http://www.archlinux.org"
 printhl "Copyright 2002-2004 Judd Vinet"
 printhl "Distributed under the GNU General Public License (GPL)"
@@ -19,27 +19,32 @@ printsep
 # anything more serious than KERN_WARNING goes to the console
 /bin/dmesg -n 3
 
+# mount /proc and /sys
+mount -n -t sysfs none /sys 2>/dev/null
+mount -n -t proc none /proc
+
 if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
+	# Looks like devfs is running, use it
 	status "Starting DevFS Daemon" /sbin/devfsd /dev
+elif [ -x /etc/start_udev -a -d /sys/block ]; then
+	# We have a start_udev script and /sys appears to be mounted, use UDev
+	status "Starting UDev Daemon" /etc/start_udev
+else
+	# Static /dev, our last resort
+	status "Using static /dev filesystem" /bin/true
 fi
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
 		# Kernel 2.4.x, LVM1 groups
-		/bin/mount -n -t proc none /proc
 		stat_busy "Activating LVM1 groups"
 		/sbin/vgchange -a y
 		stat_done
-		umount /proc
-	elif [ -x /sbin/lvm ]; then
+	elif [ -x /sbin/lvm -a -d /sys/block ]; then
 		# Kernel 2.6.x, LVM2 groups
-		/bin/mount -n -t proc none /proc
-		/bin/mount -n -t sysfs none /sys
 		stat_busy "Activating LVM2 groups"
 		/sbin/lvm vgchange --ignorelockingfailure -a y
 		stat_done
-		umount /proc
-		umount /sys
 	fi
 fi
 
@@ -76,8 +81,7 @@ fi
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
 /bin/rm -f /etc/mtab*
-/bin/mount /proc
-/bin/mount -a -t nonfs,nosmbfs,noncpfs
+/bin/mount -a -t nonfs,nosmbfs,noncpfs,nosysfs
 stat_done
 
 stat_busy "Configuring System Clock"
