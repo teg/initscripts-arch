@@ -8,12 +8,24 @@
 
 if [ "$PREVLEVEL" = "2" ]; then
   # Shutdown daemons
-  stat_busy "Shutting Down Daemons"
-  stat_done
+  if [ -d /var/run/daemons ]; then
+    for daemon in `ls /var/run/daemons`; do
+      /etc/rc.d/$daemon stop
+    done
+  fi
 
   # Shutdown network
   stat_busy "Shutting Down Network"
+  /sbin/ifconfig lo down
+  if [ "$IPADDR" != "" -a "$NETMASK" != "" ]; then
+    /sbin/ifconfig eth0 down
+  fi
   stat_done
+
+  # Shutdown pcmcia
+  if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then
+    /etc/rc.d/pcmcia stop
+  fi
 fi
 
 if [ "$PREVLEVEL" != "N" ]; then
