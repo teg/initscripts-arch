@@ -55,8 +55,8 @@ if [ "$HARDWARECLOCK" = "UTC" ]; then
 else
   /sbin/hwclock --localtime --hctosys
 fi
-if [ ! -f /etc/adjtime ]; then
-  echo "0.0 0 0.0" > /etc/adjtime
+if [ ! -f /var/lib/hwclock/adjtime ]; then
+  echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
 fi
 if [ "$TIMEZONE" != "" ]; then
   /bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
