@@ -81,6 +81,10 @@ fi
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
 /bin/rm -f /etc/mtab*
+# re-mount /proc and /sys so they can be written to /etc/mtab
+umount /proc && mount -t proc none /proc
+[ "`grep sysfs /proc/filesystems`" ] && umount /sys && mount -t sysfs none /sys
+# now mount all local mounts in /etc/fstab
 /bin/mount -a -t nonfs,nosmbfs,noncpfs,nosysfs
 stat_done
 
