@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # functions
 #
@@ -5,46 +6,72 @@
 STAT_COL=68
 
 deltext() {
-  echo -ne "\033[$(($STAT_COL+4))G"
+	echo -ne "\033[$(($STAT_COL+4))G"
 }
 
 stat_busy() {
-  echo -n "[ $1 "
-  awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
-  echo -n "   BUSY ]"
+	echo -n "[ $1 "
+	awk "BEGIN { for (j=length(\"$1\"); j<$STAT_COL; j++) printf \" \" }"
+	echo -n "   BUSY ]"
 }
 
 stat_done() {
-  deltext
-  echo "   DONE ]"
+	deltext
+	echo "   DONE ]"
 }
 
 stat_fail() {
-  deltext
-  echo " FAILED ]"
+	deltext
+	echo " FAILED ]"
 }
 
 stat_die() {
-  stat_fail
-  exit 1
+	stat_fail
+	exit 1
 }
 
+#
+# here for legcay reasons: use 'status' instead
+#
 checkret() {
-  $* >/dev/null 2>&1
-  if [ $? -gt 0 ]; then
-    stat_fail
-  else
-    stat_done
-  fi
+	$* >/dev/null 2>&1
+	if [ $? -gt 0 ]; then
+		stat_fail
+		return 0
+	else
+		stat_done
+		return 1
+	fi
+}
+
+status() {
+	stat_busy "$1"
+	shift
+	$* >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		stat_done
+		return 0
+	else
+		stat_fail
+		return 1
+	fi
 }
 
 add_daemon() {
-  [ -d /var/run/daemons ] || mkdir -p /var/run/daemons
-  touch /var/run/daemons/$1
+	[ -d /var/run/daemons ] || mkdir -p /var/run/daemons
+	touch /var/run/daemons/$1
 }
 
 rm_daemon() {
-  rm -f /var/run/daemons/$1
+	rm -f /var/run/daemons/$1
+}
+
+ck_daemon() {
+	if [ -f /var/run/daemons/$1 ]; then
+		return 1
+	else
+		return 0
+	fi
 }
 
 # End of file

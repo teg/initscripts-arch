@@ -6,6 +6,7 @@
 
 case "$1" in
   start)
+    ck_daemon network || exit
     stat_busy "Starting Network"
     for ifline in ${INTERFACES[@]}; do
       if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
@@ -15,7 +16,7 @@ case "$1" in
           /usr/sbin/dhcpcd $ifline || stat_die
         else
           /sbin/ifconfig $new_ifline || stat_die
-	fi
+        fi
       fi
     done
     for rtline in "${ROUTES[@]}"; do
@@ -25,10 +26,13 @@ case "$1" in
         /sbin/route add $new_rtline || stat_die
       fi
     done
+    add_daemon network
     stat_done
     ;;
   stop)
+    ck_daemon network && exit
     stat_busy "Stopping Network"
+    rm_daemon network
     for rtline in "${ROUTES[@]}"; do
       if echo $rtline | grep '^[^\!]' 2>&1 > /dev/null; then
         varname="\$${rtline}"
@@ -40,12 +44,12 @@ case "$1" in
       if echo $ifline | grep '^[^\!]' 2>&1 > /dev/null; then
         varname="\$${ifline}"
         eval new_ifline=$varname
-	if [ "$new_ifline" = "dhcp" ]; then
-	  # do nothing - we kill dhcpcd later
-	  /bin/true
-	else
+        if [ "$new_ifline" = "dhcp" ]; then
+          # do nothing - we kill dhcpcd later
+          /bin/true
+        else
           /sbin/ifconfig $new_ifline down || stat_die
-	fi
+        fi
       fi
     done
     /usr/bin/killall -q dhcpcd
