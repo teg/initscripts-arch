@@ -11,7 +11,7 @@ if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	echo -e "\033[1;32m|\033[1;0m"
 	echo -e "\033[1;32m|\033[1;37m  http://www.archlinux.org\033[1;0m"
 	echo -e "\033[1;32m|\033[1;0m  Copyright 2002-2003 Judd Vinet"
-	echo -e "\033[1;32m|\033[1;0m  Distributed under the GNU Public License (GPL)"
+	echo -e "\033[1;32m|\033[1;0m  Distributed under the GNU General Public License (GPL)"
 	echo -e "\033[1;32m|\033[1;0m"
 else
 	echo -e "\nArch Linux v0.5 (Nova)"
