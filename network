@@ -20,7 +20,7 @@ ifup()
 			wvarname="\$wlan_${1}"
 			eval wif_line=$wvarname
 			/usr/sbin/iwconfig $wif_line
-			/usr/bin/sleep 2
+			/bin/sleep 2
 		fi
 	done
 	varname="\$${1}"
@@ -157,7 +157,7 @@ case "$1" in
 	;;
 	restart)
 	$0 stop
-	/usr/bin/sleep 2
+	/bin/sleep 2
 	$0 start
 	;;
 	ifup|ifdown|iflist|rtup|rtdown|rtlist)

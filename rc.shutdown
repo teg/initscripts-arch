@@ -33,12 +33,12 @@ fi
 # Terminate all processes
 stat_busy "Sending SIGTERM To Processes"
 /sbin/killall5 -15 &> /dev/null
-/usr/bin/sleep 5
+/bin/sleep 5
 stat_done
 
 stat_busy "Sending SIGKILL To Processes"
 /sbin/killall5 -9 &> /dev/null
-/usr/bin/sleep 1
+/bin/sleep 1
 stat_done
 
 stat_busy "Saving Random Seed"
