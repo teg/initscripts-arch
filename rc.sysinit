@@ -78,7 +78,7 @@ stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
 /bin/rm -f /etc/mtab*
 /bin/mount /proc
-/bin/mount -a -t nonfs
+/bin/mount -a -t nonfs,nosmbfs,noncpfs
 stat_done
 
 stat_busy "Configuring System Clock"

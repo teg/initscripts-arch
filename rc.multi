@@ -17,4 +17,7 @@ if [ -x /etc/rc.local ]; then
 	/etc/rc.local
 fi
 
+# Mount any leftover (nfs,smbfs,etc) mounts
+/bin/mount -a
+
 # End of file
