@@ -12,6 +12,13 @@ if [ "$PCMCIA" = "yes" -a -f /etc/rc.d/pcmcia ]; then
 fi
 
 stat_busy "Starting Network"
+/sbin/ifconfig lo 127.0.0.1 netmask 255.255.255.255
+if [ "$IPADDR" != "" -a "$NETMASK" != "" ]; then
+  /sbin/ifconfig eth0 $IPADDR netmask $NETMASK
+  if [ "$GATEWAY" != "" ]; then
+    /sbin/route add default gw $GATEWAY
+  fi
+fi
 stat_done
 
 # Start daemons
