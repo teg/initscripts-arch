@@ -54,6 +54,7 @@ stat_busy "Removing Leftover Files"
 /bin/rm -f /etc/shutdownpid &> /dev/null
 /bin/rm -f /var/locks/* &> /dev/null
 /bin/rm -f /var/run/*.pid &> /dev/null
+/bin/rm -f /var/run/daemons/* &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &> /dev/null
 : > /var/run/utmp
 stat_done
