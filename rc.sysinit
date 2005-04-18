@@ -152,13 +152,15 @@ if [ "$CONSOLEFONT" != "" ]; then
 fi
 
 # Load modules from the MODULES array defined in rc.conf
-stat_busy "Loading Modules"
-for mod in "${MODULES[@]}"; do
-	if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-		/sbin/modprobe $mod
-	fi
-done
-stat_done
+if [ -f /proc/modules ]; then
+	stat_busy "Loading Modules"
+	for mod in "${MODULES[@]}"; do
+		if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+			/sbin/modprobe $mod
+		fi
+	done
+	stat_done
+fi
 
 # Now that modules are loaded, try to mount /proc/bus/usb
 [ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
