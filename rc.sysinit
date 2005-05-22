@@ -165,6 +165,9 @@ fi
 # Now that modules are loaded, try to mount /proc/bus/usb
 [ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
 
+# Load sysctl variables if sysctl.conf is present
+[ -r /etc/sysctl.conf ] && /sbin/sysctl -p
+
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
 
