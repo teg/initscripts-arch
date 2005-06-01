@@ -167,7 +167,7 @@ if [ -f /proc/modules ]; then
 fi
 
 # Load sysctl variables if sysctl.conf is present
-[ -r /etc/sysctl.conf ] && /sbin/sysctl -p
+[ -r /etc/sysctl.conf ] && /sbin/sysctl -q -p
 
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
