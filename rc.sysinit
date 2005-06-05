@@ -110,7 +110,7 @@ stat_done
 stat_busy "Removing Leftover Files"
 /bin/rm -f /etc/nologin &>/dev/null
 /bin/rm -f /etc/shutdownpid &>/dev/null
-/bin/rm -f /var/locks/* &>/dev/null
+/bin/rm -f /var/lock/* &>/dev/null
 /bin/rm -f /var/run/*.pid &>/dev/null
 /bin/rm -f /var/run/daemons/* &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
@@ -125,6 +125,12 @@ stat_done
 
 if [ "$HOSTNAME" != "" ]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
+fi
+
+# Set the NIS domain name, if necessary
+[ -f /etc/conf.d/nisdomainname ] && . /etc/conf.d/nisdomainname
+if [ "$NISDOMAINNAME" != "" ]; then
+	status "Setting NIS Domain Name: $NISDOMAINNAME" /bin/nisdomainname $NISDOMAINNAME
 fi
 
 status "Updating Module Dependencies" /sbin/depmod -A
