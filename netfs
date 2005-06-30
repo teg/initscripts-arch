@@ -33,3 +33,5 @@ case "$1" in
   *)
     echo "usage: $0 {start|stop|restart}"  
 esac
+
+# vim: set ts=2 noet:

@@ -102,3 +102,4 @@ ck_daemon() {
 }
 
 # End of file
+# vim: set ts=2 noet:

@@ -113,6 +113,7 @@ stat_busy "Removing Leftover Files"
 /bin/rm -f /var/lock/* &>/dev/null
 /bin/rm -f /var/run/*.pid &>/dev/null
 /bin/rm -f /var/run/daemons/* &>/dev/null
+/bin/rm -f /var/run/net/* &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 /bin/rm -f /forcefsck &>/dev/null
 : > /var/run/utmp
@@ -145,6 +146,29 @@ if [ "$KEYMAP" != "" ]; then
 	status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
 fi
 
+
+# Set user defined locale
+if [ "$LOCALE" != "" ]; then
+	stat_busy "Setting Locale: $LOCALE"
+	echo "export LANG=$LOCALE" >/etc/profile.d/locale.sh
+	/bin/chmod 755 /etc/profile.d/locale.sh
+
+	# If locale is *.utf set console to Unicode mode
+	if [ `echo $LOCALE | /bin/grep -i utf` != "" ]; then
+		/usr/bin/kbd_mode -u
+		/usr/bin/dumpkeys | /bin/loadkeys --unicode
+		for i in `seq 1 12`; do
+			echo -ne "\033%G" > /dev/vc/${i};
+		done
+		if [ "$CONSOLEFONT" = "" ]; then
+			CONSOLEFONT="LatArCyrHeb-16"
+		fi
+	fi
+	stat_done
+else
+	rm -f /etc/profile.d/locale.sh
+fi
+
 if [ "$CONSOLEFONT" != "" ]; then
 	stat_busy "Loading Console Font: $CONSOLEFONT"
 	for i in `seq 1 12`; do 
@@ -172,10 +196,8 @@ if [ -f /proc/modules ]; then
 	stat_done
 fi
 
-# Load sysctl variables if sysctl.conf is present
-[ -r /etc/sysctl.conf ] && /sbin/sysctl -q -p
-
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
 
 # End of file
+# vim: set ts=2 noet:

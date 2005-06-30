@@ -18,8 +18,12 @@ for daemon in "${DAEMONS[@]}"; do
 	fi
 done
 
+# Load sysctl variables if sysctl.conf is present
+[ -r /etc/sysctl.conf ] && /sbin/sysctl -q -p &>/dev/null
+
 if [ -x /etc/rc.local ]; then
 	/etc/rc.local
 fi
 
 # End of file
+# vim: set ts=2 noet:
