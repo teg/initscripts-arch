@@ -12,7 +12,7 @@ for daemon in "${DAEMONS[@]}"; do
 		if [[ `echo $daemon | grep '^[^\@]' | wc -l` -eq 1 ]]; then
 			/etc/rc.d/$daemon start
 		else
-                        stat_bkgd "Starting ${daemon:1}"
+			stat_bkgd "Starting ${daemon:1}"
 			(/etc/rc.d/${daemon:1} start) &>/dev/null &
 		fi
 	fi
