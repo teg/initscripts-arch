@@ -58,7 +58,7 @@ stop_all()
 	[ -d $STATE_DIR ] || return
 	for prof in `ls $STATE_DIR`; do
 		unset INTERFACE
-		. $prof
+		. $STATE_DIR/$prof
 		stop_profile $INTERFACE
 	done
 }
