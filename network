@@ -70,7 +70,7 @@ ifdown()
 iflist()
 {
 	for ifline in ${INTERFACES[@]}; do
-		if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+		if [ "$ifline" = "${ifline#!}" ]; then
 			echo -en " $ifline:\t"
 		else
 			echo -en "$ifline:\t"
@@ -105,7 +105,7 @@ rtdown()
 rtlist()
 {
 	for rtline in ${ROUTES[@]}; do
-		if echo $rtline | grep '^[^\!]' >/dev/null 2>&1; then
+		if [ "$rtline" = "${rtline#!}" ]; then
 			echo -en " $rtline:\t"
 		else
 			echo -en "$rtline:\t"
@@ -171,7 +171,9 @@ case "$1" in
 				/usr/bin/netcfg --menu --timeout 5
 			else
 				for prof in ${NET_PROFILES[@]}; do
-					/usr/bin/netcfg $prof
+					if [ "$prof" = "${prof#!}" ]; then
+						/usr/bin/netcfg $prof
+					fi
 				done
 			fi
 		fi
@@ -182,7 +184,7 @@ case "$1" in
 		bridge_up
 		# bring up ethernet interfaces
 		for ifline in ${INTERFACES[@]}; do
-			if echo $ifline | grep '^[^\!]' >/dev/null 2>&1; then
+			if [ "$ifline" = "${ifline#!}" ]; then
 				ifup $ifline || error=1
 			fi
 		done
@@ -190,7 +192,7 @@ case "$1" in
 		bond_up
 		# bring up routes
 		for rtline in "${ROUTES[@]}"; do
-			if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+			if [ "$rtline" = "${rtline#!}" ]; then
 				rtup $rtline || error=1
 			fi
 		done
@@ -214,12 +216,12 @@ case "$1" in
 		rm_daemon network
 		error=0
 		for rtline in "${ROUTES[@]}"; do
-			if echo $rtline | grep '^[^\!]' 2>&1 >/dev/null; then
+			if [ "$rtline" = "${rtline#!}" ]; then
 				rtdown $rtline || error=1
 			fi
 		done
 		for ifline in ${INTERFACES[@]}; do
-			if echo $ifline | grep '^[^\!]' 2>&1 >/dev/null; then
+			if [ "$ifline" = "${ifline#!}" ]; then
 				ifdown $ifline || error=1
 			fi
 		done
