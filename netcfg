@@ -95,6 +95,8 @@ start_profile()
 	fi
 
 	if [ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ]; then
+		# remove the .pid file if it exists
+		rm -f /etc/dhcpc/dhcpcd-${INTERFACE}.{pid,cache} >/dev/null 2>&1
 		dhcpcd $DHCPCD_ARGS $INTERFACE
 		[ $? -ne 0 ] && stat_fail && return
 	else
