@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # /etc/rc.multi
 #
@@ -8,8 +8,8 @@
 
 # Start daemons
 for daemon in "${DAEMONS[@]}"; do
-	if [[ `echo $daemon | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-		if [[ `echo $daemon | grep '^[^\@]' | wc -l` -eq 1 ]]; then
+	if [ "$daemon" = "${daemon#!}" ]; then
+		if [ "$daemon" = "${daemon#@}" ]; then
 			/etc/rc.d/$daemon start
 		else
 			stat_bkgd "Starting ${daemon:1}"
@@ -25,5 +25,4 @@ if [ -x /etc/rc.local ]; then
 	/etc/rc.local
 fi
 
-# End of file
 # vim: set ts=2 noet:

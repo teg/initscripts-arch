@@ -172,7 +172,7 @@ case "$1" in
 			else
 				for prof in ${NET_PROFILES[@]}; do
 					if [ "$prof" = "${prof#!}" ]; then
-						/usr/bin/netcfg $prof
+						/usr/bin/netcfg -c $prof
 					fi
 				done
 			fi
@@ -245,3 +245,5 @@ case "$1" in
 		echo "usage: $0 {start|stop|restart}"  
 		echo "       $0 {ifup|ifdown|iflist|rtup|rtdown|rtlist}"
 esac
+
+# vim: set ts=2 noet:

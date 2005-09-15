@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 #
-# /etc/rc.single
+# /etc/rc.single: Single-user startup script.
 #
 
 . /etc/rc.conf

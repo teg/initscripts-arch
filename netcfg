@@ -19,10 +19,13 @@ usage()
 {
 	version
 	echo
-	echo "usage: netcfg <profile_name>"
+	echo "usage: netcfg [options] <profile_name>"
 	echo "       netcfg --stop <interface>"
 	echo "       netcfg --menu [--timeout <secs>]"
 	echo "       netcfg --stopall"
+	echo
+	echo "options:"
+	echo "  -c    Don't reconfigure an interface if it's already up"
 	echo
 	echo "Network profiles are stored in $PROFILE_DIR"
 	echo
@@ -76,6 +79,8 @@ start_profile()
 	
 	# Read the profile
 	. $PROFILE_DIR/$1
+
+	[ "$CHECK" = "1" -a  -f $STATE_DIR/$INTERFACE ] && return
 
 	# Shut down any profiles tied to this interface
 	stop_profile $INTERFACE
@@ -208,6 +213,7 @@ fi
 
 # Parse command line
 MODE="profile"
+CHECK=0
 PROFILE=
 IFACE=
 TIMEOUT=
@@ -223,6 +229,7 @@ while [ $# -ne 0 ]; do
 		--timeout) shift
 		           TIMEOUT=$1     ;;
 		--*)       MODE="usage"   ;;
+		-c)        CHECK=1        ;;
 		-*)        MODE="usage"   ;;
 		*)         PROFILE=$1     ;;
 	esac
