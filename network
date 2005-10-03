@@ -165,7 +165,11 @@ case "$1" in
 		# See if we're using network profiles
 		if [ "$NET" ]; then
 			# This env var is passed from the kernel boot line
-			/usr/bin/netcfg $NET
+			if [ "$NET" = "menu" ]; then
+				/usr/bin/netcfg --menu --timeout 5
+			else
+				/usr/bin/netcfg $NET
+			fi
 		elif [ "$NET_PROFILES" ]; then
 			if [ "$NET_PROFILES" = "menu" ]; then
 				/usr/bin/netcfg --menu --timeout 5
