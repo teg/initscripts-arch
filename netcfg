@@ -88,7 +88,7 @@ start_profile()
 	stat_busy "Starting network profile: $1"
 
 	# Re-read the profile (stop_profile might have overwritten our settings)
-	unset DESCRIPTION INTERFACE IFOPTS IWOPTS WIFI_INTERFACE
+	unset DESCRIPTION INTERFACE IFOPTS IWOPTS WIFI_INTERFACE WIFI_WAIT
 	unset GATEWAY HOSTNAME DOMAIN DNS1 DNS2
 	. $PROFILE_DIR/$1
 
@@ -97,6 +97,7 @@ start_profile()
 	if [ "$IWOPTS" ]; then
 		iwconfig $WIFI_INTERFACE $IWOPTS
 		[ $? -ne 0 ] && stat_fail && return
+		[ "$WIFI_WAIT" ] && sleep $WIFI_WAIT
 	fi
 
 	if [ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ]; then

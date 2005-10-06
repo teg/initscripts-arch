@@ -25,3 +25,5 @@ DNS2=
 #WIFI_INTERFACE=wlan0      # use this if you have a special wireless interface
                            # that is linked to the real $INTERFACE
 
+#WIFI_WAIT=5               # seconds to wait for the wireless card to
+                           # associate before bringing the interface up
