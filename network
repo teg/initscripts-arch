@@ -212,9 +212,9 @@ case "$1" in
 		#	echo "Network is not running.  Try 'network start'"
 		#	exit
 		#fi
-		if [ "$NET_PROFILES" ]; then
-			/usr/bin/netcfg --stopall
-		fi
+
+		# shutdown any profiles started by netcfg (or from NET_PROFILES in rc.conf)
+		/usr/bin/netcfg --stopall
 
 		stat_busy "Stopping Network"
 		rm_daemon network
