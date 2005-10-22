@@ -40,7 +40,7 @@ stop_profile()
 	INTERFACE=$1
 	[ -f $STATE_DIR/$INTERFACE ] || return
 
-	unset GATEWAY
+	unset GATEWAY IFOPTS
 	. $STATE_DIR/$INTERFACE
 
 	stat_busy "Shutting down interface: $INTERFACE"
@@ -48,7 +48,13 @@ stop_profile()
 	# bring down the default route (gateway)
 	[ "$GATEWAY" ] && route del default gw $GATEWAY
 
-	# bring down the interface
+	# shutdown wpa_supplicant if it's running
+	[ "$WPAOPTS" ] && wpa_cli terminate >/dev/null 2>&1
+
+	# bring down dhcpcd if we're using it
+	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && dhcpcd -k
+
+	# bring down the interface itself
 	ifconfig $INTERFACE down
 
 	rm -f $STATE_DIR/$INTERFACE
@@ -88,7 +94,7 @@ start_profile()
 	stat_busy "Starting network profile: $1"
 
 	# Re-read the profile (stop_profile might have overwritten our settings)
-	unset DESCRIPTION INTERFACE IFOPTS IWOPTS WIFI_INTERFACE WIFI_WAIT
+	unset DESCRIPTION INTERFACE IFOPTS IWOPTS WIFI_INTERFACE WIFI_WAIT WPAOPTS
 	unset GATEWAY HOSTNAME DOMAIN DNS1 DNS2
 	. $PROFILE_DIR/$1
 
@@ -98,6 +104,24 @@ start_profile()
 		iwconfig $WIFI_INTERFACE $IWOPTS
 		[ $? -ne 0 ] && stat_fail && return
 		[ "$WIFI_WAIT" ] && sleep $WIFI_WAIT
+	fi
+
+	# Start wpa_supplicant, if necessary
+	if [ "$WPAOPTS" ]; then
+		ifconfig $WIFI_INTERFACE up
+		wpa_supplicant -wB -i $WIFI_INTERFACE -c /etc/wpa_supplicant.conf $WPAOPTS
+		# I don´t know how we could determine if wpa_supplicant is ready...
+		sleep 2
+		let i=0
+		while ! /usr/bin/wpa_cli status | grep "wpa_state=COMPLETED" >/dev/null 2>&1; do
+			if [ $i -gt 10 ]; then
+				wpa_cli terminate >/dev/null 2>&1
+				ifconfig $WIFI_INTERFACE down
+				stat_fail && return
+			fi
+			sleep 2
+			let i++
+		done
 	fi
 
 	if [ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ]; then
