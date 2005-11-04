@@ -164,7 +164,7 @@ if [ "$LOCALE" != "" ]; then
 	/bin/chmod 755 /etc/profile.d/locale.sh
 
 #	If locale is *.utf set console to Unicode mode
-	if [ `echo $LOCALE | /bin/grep -i utf` != "" ]; then
+	if [ "`echo $LOCALE | /bin/grep -i utf`" != "" ]; then
 		/usr/bin/kbd_mode -u
 		/usr/bin/dumpkeys | /bin/loadkeys --unicode
 		echo 'for i in `seq 1 12`; do' >>/etc/profile.d/locale.sh
