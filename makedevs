@@ -94,8 +94,8 @@ for CLASS in $CLASSES; do
 			mksubdevs loop b 0 7 7 0
 			;;
 		dm)
-			mknod device-mapper c 10 63
-			mksubdevs dm b 0 15 253 0
+			mkdir mapper >/dev/null 2>&1
+			mknod mapper/control c 10 63
 			;;
 		*)
 			echo "Unknown class: $CLASS" >&2
