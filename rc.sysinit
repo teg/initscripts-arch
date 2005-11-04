@@ -34,6 +34,16 @@ else
 	status "Using static /dev filesystem" /bin/true
 fi
 
+# If using an encrypted root fs, we should find the root dev in the initrd
+if [ -e /initrd/dev/mapper/root ]; then
+	mkdir /dev/mapper 2>/dev/null
+	cp -a /initrd/dev/mapper/root /dev/mapper/root
+fi
+# Unmount the old initrd, if it exists
+[ -d /initrd ] && umount /initrd 2>/dev/null
+
+# TODO: set up non-root encrypted partition mappings
+
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
 		# Kernel 2.4.x, LVM1 groups
