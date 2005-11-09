@@ -41,7 +41,7 @@ if [ -e /initrd/dev/mapper/root ]; then
 fi
 # Unmount and free up the old initrd if it exists
 if [ -f /initrd/linuxrc ]; then
-	stat_busy "Freeing memory from initial ramdisk"
+	stat_busy "Freeing memory from Initial Ramdisk"
 	umount /initrd 2>/dev/null
 	/sbin/blockdev --flushbufs /dev/rd/0 2>/dev/null
 	stat_done
