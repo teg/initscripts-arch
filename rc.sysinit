@@ -39,8 +39,13 @@ if [ -e /initrd/dev/mapper/root ]; then
 	mkdir /dev/mapper 2>/dev/null
 	cp -a /initrd/dev/mapper/root /dev/mapper/root
 fi
-# Unmount the old initrd, if it exists
-[ -d /initrd ] && umount /initrd 2>/dev/null
+# Unmount and free up the old initrd if it exists
+if [ -f /initrd/linuxrc ]; then
+	stat_busy "Freeing memory from initial ramdisk"
+	umount /initrd 2>/dev/null
+	/sbin/blockdev --flushbufs /dev/rd/0 2>/dev/null
+	stat_done
+fi
 
 # TODO: set up non-root encrypted partition mappings
 
