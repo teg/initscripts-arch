@@ -39,6 +39,18 @@ if [ -e /initrd/dev/mapper/root ]; then
 	mkdir /dev/mapper 2>/dev/null
 	cp -a /initrd/dev/mapper/root /dev/mapper/root
 fi
+
+# If necessary, find md devices and manually assemble RAID arrays
+if [ -f /etc/mdadm.conf -a "`grep ^ARRAY /etc/mdadm.conf`" ]; then
+	if [ -d /initrd/dev ]; then
+		# udev won't create these md nodes, so we steal them from the initrd
+		for i in `grep ^ARRAY /etc/mdadm.conf | awk '{print $2}'`; do
+			cp -a /initrd/$i /dev/
+		done
+	fi
+	status "Assembling RAID arrays" /sbin/mdadm --assemble --scan
+fi
+
 # Unmount and free up the old initrd if it exists
 if [ -f /initrd/linuxrc ]; then
 	stat_busy "Freeing memory from Initial Ramdisk"
@@ -58,6 +70,7 @@ if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	elif [ -x /sbin/lvm -a -d /sys/block ]; then
 		# Kernel 2.6.x, LVM2 groups
 		stat_busy "Activating LVM2 groups"
+		/sbin/lvm vgscan --ignorelockingfailure
 		/sbin/lvm vgchange --ignorelockingfailure -a y
 		stat_done
 	fi
