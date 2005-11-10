@@ -41,7 +41,7 @@ if [ -e /initrd/dev/mapper/root ]; then
 fi
 
 # If necessary, find md devices and manually assemble RAID arrays
-if [ -f /etc/mdadm.conf -a "`grep ^ARRAY /etc/mdadm.conf`" ]; then
+if [ -f /etc/mdadm.conf -a "`grep ^ARRAY /etc/mdadm.conf 2>/dev/null`" ]; then
 	if [ -d /initrd/dev ]; then
 		# udev won't create these md nodes, so we steal them from the initrd
 		for i in `grep ^ARRAY /etc/mdadm.conf | awk '{print $2}'`; do
@@ -118,8 +118,10 @@ stat_busy "Mounting Local Filesystems"
 umount /proc && mount -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && umount /sys && mount -t sysfs none /sys
 # now mount all the local filesystems
-/bin/mount -a -t nonfs,nosmbfs,noncpfs,nosysfs,nousbfs
+/bin/mount -a -t nonfs,nosmbfs,nocifs,noncpfs,nosysfs,nousbfs
 stat_done
+
+status "Detecting Required Modules" /sbin/hwdetect -load-modules
 
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
