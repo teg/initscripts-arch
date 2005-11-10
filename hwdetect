@@ -1,0 +1,147 @@
+#! /bin/sh
+# Autodetection script for scanning /sys for pci stuff
+# for Archlinux by Tobias Powalowski <tpowa@archlinux.org>
+usage () {
+	echo "$0 [options]"
+	echo ""
+	echo " This is a tool that detects/lists modules that are exported by /sys"
+	echo ""
+	echo "  Options:"
+	echo "    -load-modules         load all detected modules"
+	echo "    -show-modules         show all detected modules"
+	echo "    -show-agp             show AGP modules"	
+	echo "    -show-ide             show IDE modules"
+	echo "    -show-scsi            show SCSI modules"
+	echo "    -show-sata            show SATA modules"
+	echo "    -show-usb             show USB modules"
+	echo "    -show-fw              show FIREWIRE modules"
+	echo "    -show-net             show NETWORK modules"
+	echo "    -show-pcmcia          show PCMCIA modules"
+	echo "    -show-sound           show SOUND modules"
+	echo "    -show-video           show VIDEO modules"
+	echo "    -show-other           show OTHER modules"
+	echo ""
+	echo "  For /etc/mkinitrd.conf use:"
+	echo "    -ide                  show detected HOSTCONTROLLER_IDE"
+	echo "    -scsi                 show detected HOSTCONTROLLER_SCSI"
+	echo "    -sata                 show detected HOSTCONTROLLER_SATA"
+	echo "    -usb                  show detected HOSTCONTROLER_USB"
+	echo ""
+	exit 1
+}
+
+[ "$1" == "" ] && usage
+
+# find pci aliases
+find /sys/ -name "modalias" | grep pci > /tmp/modules
+for i in `cat /tmp/modules`; do
+	cat $i >> /tmp/modprobe
+done
+
+# generate files for the different actions
+for i in `cat /tmp/modprobe`; do
+	modprobe --show-depends $i >> /tmp/modules-plain 2>/dev/null
+done
+sort -u /tmp/modules-plain >> /tmp/modules-sorted
+sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
+
+# starting different actions
+while [ $# -gt 0 ]; do
+	case $1 in
+		-load)
+			# load all detected pci modules
+			for i in `cat /tmp/modprobe`; do
+				modprobe $i > /dev/null 2>&1
+			done
+			;;
+
+		-show-modules)
+			# show all detected modules
+			for i in `cat /tmp/moduleslist`; do
+				echo "Detected module: \"$i\""
+			done
+			;;
+
+		-show-agp)
+			#show detected IDE modules
+			grep "agp/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-ide)
+			#show detected IDE modules
+			grep "ide/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-scsi)
+			#show detected SCSI modules
+			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" 
+			;;
+		
+		-show-sata)
+			#show detected SATA modules
+			grep "sata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-usb)
+			#show detected USB modules
+			grep "usb/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-fw)
+			#show detected FIREWIRE modules
+			grep "ieee1394/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-net)
+			#show detected NETWORK modules
+			grep "net/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-pcmcia)
+			#show detected PCMCIA modules
+			grep "pcmcia/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-sound)
+			#show detected NETWORK modules
+			grep "sound/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-video)
+			#show detected VIDEO modules
+			grep "video/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-other)
+			#show detected OTHER modules
+			grep -v "agp/" /tmp/modules-sorted | grep -v "ide/" | grep -v "scsi/" | grep -v "sata" \
+			| grep -v "usb/" | grep -v "ieee1394" | grep -v "net/" | grep -v "pcmcia/" | grep -v "sound/"\
+			| grep -v "video/" | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-ide)
+			#show detected IDE modules
+			grep "ide/pci" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-scsi)
+			#show detected SCSI modules
+			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" 
+			;;
+
+		-sata)
+			#show detected SATA modules
+			grep "sata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			;;
+
+		-usb)
+			#show detected USB modules
+			grep "usb/host" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		esac
+	shift
+done
+
+# cleanup
+rm /tmp/{modules-plain,modules-sorted,moduleslist,modprobe,modules}
