@@ -48,7 +48,7 @@ sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
 # starting different actions
 while [ $# -gt 0 ]; do
 	case $1 in
-		-load)
+		-load-modules)
 			# load all detected pci modules
 			for i in `cat /tmp/modprobe`; do
 				modprobe $i > /dev/null 2>&1
