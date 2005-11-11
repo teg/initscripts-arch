@@ -16,6 +16,7 @@ usage () {
 	echo "    -show-usb             show USB modules"
 	echo "    -show-fw              show FIREWIRE modules"
 	echo "    -show-net             show NETWORK modules"
+	echo "    -show-isdn            show ISDN modules"
 	echo "    -show-pcmcia          show PCMCIA modules"
 	echo "    -show-sound           show SOUND modules"
 	echo "    -show-video           show VIDEO modules"
@@ -33,7 +34,14 @@ usage () {
 [ "$1" == "" ] && usage
 
 # find pci aliases
-find /sys/ -name "modalias" | grep pci > /tmp/modules
+find /sys/devices/ -name "modalias" | grep pci > /tmp/modules
+
+# delete pci devices that are blacklisted
+for i in "${BLACKLIST[@]}"; do
+	sed -i -e "/$i/d" /tmp/modules
+done
+
+# get the modaliases
 for i in `cat /tmp/modules`; do
 	cat $i >> /tmp/modprobe
 done
@@ -74,12 +82,13 @@ while [ $# -gt 0 ]; do
 
 		-show-scsi)
 			#show detected SCSI modules
-			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" 
+			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" \
+			| grep -v "ata_piix" | grep -v "libata"
 			;;
 		
 		-show-sata)
 			#show detected SATA modules
-			grep "sata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			grep "ata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "eata" 
 			;;
 
 		-show-usb)
@@ -95,6 +104,11 @@ while [ $# -gt 0 ]; do
 		-show-net)
 			#show detected NETWORK modules
 			grep "net/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			;;
+
+		-show-isdn)
+			#show detected ISDN modules
+			grep "isdn/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
 			;;
 
 		-show-pcmcia)
@@ -116,7 +130,7 @@ while [ $# -gt 0 ]; do
 			#show detected OTHER modules
 			grep -v "agp/" /tmp/modules-sorted | grep -v "ide/" | grep -v "scsi/" | grep -v "sata" \
 			| grep -v "usb/" | grep -v "ieee1394" | grep -v "net/" | grep -v "pcmcia/" | grep -v "sound/"\
-			| grep -v "video/" | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			| grep -v "video/" | grep -v "isdn/" |  sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
 			;;
 
 		-ide)
@@ -126,12 +140,14 @@ while [ $# -gt 0 ]; do
 
 		-scsi)
 			#show detected SCSI modules
-			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" 
+			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" \
+			| grep -v "ata_piix" | grep -v "libata"
 			;;
 
 		-sata)
 			#show detected SATA modules
-			grep "sata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			grep "ata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "eata" \
+			| grep -v "libata"
 			;;
 
 		-usb)
