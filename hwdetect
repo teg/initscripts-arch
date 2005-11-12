@@ -65,72 +65,156 @@ while [ $# -gt 0 ]; do
 
 		-show-modules)
 			# show all detected modules
-			for i in `cat /tmp/moduleslist`; do
-				echo "Detected module: \"$i\""
-			done
+			echo "AGP modules"
+			echo "-----------------------"
+			grep "agp/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "IDE modules"
+			echo "-----------------------"
+			grep "ide/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "SCSI modules"
+			echo "-----------------------"
+			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" \
+			| grep -v "ata_piix" | grep -v "libata"
+			echo ""
+			echo "SATA modules"
+			echo "-----------------------"
+			grep "ata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "eata"
+			echo ""
+			echo "USB modules"
+			echo "-----------------------"
+			grep "usb/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "FIREWIRE modules"
+			echo "-----------------------"
+			grep "ieee1394/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "NETWORK modules"
+			echo "-----------------------"
+			grep "net/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "ISDN modules"
+			echo "-----------------------"
+			grep "isdn/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "PCMCIA modules"
+			echo "-----------------------"
+			grep "pcmcia/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "SOUND modules"
+			echo "-----------------------"
+			grep "sound/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "VIDEO modules"
+			echo "-----------------------"
+			grep "video/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p"
+			echo ""
+			echo "OTHER modules"
+			echo "-----------------------"
+			grep -v "agp/" /tmp/modules-sorted | grep -v "ide/" | grep -v "scsi/" | grep -v "sata" \
+			| grep -v "usb/" | grep -v "ieee1394" | grep -v "net/" | grep -v "pcmcia/" | grep -v "sound/"\
+			| grep -v "video/" | grep -v "isdn/" |  sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" || echo "No module found"
+			echo ""
 			;;
 
 		-show-agp)
 			#show detected IDE modules
+			echo "AGP modules"
+			echo "-----------------------"
 			grep "agp/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-ide)
 			#show detected IDE modules
+			echo "IDE modules"
+			echo "-----------------------"
 			grep "ide/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-scsi)
 			#show detected SCSI modules
+			echo "SCSI modules"
+			echo "-----------------------"
 			grep "scsi/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "sata" \
 			| grep -v "ata_piix" | grep -v "libata"
+			echo ""
 			;;
 		
 		-show-sata)
 			#show detected SATA modules
+			echo "SATA modules"
+			echo "-----------------------"
 			grep "ata" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" | grep -v "eata" 
+			echo ""
 			;;
 
 		-show-usb)
 			#show detected USB modules
+			echo "USB modules"
+			echo "-----------------------"
 			grep "usb/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-fw)
 			#show detected FIREWIRE modules
+			echo "FIREWIRE modules"
+			echo "-----------------------"
 			grep "ieee1394/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-net)
 			#show detected NETWORK modules
+			echo "NETWORK modules"
+			echo "-----------------------"
 			grep "net/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-isdn)
 			#show detected ISDN modules
+			echo "ISDN modules"
+			echo "-----------------------"
 			grep "isdn/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-pcmcia)
 			#show detected PCMCIA modules
+			echo "PCMCIA modules"
+			echo "-----------------------"
 			grep "pcmcia/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-sound)
-			#show detected NETWORK modules
+			#show detected SOUND modules
+			echo "SOUND modules"
+			echo "-----------------------"
 			grep "sound/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-video)
 			#show detected VIDEO modules
+			echo "VIDEO modules"
+			echo "-----------------------"
 			grep "video/" /tmp/modules-sorted | sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-show-other)
 			#show detected OTHER modules
+			echo "OTHER modules"
+			echo "-----------------------"
 			grep -v "agp/" /tmp/modules-sorted | grep -v "ide/" | grep -v "scsi/" | grep -v "sata" \
 			| grep -v "usb/" | grep -v "ieee1394" | grep -v "net/" | grep -v "pcmcia/" | grep -v "sound/"\
 			| grep -v "video/" | grep -v "isdn/" |  sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" 
+			echo ""
 			;;
 
 		-ide)
