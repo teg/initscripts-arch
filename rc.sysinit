@@ -141,11 +141,9 @@ stat_busy "Removing Leftover Files"
 /bin/rm -f /etc/nologin &>/dev/null
 /bin/rm -f /etc/shutdownpid &>/dev/null
 /bin/rm -f /var/lock/* &>/dev/null
-/bin/rm -f /var/run/*.pid &>/dev/null
-/bin/rm -f /var/run/daemons/* &>/dev/null
-/bin/rm -f /var/run/net/* &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 /bin/rm -f /forcefsck &>/dev/null
+(cd /var/run && find . ! -type d -exec rm -f -- {} \; )
 : > /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
 mkdir /tmp/.ICE-unix && chmod 1777 /tmp/.ICE-unix
