@@ -32,7 +32,7 @@ ifup()
 		return 1
 	fi
 	# don't bring up an interface that's already up
-	[ "`/sbin/ifconfig ${1} 2>/dev/null | grep UP`" ] && return 1
+	[ "`/sbin/ifconfig ${1} 2>/dev/null | grep UP`" ] && return 0
 	eval iwcfg="\$wlan_${1}"
 	if [ "$iwcfg" != "" ]; then
 		/usr/sbin/iwconfig $iwcfg

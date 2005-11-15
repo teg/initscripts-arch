@@ -33,11 +33,18 @@ usage () {
 
 [ "$1" == "" ] && usage
 
+: >/tmp/modules-plain
+: >/tmp/modules-sorted
+: >/tmp/moduleslist
+: >/tmp/modprobe
+: >/tmp/modules
+
 # find pci aliases
 find /sys/devices/ -name "modalias" | grep pci > /tmp/modules
 
 # delete pci devices that are blacklisted
-for i in "${BLACKLIST[@]}"; do
+for i in $PCI_BLACKLIST; do
+	[ "$i" ] || continue
 	sed -i -e "/$i/d" /tmp/modules
 done
 
@@ -66,21 +73,25 @@ done
 sort -u /tmp/modules-plain >> /tmp/modules-sorted
 sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
 
-listex() {
-	ln=$1 ; shift
-	if [ $# -gt 0 ]; then
-		ex=$1 ; shift
-		if [ "`echo $ln | grep -v $ex`" ]; then
-			listex "$ln" $*
-		fi
-	else
-		echo $ln | sed -ne "s#^/.*/\(.*\)\.ko.*#\1#p"
-	fi
-}
+# delete modules that are blacklisted
+for i in $BLACKLIST; do
+	[ "$i" ] || continue
+	sed -i -e "/^$i$/d" /tmp/moduleslist
+done
+
 listmods() {
 	key=$1 ; shift
-	for ln in `grep "$key" /tmp/modules-sorted | sed 's|^insmod ||g' | sort -u`; do
-		listex "$ln" $*
+	ex=
+	while [ "$1" ]; do
+		[ "$ex" ] && ex="$ex|$1" || ex="$1"
+		shift
+	done
+	for ln in `grep "$key" /tmp/modules-sorted | sed 's|^insmod ||g'`; do
+		if [ "$ex" ]; then
+			echo $ln | egrep -v "$ex" | sed -ne "s#^/.*/\(.*\)\.ko.*#\1#p"
+		else
+			echo $ln | sed -ne "s#^/.*/\(.*\)\.ko.*#\1#p"
+		fi
 	done
 }
 showlist() {

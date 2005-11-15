@@ -121,8 +121,6 @@ umount /proc && mount -t proc none /proc
 /bin/mount -a -t nonfs,nosmbfs,nocifs,noncpfs,nosysfs,nousbfs
 stat_done
 
-status "Detecting Required Modules" /sbin/hwdetect -load-modules
-
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	/sbin/hwclock --utc --hctosys
@@ -216,6 +214,10 @@ fi
 # Load modules from the MODULES array defined in rc.conf
 if [ -f /proc/modules ]; then
 	stat_busy "Loading Modules"
+	if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
+		export BLACKLIST="${MOD_BLACKLIST[*]}"
+		/sbin/hwdetect -load-modules
+	fi
 	for mod in "${MODULES[@]}"; do
 		if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
 			/sbin/modprobe $mod
