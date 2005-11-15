@@ -48,7 +48,7 @@ if [ -f /etc/mdadm.conf -a "`grep ^ARRAY /etc/mdadm.conf 2>/dev/null`" ]; then
 			cp -a /initrd/$i /dev/
 		done
 	fi
-	status "Assembling RAID arrays" /sbin/mdadm --assemble --scan
+	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
 fi
 
 # Unmount and free up the old initrd if it exists
@@ -219,7 +219,7 @@ if [ -f /proc/modules ]; then
 		/sbin/hwdetect -load-modules
 	fi
 	for mod in "${MODULES[@]}"; do
-		if [[ `echo $mod | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+		if [ "$mod" = "${mod#!}" ]; then
 			/sbin/modprobe $mod
 		fi
 	done
