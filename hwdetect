@@ -1,5 +1,5 @@
 #! /bin/sh
-# Autodetection script for scanning /sys for pci stuff
+# Autodetection script for scanning /sys for hardware
 # for Archlinux by Tobias Powalowski <tpowa@archlinux.org>
 usage () {
 	echo "$0 [options]"
@@ -40,13 +40,7 @@ usage () {
 : >/tmp/modules
 
 # find pci aliases
-find /sys/devices/ -name "modalias" | grep pci > /tmp/modules
-
-# delete pci devices that are blacklisted
-for i in $PCI_BLACKLIST; do
-	[ "$i" ] || continue
-	sed -i -e "/$i/d" /tmp/modules
-done
+find /sys/devices/ -name "modalias" > /tmp/modules
 
 # get the modaliases
 for i in `cat /tmp/modules`; do
@@ -55,19 +49,46 @@ done
 
 # generate files for the different actions
 for i in `cat /tmp/modprobe`; do
-	modprobe --show-depends $i >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --show-depends $i >> /tmp/modules-plain 2>/dev/null
 done
+# fix evdev detection
+if [ `grep "serio:ty06pr*[id]*[ex]*" /tmp/modprobe` ]; then
+modprobe -i --show-depends evdev >> /tmp/modules-plain 2>/dev/null
+fi
+# fix Intel536ep detection
+if [ `grep "pci:v00008086d00001040sv000016BEsd00001040bc07sc80i00" /tmp/modprobe` ]; then
+modprobe -i --show-depends Intel536 >> /tmp/modules-plain 2>/dev/null
+fi
 
-# find PNP devices, like parports etc. workaround for rtc and pcspkr included
+# find PNP devices, like parports, soundcards etc. workaround for rtc,pcspkr,irtty-sir and analog included
 for i in `find /sys -name "id*" | grep pnp`; do
-	devid=`cat $i`
+	devid=`cat $i | grep PNP`
+	
+	modprobe -i --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
+	
 	if [ "$devid" == "PNP0800" ]; then
-		modprobe --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
+		modprobe -i --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
 	fi
+	
 	if [ "$devid" == "PNP0b00" ]; then
-		modprobe --show-depends rtc >> /tmp/modules-plain 2>/dev/null
+		modprobe -i --show-depends rtc >> /tmp/modules-plain 2>/dev/null
 	fi
-	modprobe --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
+
+	if [ "$devid" == "PNP0510" ]; then
+		modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+	fi
+
+	if [ "$devid" == "PNP0511" ]; then
+		modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+	fi
+
+	if [ "$devid" == "PNPb02f" ]; then
+		modprobe -i --show-depends analog >> /tmp/modules-plain 2>/dev/null
+	fi
+	# load ppp-generic if serial ports are detected for modems
+	if [ "$devid" == "PNP0501" ]; then
+		modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
+	fi
 done
 
 sort -u /tmp/modules-plain >> /tmp/modules-sorted
