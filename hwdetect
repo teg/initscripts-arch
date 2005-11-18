@@ -91,6 +91,38 @@ for i in `find /sys -name "id*" | grep pnp`; do
 	fi
 done
 
+# IDE disks/cdroms/floppy/tape
+for i in $(cat `find /proc/ide -name "media"`); do
+	if [ "$i" == "cdrom" ]; then
+		modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null
+	fi
+	if [ "$i" == "floppy" ]; then
+		modprobe -i --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null
+	fi
+	if [ "$i" == "disk" ]; then
+		modprobe -i --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null
+	fi
+	if [ "$i" == "tape" ]; then
+		modprobe -i --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null
+	fi
+done
+
+# SCSI disks/cdroms/tapes/generic devices
+for i in $(cat `find /sys/devices -name "type"`); do
+	if [ "$i" == "3" ] || [ "$i" == "4" ] || [ "$i" == "5" ]; then
+		modprobe -i --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null
+	fi
+	if [ "$i" == "2" ] || [ "$i" == "3" ] || [ "$i" == "5" ] || [ "$i" == "6" ] || [ "$i" == "8" ] || [ "$i" == "9" ]; then
+		modprobe -i --show-depends sg >> /tmp/modules-plain 2>/dev/null
+	fi
+	if [ "$i" == "0" ] || [ "$i" == "7" ] || [ "$i" == "14" ]; then
+		modprobe -i --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null
+	fi
+	if [ "$i" == "1" ]; then
+		modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null
+	fi
+done
+
 sort -u /tmp/modules-plain >> /tmp/modules-sorted
 sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
 
