@@ -95,6 +95,29 @@ for i in $(cat `find /sys/devices -name "type"`); do
 	case $i in (1)           modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
 done
 
+# Firewire disks/cdroms
+if [ "`grep 'ohci1394' /tmp/modules-plain`" ]; then
+	modprobe -i --show-depends sbp2 >> /tmp/modules-plain 2>/dev/null
+fi
+
+# Modem devices
+case $i in (Intel536|Intel537|ltmodem|ltserial|slarm|slusb) \ 
+modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null ;; esac
+
+# Parport modules
+if [ "`grep 'parport' /tmp/modules-plain`" ]; then
+	modprobe -i --show-depends lp >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --show-depends ppdev >> /tmp/modules-plain 2>/dev/null
+fi
+
+# Sound OSS compat modules
+if [ "`grep 'snd-pcm' /tmp/modules-plain`" ]; then
+	modprobe -i --show-depends snd-pcm-oss >> /tmp/modules-plain 2>/dev/null
+fi
+if [ "`grep 'snd-seq' /tmp/modules-plain`" ]; then
+	modprobe -i --show-depends snd-seq-oss >> /tmp/modules-plain 2>/dev/null
+fi
+
 sort -u /tmp/modules-plain >> /tmp/modules-sorted
 sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
 
