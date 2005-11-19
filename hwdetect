@@ -52,75 +52,47 @@ for i in `cat /tmp/modprobe`; do
 	modprobe -i --show-depends $i >> /tmp/modules-plain 2>/dev/null
 done
 # fix evdev detection
-if [ `grep "serio:ty06pr*[id]*[ex]*" /tmp/modprobe` ]; then
-modprobe -i --show-depends evdev >> /tmp/modules-plain 2>/dev/null
+if [ "`grep 'serio:ty06pr*[id]*[ex]*' /tmp/modprobe`" ]; then
+	modprobe -i --show-depends evdev >> /tmp/modules-plain 2>/dev/null
 fi
 # fix Intel536ep detection
-if [ `grep "pci:v00008086d00001040sv000016BEsd00001040bc07sc80i00" /tmp/modprobe` ]; then
-modprobe -i --show-depends Intel536 >> /tmp/modules-plain 2>/dev/null
+if [ "`grep 'pci:v00008086d00001040sv000016BEsd00001040bc07sc80i00' /tmp/modprobe`" ]; then
+	modprobe -i --show-depends Intel536 >> /tmp/modules-plain 2>/dev/null
 fi
 
-# find PNP devices, like parports, soundcards etc. workaround for rtc,pcspkr,irtty-sir and analog included
+# find PNP devices like parports, soundcards etc.
+#   (workaround for rtc, pcspkr, irtty-sir and analog are included)
 for i in `find /sys -name "id*" | grep pnp`; do
 	devid=`cat $i | grep PNP`
 	
 	modprobe -i --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
 	
-	if [ "$devid" == "PNP0800" ]; then
-		modprobe -i --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
-	fi
-	
-	if [ "$devid" == "PNP0b00" ]; then
-		modprobe -i --show-depends rtc >> /tmp/modules-plain 2>/dev/null
-	fi
+	[ "$devid" == "PNP0800" ] && modprobe -i --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
+	[ "$devid" == "PNP0b00" ] && modprobe -i --show-depends rtc >> /tmp/modules-plain 2>/dev/null
+	[ "$devid" == "PNP0510" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+	[ "$devid" == "PNP0511" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+	[ "$devid" == "PNPb02f" ] && modprobe -i --show-depends analog >> /tmp/modules-plain 2>/dev/null
 
-	if [ "$devid" == "PNP0510" ]; then
-		modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
-	fi
-
-	if [ "$devid" == "PNP0511" ]; then
-		modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
-	fi
-
-	if [ "$devid" == "PNPb02f" ]; then
-		modprobe -i --show-depends analog >> /tmp/modules-plain 2>/dev/null
-	fi
 	# load ppp-generic if serial ports are detected for modems
-	if [ "$devid" == "PNP0501" ]; then
-		modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
-	fi
+	[ "$devid" == "PNP0501" ] && modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
 done
 
 # IDE disks/cdroms/floppy/tape
 for i in $(cat `find /proc/ide -name "media"`); do
-	if [ "$i" == "cdrom" ]; then
-		modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null
-	fi
-	if [ "$i" == "floppy" ]; then
-		modprobe -i --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null
-	fi
-	if [ "$i" == "disk" ]; then
-		modprobe -i --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null
-	fi
-	if [ "$i" == "tape" ]; then
-		modprobe -i --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null
-	fi
+	case $i in
+		cdrom)  modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null ;;
+		floppy) modprobe -i --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null ;;
+		disk)   modprobe -i --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null ;;
+		tape)   modprobe -i --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null ;;
+	esac
 done
 
 # SCSI disks/cdroms/tapes/generic devices
 for i in $(cat `find /sys/devices -name "type"`); do
-	if [ "$i" == "3" ] || [ "$i" == "4" ] || [ "$i" == "5" ]; then
-		modprobe -i --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null
-	fi
-	if [ "$i" == "2" ] || [ "$i" == "3" ] || [ "$i" == "5" ] || [ "$i" == "6" ] || [ "$i" == "8" ] || [ "$i" == "9" ]; then
-		modprobe -i --show-depends sg >> /tmp/modules-plain 2>/dev/null
-	fi
-	if [ "$i" == "0" ] || [ "$i" == "7" ] || [ "$i" == "14" ]; then
-		modprobe -i --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null
-	fi
-	if [ "$i" == "1" ]; then
-		modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null
-	fi
+	case $i in (3|4|5)       modprobe -i --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null ;; esac
+	case $i in (2|3|5|6|8|9) modprobe -i --show-depends sg >> /tmp/modules-plain 2>/dev/null ;; esac
+	case $i in (0|7|14)	     modprobe -i --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null ;; esac
+	case $i in (1)           modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
 done
 
 sort -u /tmp/modules-plain >> /tmp/modules-sorted
@@ -130,6 +102,14 @@ sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
 for i in $BLACKLIST; do
 	[ "$i" ] || continue
 	sed -i -e "/^$i$/d" /tmp/moduleslist
+	# since '-' and '_' are interchangeable, we have to cover both
+	if [ "`echo $i | grep '-'`" ]; then
+		i="`echo $i | sed 's|-|_|g'`"
+		sed -i -e "/^$i$/d" /tmp/moduleslist
+	elif [ "`echo $i | grep '_'`" ]; then
+		i="`echo $i | sed 's|_|-|g'`"
+		sed -i -e "/^$i$/d" /tmp/moduleslist
+	fi
 done
 
 listmods() {
@@ -204,4 +184,4 @@ done
 # cleanup
 rm /tmp/{modules-plain,modules-sorted,moduleslist,modprobe,modules}
 
-# vim: set ts=2 sw=2:
+# vim: set ts=2 sw=2 nowrap:

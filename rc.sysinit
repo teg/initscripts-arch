@@ -59,7 +59,29 @@ if [ -f /initrd/linuxrc ]; then
 	stat_done
 fi
 
-# TODO: set up non-root encrypted partition mappings
+# Set up non-root encrypted partition mappings
+if [ -f /etc/crypttab ]; then
+	CS=/sbin/cryptsetup.static
+	while read line; do
+		[ "$line" = "" ] && continue
+		[ "`echo $line | grep ^#`" ] && continue
+		# remove redundant whitespace
+		line=`echo $line | awk '{print $0}'`
+		cname=`echo $line | cut -d' ' -f1`
+		csrc=`echo $line | cut -d' ' -f2`
+		cpass=`echo $line | cut -d' ' -f3-`
+		[ "$cpass" = "" ] && continue
+
+		action=create
+		$CS isLuks $csrc 2>/dev/null && action=luksOpen
+
+		if [ "`echo $cpass | grep \\\"`" ]; then
+			echo "echo $cpass | $CS $action $cname $csrc"
+		else
+			echo "$CS -d $cpass $action $cname $csrc"
+		fi
+	done </etc/crypttab
+fi
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
@@ -178,19 +200,21 @@ if [ "$LOCALE" != "" ]; then
 	stat_busy "Setting Locale: $LOCALE"
 	echo "export LANG=$LOCALE" >/etc/profile.d/locale.sh
 	/bin/chmod 755 /etc/profile.d/locale.sh
+	stat_done
 
 #	If locale is *.utf set console to Unicode mode
-	if [ "`echo $LOCALE | /bin/grep -i utf`" != "" ]; then
+	if [ "`echo $LOCALE | /bin/grep -i utf`" ]; then
+		stat_busy "Setting Consoles to UTF-8"
 		/usr/bin/kbd_mode -u
 		/usr/bin/dumpkeys | /bin/loadkeys --unicode
-		echo 'for i in `seq 1 12`; do' >>/etc/profile.d/locale.sh
-  	echo ' echo -ne "\033%G"' >>/etc/profile.d/locale.sh
-		echo 'done' >>/etc/profile.d/locale.sh
+		for i in `seq 1 12`; do
+  		echo -ne "\033%G" >/dev/vc/${i}
+		done
 		if [ "$CONSOLEFONT" = "" ]; then
 			CONSOLEFONT="LatArCyrHeb-16"
 		fi
+		stat_done
 	fi
-	stat_done
 else
 	rm -f /etc/profile.d/locale.sh
 fi
@@ -214,15 +238,15 @@ fi
 # Load modules from the MODULES array defined in rc.conf
 if [ -f /proc/modules ]; then
 	stat_busy "Loading Modules"
-	if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
-		export BLACKLIST="${MOD_BLACKLIST[*]}"
-		/sbin/hwdetect -load-modules
-	fi
 	for mod in "${MODULES[@]}"; do
 		if [ "$mod" = "${mod#!}" ]; then
 			/sbin/modprobe $mod
 		fi
 	done
+	if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
+		export BLACKLIST="${MOD_BLACKLIST[*]}"
+		/sbin/hwdetect -load-modules
+	fi
 	stat_done
 fi
 
