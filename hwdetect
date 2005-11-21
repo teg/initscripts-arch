@@ -8,6 +8,7 @@ usage () {
 	echo ""
 	echo "  Options:"
 	echo "    -load-modules         load all detected modules"
+	echo "    -unload-modules       unload all detected modules"
 	echo "    -show-modules         show all detected modules"
 	echo "    -show-agp             show AGP modules"	
 	echo "    -show-ide             show IDE modules"
@@ -34,6 +35,7 @@ usage () {
 [ "$1" == "" ] && usage
 
 : >/tmp/modules-plain
+: >/tmp/modules-stripped
 : >/tmp/modules-sorted
 : >/tmp/moduleslist
 : >/tmp/modprobe
@@ -95,14 +97,15 @@ for i in $(cat `find /sys/devices -name "type"`); do
 	case $i in (1)           modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
 done
 
-# Firewire disks/cdroms
+# Firewire disks/cdroms/network
 if [ "`grep 'ohci1394' /tmp/modules-plain`" ]; then
 	modprobe -i --show-depends sbp2 >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --show-depends eth1394 >> /tmp/modules-plain 2>/dev/null
 fi
 
 # Modem devices
 case $i in (Intel536|Intel537|ltmodem|ltserial|slarm|slusb) \ 
-modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null ;; esac
+grep  "$i" /tmp/modules-plain && modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null ;; esac
 
 # Parport modules
 if [ "`grep 'parport' /tmp/modules-plain`" ]; then
@@ -118,7 +121,25 @@ if [ "`grep 'snd-seq' /tmp/modules-plain`" ]; then
 	modprobe -i --show-depends snd-seq-oss >> /tmp/modules-plain 2>/dev/null
 fi
 
-sort -u /tmp/modules-plain >> /tmp/modules-sorted
+sort -u /tmp/modules-plain >> /tmp/modules-stripped
+
+# OTHER modules loading first for speedup!
+grep -v "ide/" /tmp/modules-stripped | grep -v "scsi/" | grep -v "ata" | grep -v "net/" | grep -v "pcmcia/" \
+| grep -v "usb/" | grep -v "ieee1394/" >> /tmp/modules-sorted
+# make a correct order for the modules, internal devices have priority!
+grep "ide/" /tmp/modules-stripped >> /tmp/modules-sorted
+grep "scsi/" /tmp/modules-stripped | grep -v "sata" | grep -v "libata" | grep -v "ata_piix" >> /tmp/modules-sorted
+grep "ata" /tmp/modules-stripped | grep -v "eata" >> /tmp/modules-sorted
+grep "net/" /tmp/modules-stripped | grep -v "wireless/" | grep -v "usb/" >> /tmp/modules-sorted
+grep "wireless/" /tmp/modules-stripped >> /tmp/modules-sorted
+grep "pcmcia/" /tmp/modules-stripped >> /tmp/modules-sorted
+# speedup usb module loading
+grep "usb-storage" /tmp/modules-stripped >> /tmp/modules-sorted
+grep "usblp" /tmp/modules-stripped >> /tmp/modules-sorted
+grep "usbhid" /tmp/modules-stripped >> /tmp/modules-sorted
+grep "usb/" /tmp/modules-stripped | grep -v "usb-storage" | grep -v "usbhid" | grep -v "usblp" >> /tmp/modules-sorted
+grep "ieee1394/" /tmp/modules-stripped >> /tmp/modules-sorted
+
 sed -ne "s#^insmod.*/\(.*\)\.ko.*#\1#p" /tmp/modules-sorted >> /tmp/moduleslist
 
 # delete modules that are blacklisted
@@ -168,33 +189,40 @@ while [ $# -gt 0 ]; do
 			done
 			;;
 
-		-show-modules)
-			showlist "AGP   " `listmods agp/`
-			showlist "IDE   " `listmods ide/`
-			showlist "SCSI  " `listmods scsi/ sata ata_piix libata`
-			showlist "SATA  " `listmods ata eata`
-			showlist "USB   " `listmods usb/`
-			showlist "FW    " `listmods ieee1394/`
-			showlist "NET   " `listmods net/`
-			showlist "ISDN  " `listmods isdn/`
-			showlist "PCMCIA" `listmods pcmcia/`
-			showlist "SOUND " `listmods sound/`
-			showlist "VIDEO " `listmods video/`
-			showlist "OTHER " `listmods modules/ agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video/`
+		-unload-modules)
+			# load all detected pci modules
+			for i in `cat /tmp/moduleslist`; do
+				modprobe -r $i > /dev/null 2>&1
+			done
 			;;
 
-		-show-agp)    showlist "AGP   " `listmods agp/` ;;
-		-show-ide)    showlist "IDE   " `listmods ide/` ;;
-		-show-scsi)   showlist "SCSI  " `listmods scsi/ sata ata_piix libata` ;;
-		-show-sata)   showlist "SATA  " `listmods ata eata` ;;
-		-show-usb)    showlist "USB   " `listmods usb/` ;;
-		-show-fw)     showlist "FW    " `listmods ieee1394/` ;;
-		-show-net)    showlist "NET   " `listmods net/` ;;
-		-show-isdn)   showlist "ISDN  " `listmods isdn/` ;;
-		-show-pcmcia) showlist "PCMCIA" `listmods pcmcia/` ;;
-		-show-sound)  showlist "SOUND " `listmods sound/` ;;
-		-show-video)  showlist "VIDEO " `listmods video/` ;;
-		-show-other)  showlist "OTHER " `listmods .ko agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video/` ;;
+		-show-modules)
+			showlist "AGP    " `listmods agp/`
+			showlist "IDE    " `listmods ide/`
+			showlist "SCSI   " `listmods scsi/ sata ata_piix libata`
+			showlist "SATA   " `listmods ata eata`
+			showlist "USB    " `listmods usb/`
+			showlist "FW     " `listmods ieee1394/`
+			showlist "NET    " `listmods net/`
+			showlist "ISDN   " `listmods isdn/`
+			showlist "PCMCIA " `listmods pcmcia/`
+			showlist "SOUND  " `listmods sound/`
+			showlist "VIDEO  " `listmods video/`
+			showlist "OTHER  " `listmods modules/ agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video/`
+			;;
+
+		-show-agp)    showlist "AGP    " `listmods agp/` ;;
+		-show-ide)    showlist "IDE    " `listmods ide/` ;;
+		-show-scsi)   showlist "SCSI   " `listmods scsi/ sata ata_piix libata` ;;
+		-show-sata)   showlist "SATA   " `listmods ata eata` ;;
+		-show-usb)    showlist "USB    " `listmods usb/` ;;
+		-show-fw)     showlist "FW     " `listmods ieee1394/` ;;
+		-show-net)    showlist "NET    " `listmods net/` ;;
+		-show-isdn)   showlist "ISDN   " `listmods isdn/` ;;
+		-show-pcmcia) showlist "PCMCIA " `listmods pcmcia/` ;;
+		-show-sound)  showlist "SOUND  " `listmods sound/` ;;
+		-show-video)  showlist "VIDEO  " `listmods video/` ;;
+		-show-other)  showlist "OTHER  " `listmods .ko agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video` ;;
 
 		-ide)  showlist "HOSTCONTROLLER_IDE"  `listmods ide/pci` ;;
 		-scsi) showlist "HOSTCONTROLLER_SCSI" `listmods scsi/ sata ata_piix libata` ;;
@@ -205,6 +233,6 @@ while [ $# -gt 0 ]; do
 done
 
 # cleanup
-rm /tmp/{modules-plain,modules-sorted,moduleslist,modprobe,modules}
+rm /tmp/{modules-plain,modules-sorted,modules-stripped,moduleslist,modprobe,modules}
 
 # vim: set ts=2 sw=2 nowrap:

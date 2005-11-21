@@ -236,18 +236,20 @@ fi
 [ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
 
 # Load modules from the MODULES array defined in rc.conf
-if [ -f /proc/modules ]; then
-	stat_busy "Loading Modules"
-	for mod in "${MODULES[@]}"; do
-		if [ "$mod" = "${mod#!}" ]; then
-			/sbin/modprobe $mod
+if ! [ "$load_modules" = "off" ]; then 
+	if [ -f /proc/modules ]; then
+		stat_busy "Loading Modules"
+		for mod in "${MODULES[@]}"; do
+			if [ "$mod" = "${mod#!}" ]; then
+				/sbin/modprobe $mod
+			fi
+		done
+		if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
+			export BLACKLIST="${MOD_BLACKLIST[*]}"
+			/sbin/hwdetect -load-modules
 		fi
-	done
-	if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
-		export BLACKLIST="${MOD_BLACKLIST[*]}"
-		/sbin/hwdetect -load-modules
+		stat_done
 	fi
-	stat_done
 fi
 
 # Screen blanks after 15 minutes idle time
