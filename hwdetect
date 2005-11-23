@@ -34,6 +34,11 @@ usage () {
 
 [ "$1" == "" ] && usage
 
+if ! [ -d /sys/devices ]; then
+	echo "/sys/devices is not present -- mount /sys first" >&2
+	exit 1
+fi
+
 : >/tmp/modules-plain
 : >/tmp/modules-stripped
 : >/tmp/modules-sorted
