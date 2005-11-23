@@ -7,27 +7,28 @@ usage () {
 	echo " This is a tool that detects/lists modules that are exported by /sys"
 	echo ""
 	echo "  Options:"
-	echo "    -load-modules         load all detected modules"
-	echo "    -unload-modules       unload all detected modules"
-	echo "    -show-modules         show all detected modules"
-	echo "    -show-agp             show AGP modules"	
-	echo "    -show-ide             show IDE modules"
-	echo "    -show-scsi            show SCSI modules"
-	echo "    -show-sata            show SATA modules"
-	echo "    -show-usb             show USB modules"
-	echo "    -show-fw              show FIREWIRE modules"
-	echo "    -show-net             show NETWORK modules"
-	echo "    -show-isdn            show ISDN modules"
-	echo "    -show-pcmcia          show PCMCIA modules"
-	echo "    -show-sound           show SOUND modules"
-	echo "    -show-video           show VIDEO modules"
-	echo "    -show-other           show OTHER modules"
+	echo "    --load-modules         load all detected modules"
+	echo "    --unload-modules       unload all detected modules"
+	echo "    --show-modules         show all detected modules"
+	echo "    --show-modules-order   shows load order of detected modules"
+	echo "    --show-agp             show AGP modules"	
+	echo "    --show-ide             show IDE modules"
+	echo "    --show-scsi            show SCSI modules"
+	echo "    --show-sata            show SATA modules"
+	echo "    --show-usb             show USB modules"
+	echo "    --show-fw              show FIREWIRE modules"
+	echo "    --show-net             show NETWORK modules"
+	echo "    --show-isdn            show ISDN modules"
+	echo "    --show-pcmcia          show PCMCIA modules"
+	echo "    --show-sound           show SOUND modules"
+	echo "    --show-video           show VIDEO modules"
+	echo "    --show-other           show OTHER modules"
 	echo ""
 	echo "  For /etc/mkinitrd.conf use:"
-	echo "    -ide                  show detected HOSTCONTROLLER_IDE"
-	echo "    -scsi                 show detected HOSTCONTROLLER_SCSI"
-	echo "    -sata                 show detected HOSTCONTROLLER_SATA"
-	echo "    -usb                  show detected HOSTCONTROLER_USB"
+	echo "    --ide                  show detected HOSTCONTROLLER_IDE"
+	echo "    --scsi                 show detected HOSTCONTROLLER_SCSI"
+	echo "    --sata                 show detected HOSTCONTROLLER_SATA"
+	echo "    --usb                  show detected HOSTCONTROLER_USB"
 	echo ""
 	exit 1
 }
@@ -187,24 +188,24 @@ showlist() {
 # starting different actions
 while [ $# -gt 0 ]; do
 	case $1 in
-		-load-modules)
+		--load-modules)
 			# load all detected pci modules
 			for i in `cat /tmp/moduleslist`; do
 				modprobe $i > /dev/null 2>&1
 			done
 			;;
 
-		-unload-modules)
+		--unload-modules)
 			# load all detected pci modules
 			for i in `cat /tmp/moduleslist`; do
 				modprobe -r $i > /dev/null 2>&1
 			done
 			;;
 
-		-show-modules)
+		--show-modules)
 			showlist "AGP    " `listmods agp/`
 			showlist "IDE    " `listmods ide/`
-			showlist "SCSI   " `listmods scsi/ sata ata_piix libata`
+			showlist "SCSI   " `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` 
 			showlist "SATA   " `listmods ata eata`
 			showlist "USB    " `listmods usb/`
 			showlist "FW     " `listmods ieee1394/`
@@ -216,23 +217,27 @@ while [ $# -gt 0 ]; do
 			showlist "OTHER  " `listmods modules/ agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video/`
 			;;
 
-		-show-agp)    showlist "AGP    " `listmods agp/` ;;
-		-show-ide)    showlist "IDE    " `listmods ide/` ;;
-		-show-scsi)   showlist "SCSI   " `listmods scsi/ sata ata_piix libata` ;;
-		-show-sata)   showlist "SATA   " `listmods ata eata` ;;
-		-show-usb)    showlist "USB    " `listmods usb/` ;;
-		-show-fw)     showlist "FW     " `listmods ieee1394/` ;;
-		-show-net)    showlist "NET    " `listmods net/` ;;
-		-show-isdn)   showlist "ISDN   " `listmods isdn/` ;;
-		-show-pcmcia) showlist "PCMCIA " `listmods pcmcia/` ;;
-		-show-sound)  showlist "SOUND  " `listmods sound/` ;;
-		-show-video)  showlist "VIDEO  " `listmods video/` ;;
-		-show-other)  showlist "OTHER  " `listmods .ko agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video` ;;
+		--show-modules-order)
+			showlist "MODULES ORDER" `listmods modules/`
+			;;
 
-		-ide)  showlist "HOSTCONTROLLER_IDE"  `listmods ide/pci` ;;
-		-scsi) showlist "HOSTCONTROLLER_SCSI" `listmods scsi/ sata ata_piix libata` ;;
-		-sata) showlist "HOSTCONTROLLER_SATA" `listmods ata eata libata` ;;
-		-usb)  showlist "HOSTCONTROLLER_USB"  `listmods usb/host` "" ;;
+		--show-agp)    showlist "AGP    " `listmods agp/` ;;
+		--show-ide)    showlist "IDE    " `listmods ide/` ;;
+		--show-scsi)   showlist "SCSI   " `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` ;;
+		--show-sata)   showlist "SATA   " `listmods ata eata` ;;
+		--show-usb)    showlist "USB    " `listmods usb/` ;;
+		--show-fw)     showlist "FW     " `listmods ieee1394/` ;;
+		--show-net)    showlist "NET    " `listmods net/` ;;
+		--show-isdn)   showlist "ISDN   " `listmods isdn/` ;;
+		--show-pcmcia) showlist "PCMCIA " `listmods pcmcia/` ;;
+		--show-sound)  showlist "SOUND  " `listmods sound/` ;;
+		--show-video)  showlist "VIDEO  " `listmods video/` ;;
+		--show-other)  showlist "OTHER  " `listmods .ko agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video` ;;
+
+		--ide)  showlist "HOSTCONTROLLER_IDE"  `listmods ide/pci` ;;
+		--scsi) showlist "HOSTCONTROLLER_SCSI" `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` ;;
+		--sata) showlist "HOSTCONTROLLER_SATA" `listmods ata eata libata` ;;
+		--usb)  showlist "HOSTCONTROLLER_USB"  `listmods usb/host` "" ;;
 	esac
 	shift
 done
