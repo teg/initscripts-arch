@@ -247,7 +247,7 @@ if ! [ "$load_modules" = "off" ]; then
 		done
 		if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
 			export BLACKLIST="${MOD_BLACKLIST[*]}"
-			/sbin/hwdetect -load-modules
+			/sbin/hwdetect --load-modules
 		fi
 		stat_done
 	fi
