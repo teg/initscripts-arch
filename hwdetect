@@ -86,14 +86,16 @@ for i in `find /sys -name "id*" | grep pnp`; do
 done
 
 # IDE disks/cdroms/floppy/tape
-for i in $(cat `find /proc/ide -name "media"`); do
-	case $i in
-		cdrom)  modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null ;;
-		floppy) modprobe -i --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null ;;
-		disk)   modprobe -i --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null ;;
-		tape)   modprobe -i --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null ;;
-	esac
-done
+if [ -d /proc/ide ]; then
+	for i in $(cat `find /proc/ide -name "media"`); do
+		case $i in
+			cdrom)  modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null ;;
+			floppy) modprobe -i --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null ;;
+			disk)   modprobe -i --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null ;;
+			tape)   modprobe -i --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null ;;
+		esac
+	done
+fi
 
 # SCSI disks/cdroms/tapes/generic devices
 for i in $(cat `find /sys/devices -name "type"`); do
@@ -127,6 +129,12 @@ if [ "`grep 'snd-seq' /tmp/modules-plain`" ]; then
 	modprobe -i --show-depends snd-seq-oss >> /tmp/modules-plain 2>/dev/null
 fi
 
+# USB modules
+if [ "`grep 'usb/' /tmp/modules-plain`" ]; then
+	modprobe -i --show-depends usbhid >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --show-depends usb-storage >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --show-depends usblp >> /tmp/modules-plain 2>/dev/null
+fi
 sort -u /tmp/modules-plain >> /tmp/modules-stripped
 
 # OTHER modules loading first for speedup!
