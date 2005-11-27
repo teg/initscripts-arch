@@ -50,6 +50,12 @@ fi
 # find pci aliases
 find /sys/devices/ -name "modalias" > /tmp/modules
 
+# check for empty /tmp/modules
+if ! [ -s /tmp/modules ]; then
+	echo "hwdetect aborted -- you need a kernel >= 2.6.12" >&2
+	exit 1
+fi
+
 # get the modaliases
 for i in `cat /tmp/modules`; do
 	cat $i >> /tmp/modprobe
