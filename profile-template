@@ -22,8 +22,14 @@ DNS2=
 #KEY=
 #IWOPTS="mode managed essid $ESSID channel 6 key restricted $KEY"
 
-#WIFI_INTERFACE=wlan0      # use this if you have a special wireless interface
-                           # that is linked to the real $INTERFACE
+#WIFI_INTERFACE=wlan0   # use this if you have a special wireless interface
+                        # that is linked to the real $INTERFACE
 
-#WIFI_WAIT=5               # seconds to wait for the wireless card to
-                           # associate before bringing the interface up
+#WIFI_WAIT=5            # seconds to wait for the wireless card to
+                        # associate before bringing the interface up
+
+#USEWPA="yes"           # start wpa_supplicant with the profile
+#WPAOPTS=""             # use "" for normal operation or specify additional
+                        # options (eg, "-D ipw")
+                        # see /etc/wpa_supplicant.conf for configuration
+

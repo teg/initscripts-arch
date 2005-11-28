@@ -49,7 +49,7 @@ stop_profile()
 	[ "$GATEWAY" ] && route del default gw $GATEWAY
 
 	# shutdown wpa_supplicant if it's running
-	[ "$WPAOPTS" ] && wpa_cli terminate >/dev/null 2>&1
+	[ "$USEWPA" = "yes" -o "$USEWPA" = "YES" ] && wpa_cli terminate >/dev/null 2>&1
 
 	# bring down dhcpcd if we're using it
 	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && dhcpcd -k
@@ -94,7 +94,8 @@ start_profile()
 	stat_busy "Starting network profile: $1"
 
 	# Re-read the profile (stop_profile might have overwritten our settings)
-	unset DESCRIPTION INTERFACE IFOPTS IWOPTS WIFI_INTERFACE WIFI_WAIT WPAOPTS
+	unset DESCRIPTION INTERFACE IFOPTS
+	unset IWOPTS WIFI_INTERFACE WIFI_WAIT USEWPA WPAOPTS
 	unset GATEWAY HOSTNAME DOMAIN DNS1 DNS2
 	. $PROFILE_DIR/$1
 
@@ -107,7 +108,7 @@ start_profile()
 	fi
 
 	# Start wpa_supplicant, if necessary
-	if [ "$WPAOPTS" ]; then
+	if [ "$USEWPA" = "yes" -o "$USEWPA" = "YES" ]; then
 		ifconfig $WIFI_INTERFACE up
 		wpa_supplicant -wB -i $WIFI_INTERFACE -c /etc/wpa_supplicant.conf $WPAOPTS
 		# I don´t know how we could determine if wpa_supplicant is ready...
