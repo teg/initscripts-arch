@@ -76,20 +76,22 @@ fi
 
 # find PNP devices like parports, soundcards etc.
 #   (workaround for rtc, pcspkr, irtty-sir and analog are included)
-for i in `find /sys -name "id*" | grep pnp`; do
-	devid=`cat $i | grep PNP`
+if [ "`find /sys -name 'id' | grep pnp`" ]; then
+	for i in `find /sys -name "id" | grep pnp`; do
+		devid=`cat $i | grep PNP`
 	
-	modprobe -i --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
+		modprobe -i --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
 	
-	[ "$devid" == "PNP0800" ] && modprobe -i --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
-	[ "$devid" == "PNP0b00" ] && modprobe -i --show-depends rtc >> /tmp/modules-plain 2>/dev/null
-	[ "$devid" == "PNP0510" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
-	[ "$devid" == "PNP0511" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
-	[ "$devid" == "PNPb02f" ] && modprobe -i --show-depends analog >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0800" ] && modprobe -i --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0b00" ] && modprobe -i --show-depends rtc >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0510" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0511" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNPb02f" ] && modprobe -i --show-depends analog >> /tmp/modules-plain 2>/dev/null
 
-	# load ppp-generic if serial ports are detected for modems
-	[ "$devid" == "PNP0501" ] && modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
-done
+		# load ppp-generic if serial ports are detected for modems
+		[ "$devid" == "PNP0501" ] && modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
+	done
+fi
 
 # IDE disks/cdroms/floppy/tape
 if [ -d /proc/ide ]; then
@@ -104,12 +106,14 @@ if [ -d /proc/ide ]; then
 fi
 
 # SCSI disks/cdroms/tapes/generic devices
-for i in $(cat `find /sys/devices -name "type"`); do
-	case $i in (3|4|5)       modprobe -i --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null ;; esac
-	case $i in (2|3|5|6|8|9) modprobe -i --show-depends sg >> /tmp/modules-plain 2>/dev/null ;; esac
-	case $i in (0|7|14)	     modprobe -i --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null ;; esac
-	case $i in (1)           modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
-done
+if [ "`find /sys/devices -name 'type'`" ]; then
+	for i in $(cat `find /sys/devices -name "type"`); do
+		case $i in (3|4|5)       modprobe -i --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null ;; esac
+		case $i in (2|3|5|6|8|9) modprobe -i --show-depends sg >> /tmp/modules-plain 2>/dev/null ;; esac
+		case $i in (0|7|14)	     modprobe -i --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null ;; esac
+		case $i in (1)           modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
+	done
+fi
 
 # Firewire disks/cdroms/network
 if [ "`grep 'ohci1394' /tmp/modules-plain`" ]; then
