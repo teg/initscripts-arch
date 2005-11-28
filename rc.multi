@@ -6,6 +6,9 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
+# Load sysctl variables if sysctl.conf is present
+[ -r /etc/sysctl.conf ] && /sbin/sysctl -q -p &>/dev/null
+
 # Start daemons
 for daemon in "${DAEMONS[@]}"; do
 	if [ "$daemon" = "${daemon#!}" ]; then
@@ -17,9 +20,6 @@ for daemon in "${DAEMONS[@]}"; do
 		fi
 	fi
 done
-
-# Load sysctl variables if sysctl.conf is present
-[ -r /etc/sysctl.conf ] && /sbin/sysctl -q -p &>/dev/null
 
 if [ -x /etc/rc.local ]; then
 	/etc/rc.local
