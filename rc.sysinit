@@ -65,7 +65,7 @@ if [ -f /etc/crypttab ]; then
 	while read line; do
 		[ "$line" = "" ] && continue
 		[ "`echo $line | grep ^#`" ] && continue
-		# remove redundant whitespace
+		# remove redundant whitespace and split up tokens
 		line=`echo $line | awk '{print $0}'`
 		cname=`echo $line | cut -d' ' -f1`
 		csrc=`echo $line | cut -d' ' -f2`
@@ -76,9 +76,21 @@ if [ -f /etc/crypttab ]; then
 		$CS isLuks $csrc 2>/dev/null && action=luksOpen
 
 		if [ "`echo $cpass | grep \\\"`" ]; then
-			echo "echo $cpass | $CS $action $cname $csrc"
+			# Trim off the quotes around the password string
+			cpass2=`echo $cpass | sed -e 's|^"||' -e 's|"$||'`
+			# For some fun reason, the parameter ordering varies for
+			# LUKS and non-LUKS devices.  Joy.
+			if `$CS isLuks $csrc 2>/dev/null`; then
+				echo "$cpass2" | $CS luksOpen $csrc $cname >/dev/null
+			else
+				echo "$cpass2" | $CS create $cname $csrc >/dev/null
+			fi
 		else
-			echo "$CS -d $cpass $action $cname $csrc"
+			if `$CS isLuks $csrc 2>/dev/null`; then
+				$CS -d $cpass luksOpen $csrc $cname >/dev/null
+			else
+				$CS -d $cpass create $cname $csrc >/dev/null
+			fi
 		fi
 	done </etc/crypttab
 fi
