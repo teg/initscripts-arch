@@ -114,7 +114,7 @@ start_profile()
 		# I don´t know how we could determine if wpa_supplicant is ready...
 		sleep 2
 		let i=0
-		while ! /usr/bin/wpa_cli status | grep "wpa_state=COMPLETED" >/dev/null 2>&1; do
+		while ! wpa_cli status | grep "wpa_state=COMPLETED" >/dev/null 2>&1; do
 			if [ $i -gt 10 ]; then
 				wpa_cli terminate >/dev/null 2>&1
 				ifconfig $WIFI_INTERFACE down
