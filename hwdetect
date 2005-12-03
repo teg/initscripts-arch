@@ -95,7 +95,7 @@ if [ "`find /sys/devices -name 'id' | grep /pnp`" ]; then
 fi
 
 # IDE disks/cdroms/floppy/tape
-if [ -d /proc/ide ]; then
+if [ "`find /proc/ide -name 'media'`" ]; then
 	for i in $(cat `find /proc/ide -name "media"`); do
 		case $i in
 			cdrom)  modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null ;;
