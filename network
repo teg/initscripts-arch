@@ -58,7 +58,7 @@ ifdown()
 	eval ifcfg="\$${1}"
 	if [ "$ifcfg" = "dhcp" ]; then
 		if [ -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
-			/sbin/dhcpcd -k
+			/sbin/dhcpcd -k ${1}
 		else
 			# No .pid file, just bring the interface itself down
 			/sbin/ifconfig ${1} down

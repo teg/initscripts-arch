@@ -52,7 +52,7 @@ stop_profile()
 	[ "$USEWPA" = "yes" -o "$USEWPA" = "YES" ] && wpa_cli terminate >/dev/null 2>&1
 
 	# bring down dhcpcd if we're using it
-	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && dhcpcd -k
+	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && dhcpcd -k $INTERFACE
 
 	# bring down the interface itself
 	ifconfig $INTERFACE down
