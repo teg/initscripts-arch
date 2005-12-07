@@ -52,7 +52,7 @@ stop_profile()
 	[ "$USEWPA" = "yes" -o "$USEWPA" = "YES" ] && wpa_cli terminate >/dev/null 2>&1
 
 	# bring down dhcpcd if we're using it
-	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && dhcpcd -k $INTERFACE
+	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && kill `cat /etc/dhcpc/dhcpcd-${INTERFACE}.pid`
 
 	# bring down the interface itself
 	ifconfig $INTERFACE down
@@ -198,7 +198,7 @@ menu()
 	# if no default yet, use the first entry
 	[ "$DEFAULT" = "" ] && DEFAULT=${profiles[0]}
 
-	ANSWER=`mktemp`
+	ANSWER=`mktemp` || exit 1
 
 	if [ "$TIMEOUT" != "" ]; then
 		dialog \
