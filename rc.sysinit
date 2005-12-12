@@ -119,7 +119,11 @@ FORCEFSCK=
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
-	/sbin/fsck -A -T -C -a $FORCEFSCK
+	if [ "`cat /proc/cmdline | grep quiet`" ]; then
+		/sbin/fsck -A -T -C -a $FORCEFSCK >/dev/null 2>&1
+	else
+		/sbin/fsck -A -T -C -a $FORCEFSCK
+	fi
 	if [ $? -gt 1 ]; then
 		stat_fail
 		echo
@@ -219,13 +223,7 @@ if [ "$LOCALE" != "" ]; then
 		stat_busy "Setting Consoles to UTF-8"
 		/usr/bin/kbd_mode -u
 		/usr/bin/dumpkeys | /bin/loadkeys --unicode
-		for i in `seq 1 12`; do
-  		echo -ne "\033%G" >/dev/vc/${i}
-		done
 		echo ' echo -ne "\033%G"'>>/etc/profile.d/locale.sh
-		if [ "$CONSOLEFONT" = "" ]; then
-			CONSOLEFONT="LatArCyrHeb-16"
-		fi
 		stat_done
 	fi
 else
