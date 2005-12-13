@@ -7,6 +7,7 @@ usage () {
 	echo " This is a tool that detects/lists modules that are exported by /sys"
 	echo ""
 	echo "  Options:"
+	echo "    --kernel_version=      use kernel version (no autodetect)"
 	echo "    --load-modules         load all detected modules"
 	echo "    --unload-modules       unload all detected modules"
 	echo "    --show-modules         show all detected modules"
@@ -30,11 +31,26 @@ usage () {
 	echo "    --sata                 show detected HOSTCONTROLLER_SATA"
 	echo "    --usb                  show detected HOSTCONTROLER_USB"
 	echo ""
+	echo "  For /etc/rc.conf use:"
+	echo "    --modules              show detected MODULES"
+	echo ""
 	exit 1
 }
 
 [ "$1" == "" ] && usage
 
+#setting kernel version
+case $1 in
+	--kernel_version=*)
+	KERNEL_VERSION="`echo $1 | awk -F= '{print $2;}'`"
+	;;
+esac
+
+if [ "$KERNEL_VERSION" == "" ]; then
+	KERNEL_VERSION="`uname -r`"
+fi
+
+# checking /sys
 if ! [ -d /sys/devices ]; then
 	echo "/sys/devices is not present -- mount /sys first" >&2
 	exit 1
@@ -44,108 +60,100 @@ fi
 : >/tmp/modules-stripped
 : >/tmp/modules-sorted
 : >/tmp/moduleslist
-: >/tmp/modprobe
-: >/tmp/modules
 
 # find pci aliases
-find /sys/devices/ -name "modalias" > /tmp/modules
+aliases=`find /sys/devices/ -noleaf -name modalias  -exec cat {} +`
 
-# check for empty /tmp/modules
-if ! [ -s /tmp/modules ]; then
+# check for empty aliases
+if [ "$aliases" == "" ]; then
 	echo "hwdetect aborted -- you need a kernel >= 2.6.12" >&2
 	exit 1
 fi
 
-# get the modaliases
-for i in `cat /tmp/modules`; do
-	cat $i >> /tmp/modprobe
-done
-
 # generate files for the different actions
-for i in `cat /tmp/modprobe`; do
-	modprobe -i --show-depends $i >> /tmp/modules-plain 2>/dev/null
-done
+modprobe -a --set-version=$KERNEL_VERSION --show-depends $aliases >> /tmp/modules-plain 2>/dev/null
+
 # fix evdev detection
-if [ "`grep 'serio:ty06pr*[id]*[ex]*' /tmp/modprobe`" ]; then
-	modprobe -i --show-depends evdev >> /tmp/modules-plain 2>/dev/null
+if [ "`echo $aliases | grep 'serio:ty06pr*[id]*[ex]*'`" ]; then
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends evdev >> /tmp/modules-plain 2>/dev/null
 fi
 # fix Intel536ep detection
-if [ "`grep 'pci:v00008086d00001040sv000016BEsd00001040bc07sc80i00' /tmp/modprobe`" ]; then
-	modprobe -i --show-depends Intel536 >> /tmp/modules-plain 2>/dev/null
+if [ "`echo $aliases | grep 'pci:v00008086d00001040sv000016BEsd00001040bc07sc80i00'`" ]; then
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends Intel536 >> /tmp/modules-plain 2>/dev/null
 fi
 
 # find PNP devices like parports, soundcards etc.
 #   (workaround for rtc, pcspkr, irtty-sir and analog are included)
-if [ "`find /sys/devices -name 'id' | grep /pnp`" ]; then
-	for i in `find /sys/devices -name "id" | grep /pnp`; do
+if [ "`find /sys/devices -noleaf -name 'id' | grep /pnp`" ]; then
+	for i in `find /sys/devices -noleaf -name "id" | grep /pnp`; do
 		devid=`cat $i | grep PNP`
 		[ "$devid" ] || continue
 	
-		modprobe -i --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
+		modprobe -i --set-version=$KERNEL_VERSION --show-depends pnp:d${devid} >> /tmp/modules-plain 2>/dev/null
 	
-		[ "$devid" == "PNP0800" ] && modprobe -i --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
-		[ "$devid" == "PNP0b00" ] && modprobe -i --show-depends rtc >> /tmp/modules-plain 2>/dev/null
-		[ "$devid" == "PNP0510" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
-		[ "$devid" == "PNP0511" ] && modprobe -i --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
-		[ "$devid" == "PNPb02f" ] && modprobe -i --show-depends analog >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0800" ] && modprobe -i --set-version=$KERNEL_VERSION --show-depends pcspkr >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0b00" ] && modprobe -i --set-version=$KERNEL_VERSION --show-depends rtc >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0510" ] && modprobe -i --set-version=$KERNEL_VERSION --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0511" ] && modprobe -i --set-version=$KERNEL_VERSION --show-depends irtty-sir >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNPb02f" ] && modprobe -i --set-version=$KERNEL_VERSION --show-depends analog >> /tmp/modules-plain 2>/dev/null
 
 		# load ppp-generic if serial ports are detected for modems
-		[ "$devid" == "PNP0501" ] && modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
+		[ "$devid" == "PNP0501" ] && modprobe -i --set-version=$KERNEL_VERSION --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null
 	done
 fi
 
 # IDE disks/cdroms/floppy/tape
-if [ "`find /proc/ide -name 'media'`" ]; then
-	for i in $(cat `find /proc/ide -name "media"`); do
+if [ "`find /proc/ide -noleaf -name 'media'`" ]; then
+	for i in $(cat `find /proc/ide -noleaf -name "media"`); do
 		case $i in
-			cdrom)  modprobe -i --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null ;;
-			floppy) modprobe -i --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null ;;
-			disk)   modprobe -i --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null ;;
-			tape)   modprobe -i --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null ;;
+			cdrom)  modprobe -i --set-version=$KERNEL_VERSION --show-depends ide-cd >> /tmp/modules-plain 2>/dev/null ;;
+			floppy) modprobe -i --set-version=$KERNEL_VERSION --show-depends ide-floppy >> /tmp/modules-plain 2>/dev/null ;;
+			disk)   modprobe -i --set-version=$KERNEL_VERSION --show-depends ide-disk >> /tmp/modules-plain 2>/dev/null ;;
+			tape)   modprobe -i --set-version=$KERNEL_VERSION --show-depends ide-tape >> /tmp/modules-plain 2>/dev/null ;;
 		esac
 	done
 fi
 
 # SCSI disks/cdroms/tapes/generic devices
-if [ "`find /sys/devices -name 'type'`" ]; then
-	for i in $(cat `find /sys/devices -name "type"`); do
-		case $i in (3|4|5)       modprobe -i --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null ;; esac
-		case $i in (2|3|5|6|8|9) modprobe -i --show-depends sg >> /tmp/modules-plain 2>/dev/null ;; esac
-		case $i in (0|7|14)	     modprobe -i --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null ;; esac
-		case $i in (1)           modprobe -i --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
+if [ "`find /sys/devices -noleaf -name 'type'`" ]; then
+	for i in $(cat `find /sys/devices -noleaf -name "type"`); do
+		case $i in (3|4|5)       modprobe -i --set-version=$KERNEL_VERSION --show-depends sr-mod >> /tmp/modules-plain 2>/dev/null ;; esac
+		case $i in (2|3|5|6|8|9) modprobe -i --set-version=$KERNEL_VERSION --show-depends sg >> /tmp/modules-plain 2>/dev/null ;; esac
+		case $i in (0|7|14)	     modprobe -i --set-version=$KERNEL_VERSION --show-depends sd-mod >> /tmp/modules-plain 2>/dev/null ;; esac
+		case $i in (1)           modprobe -i --set-version=$KERNEL_VERSION --show-depends st >> /tmp/modules-plain 2>/dev/null ;; esac
 	done
 fi
 
 # Firewire disks/cdroms/network
 if [ "`grep 'ohci1394' /tmp/modules-plain`" ]; then
-	modprobe -i --show-depends sbp2 >> /tmp/modules-plain 2>/dev/null
-	modprobe -i --show-depends eth1394 >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends sbp2 >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends eth1394 >> /tmp/modules-plain 2>/dev/null
 fi
 
 # Modem devices
 case $i in (Intel536|Intel537|ltmodem|ltserial|slarm|slusb) \ 
-	grep "$i" /tmp/modules-plain && modprobe -i --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null ;; \
+	grep "$i" /tmp/modules-plain && modprobe -i --set-version=$KERNEL_VERSION --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null ;; \
 	esac
 
 # Parport modules
 if [ "`grep 'parport' /tmp/modules-plain`" ]; then
-	modprobe -i --show-depends lp >> /tmp/modules-plain 2>/dev/null
-	modprobe -i --show-depends ppdev >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends lp >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends ppdev >> /tmp/modules-plain 2>/dev/null
 fi
 
 # Sound OSS compat modules
 if [ "`grep 'snd-pcm' /tmp/modules-plain`" ]; then
-	modprobe -i --show-depends snd-pcm-oss >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends snd-pcm-oss >> /tmp/modules-plain 2>/dev/null
 fi
 if [ "`grep 'snd-seq' /tmp/modules-plain`" ]; then
-	modprobe -i --show-depends snd-seq-oss >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends snd-seq-oss >> /tmp/modules-plain 2>/dev/null
 fi
 
 # USB modules
 if [ "`grep 'usb/' /tmp/modules-plain`" ]; then
-	modprobe -i --show-depends usbhid >> /tmp/modules-plain 2>/dev/null
-	modprobe -i --show-depends usb-storage >> /tmp/modules-plain 2>/dev/null
-	modprobe -i --show-depends usblp >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends usbhid >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends usb-storage >> /tmp/modules-plain 2>/dev/null
+	modprobe -i --set-version=$KERNEL_VERSION --show-depends usblp >> /tmp/modules-plain 2>/dev/null
 fi
 sort -u /tmp/modules-plain >> /tmp/modules-stripped
 
@@ -208,6 +216,14 @@ showlist() {
 	echo ""
 }
 
+showlist2() {
+	cat=$1 ; shift
+	[ $# -gt 0 ] || return
+	echo -n "$cat="
+	for i in $*; do echo -n "$i "; done
+	echo ""
+}
+
 # starting different actions
 while [ $# -gt 0 ]; do
 	case $1 in
@@ -261,11 +277,12 @@ while [ $# -gt 0 ]; do
 		--scsi) showlist "HOSTCONTROLLER_SCSI" `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` ;;
 		--sata) showlist "HOSTCONTROLLER_SATA" `listmods ata eata libata` ;;
 		--usb)  showlist "HOSTCONTROLLER_USB"  `listmods usb/host` "" ;;
+		--modules) showlist2 "MODULES" \(`listmods modules/`\)
 	esac
 	shift
 done
 
 # cleanup
-rm /tmp/{modules-plain,modules-sorted,modules-stripped,moduleslist,modprobe,modules}
+rm /tmp/{modules-plain,modules-sorted,modules-stripped,moduleslist}
 
 # vim: set ts=2 sw=2 nowrap:
