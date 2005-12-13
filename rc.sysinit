@@ -223,7 +223,7 @@ if [ "$LOCALE" != "" ]; then
 		stat_busy "Setting Consoles to UTF-8"
 		/usr/bin/kbd_mode -u
 		/usr/bin/dumpkeys | /bin/loadkeys --unicode
-		echo ' echo -ne "\033%G"'>>/etc/profile.d/locale.sh
+		echo ' echo -ne "\e%G"'>>/etc/profile.d/locale.sh
 		stat_done
 	fi
 else
@@ -234,10 +234,11 @@ if [ "$CONSOLEFONT" != "" ]; then
 	stat_busy "Loading Console Font: $CONSOLEFONT"
 	for i in `seq 1 12`; do 
 		if [ "$CONSOLEMAP" != "" ]; then
-			/usr/bin/setfont -m $CONSOLEMAP $CONSOLEFONT -C /dev/vc/${i}; 
+			/usr/bin/setfont -m $CONSOLEMAP $CONSOLEFONT -C /dev/vc/${i}
 		else
-			/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}; 
+			/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}
 		fi
+		echo -ne "\e(K" >/dev/vc/${i}
 	done
 	stat_done
 fi
