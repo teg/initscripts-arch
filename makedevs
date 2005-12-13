@@ -92,7 +92,7 @@ for CLASS in $CLASSES; do
 			mksubdevs sdh b 1 12 8 113
 			;;
 		fd)
-			mksubdevs fd b 1 4 2 0
+			mksubdevs fd b 0 3 2 0
 			;;
 		tty)
 			mksubdevs tty c 0 63 4 0
