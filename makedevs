@@ -60,20 +60,36 @@ for CLASS in $CLASSES; do
 			mknod hdb b 3 64
 			mknod hdc b 22 0
 			mknod hdd b 22 64
+			mknod hde b 33 0
+			mknod hdf b 33 64
+			mknod hdg b 34 0
+			mknod hdh b 34 64
 			mksubdevs hda b 1 12 3 1
 			mksubdevs hdb b 1 12 3 65
 			mksubdevs hdc b 1 12 22 1
 			mksubdevs hdd b 1 12 22 65
+			mksubdevs hde b 1 12 33 1
+			mksubdevs hdf b 1 12 33 65
+			mksubdevs hdg b 1 12 34 1
+			mksubdevs hdh b 1 12 34 65
 			;;
 		scsi)
 			mknod sda b 8 0
 			mknod sdb b 8 16
 			mknod sdc b 8 32
 			mknod sdd b 8 48
+			mknod sde b 8 64
+			mknod sdf b 8 80
+			mknod sdg b 8 96
+			mknod sdh b 8 112
 			mksubdevs sda b 1 12 8 1
 			mksubdevs sdb b 1 12 8 17
 			mksubdevs sdc b 1 12 8 33
 			mksubdevs sdd b 1 12 8 49
+			mksubdevs sde b 1 12 8 65
+			mksubdevs sdf b 1 12 8 81
+			mksubdevs sdg b 1 12 8 97
+			mksubdevs sdh b 1 12 8 113
 			;;
 		fd)
 			mksubdevs fd b 1 4 2 0
