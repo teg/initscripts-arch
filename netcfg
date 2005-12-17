@@ -52,7 +52,13 @@ stop_profile()
 	[ "$USEWPA" = "yes" -o "$USEWPA" = "YES" ] && wpa_cli terminate >/dev/null 2>&1
 
 	# bring down dhcpcd if we're using it
-	[ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ] && kill `cat /etc/dhcpc/dhcpcd-${INTERFACE}.pid`
+	if [ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ]; then
+		# if the dhcp client received an unlimited lease then it just exits,
+		# so check for .pid file before trying to kill it.
+		if [ -f /etc/dhcpc/dhcpcd-${INTERFACE}.pid ]; then
+			kill `cat /etc/dhcpc/dhcpcd-${INTERFACE}.pid`
+		fi
+	fi
 
 	# bring down the interface itself
 	ifconfig $INTERFACE down

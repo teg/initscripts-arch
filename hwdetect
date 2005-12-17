@@ -37,9 +37,11 @@ usage () {
 	exit 1
 }
 
-[ "$1" == "" ] && usage
+[ "$1" == "" ]       && usage
+[ "$1" == "--help" ] && usage
+[ "$1" == "-h" ]     && usage
 
-#setting kernel version
+# setting kernel version
 case $1 in
 	--kernel_version=*)
 	KERNEL_VERSION="`echo $1 | awk -F= '{print $2;}'`"
@@ -131,7 +133,7 @@ if [ "`grep 'ohci1394' /tmp/modules-plain`" ]; then
 fi
 
 # Modem devices
-case $i in (Intel536|Intel537|ltmodem|ltserial|slarm|slusb) \ 
+case $i in (Intel536|Intel537|ltmodem|ltserial|slamr|slusb) \ 
 	grep "$i" /tmp/modules-plain && modprobe -i --set-version=$KERNEL_VERSION --show-depends ppp-generic >> /tmp/modules-plain 2>/dev/null ;; \
 	esac
 
