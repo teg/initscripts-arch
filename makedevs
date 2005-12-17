@@ -90,7 +90,9 @@ for CLASS in $CLASSES; do
 			mksubdevs sdf b 1 12  8  81
 			mksubdevs sdg b 1 12  8  97
 			mksubdevs sdh b 1 12  8 113
+			# SCSI CD-ROMs
 			mksubdevs scd b 0  3 11   0
+			mksubdevs sr  b 0  3 11   0
 			;;
 		fd)
 			mksubdevs fd b 0 3 2 0
