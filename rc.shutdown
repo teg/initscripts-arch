@@ -13,6 +13,10 @@ echo " "
 printhl "Initiating Shutdown..."
 echo " "
 
+if [ -x /etc/rc.local.shutdown ]; then
+	/etc/rc.local.shutdown
+fi
+
 if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	# Shutdown daemons
 	let i=${#DAEMONS[@]}
