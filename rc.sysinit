@@ -254,10 +254,6 @@ if ! [ "$load_modules" = "off" ]; then
 				/sbin/modprobe $mod
 			fi
 		done
-		if [ "$MOD_AUTOLOAD" = "yes" -o "$MOD_AUTOLOAD" = "YES" ]; then
-			export BLACKLIST="${MOD_BLACKLIST[*]}"
-			/sbin/hwdetect --load-modules
-		fi
 		stat_done
 	fi
 fi
