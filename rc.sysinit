@@ -173,6 +173,12 @@ if [ "$TIMEZONE" != "" ]; then
 fi
 stat_done
 
+if [ -f /var/run/random-seed ]; then
+	stat_busy "Initializing Random Seed"
+	/bin/cat /var/run/random-seed >/dev/urandom
+	stat_done
+fi
+
 stat_busy "Removing Leftover Files"
 /bin/rm -f /etc/nologin &>/dev/null
 /bin/rm -f /etc/shutdownpid &>/dev/null
@@ -199,12 +205,6 @@ if [ "$NISDOMAINNAME" != "" ]; then
 fi
 
 status "Updating Module Dependencies" /sbin/depmod -A
-
-if [ -f /var/run/random-seed ]; then
-	stat_busy "Initializing Random Seed"
-	/bin/cat /var/run/random-seed >/dev/urandom
-	stat_done
-fi
 
 if [ "$KEYMAP" != "" ]; then
 	status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
