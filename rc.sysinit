@@ -236,8 +236,8 @@ if [ "$CONSOLEFONT" != "" ]; then
 		else
 			/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}
 		fi
-		echo 'echo -ne "\e(K"' >>/etc/profile.d/locale.sh
 	done
+	echo 'echo -ne "\e(K"' >>/etc/profile.d/locale.sh
 	stat_done
 fi
 
