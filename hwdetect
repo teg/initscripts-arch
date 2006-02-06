@@ -246,8 +246,8 @@ while [ $# -gt 0 ]; do
 		--show-modules)
 			showlist "AGP    " `listmods agp/`
 			showlist "IDE    " `listmods ide/`
-			showlist "SCSI   " `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` 
-			showlist "SATA   " `listmods ata eata`
+			showlist "SCSI   " `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` `listmods drivers/block/ nbd pktcdvd sx8`
+			showlist "SATA   " `listmods ata eata` `listmods drivers/block/sx8`
 			showlist "USB    " `listmods usb/`
 			showlist "FW     " `listmods ieee1394/`
 			showlist "NET    " `listmods net/`
@@ -264,8 +264,8 @@ while [ $# -gt 0 ]; do
 
 		--show-agp)    showlist "AGP    " `listmods agp/` ;;
 		--show-ide)    showlist "IDE    " `listmods ide/` ;;
-		--show-scsi)   showlist "SCSI   " `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` ;;
-		--show-sata)   showlist "SATA   " `listmods ata eata` ;;
+		--show-scsi)   showlist "SCSI   " `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` `listmods drivers/block/ nbd pktcdvd sx8`;;
+		--show-sata)   showlist "SATA   " `listmods ata eata` `listmods drivers/block/sx8` ;;
 		--show-usb)    showlist "USB    " `listmods usb/` ;;
 		--show-fw)     showlist "FW     " `listmods ieee1394/` ;;
 		--show-net)    showlist "NET    " `listmods net/` ;;
@@ -276,8 +276,8 @@ while [ $# -gt 0 ]; do
 		--show-other)  showlist "OTHER  " `listmods .ko agp/ ide/ scsi/ sata usb/ ieee1394 net/ isdn/ pcmcia/ sound/ video` ;;
 
 		--ide)  showlist "HOSTCONTROLLER_IDE"  `listmods ide/pci` ;;
-		--scsi) showlist "HOSTCONTROLLER_SCSI" `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` ;;
-		--sata) showlist "HOSTCONTROLLER_SATA" `listmods ata eata libata` ;;
+		--scsi) showlist "HOSTCONTROLLER_SCSI" `listmods scsi/ sata ata_piix libata` `listmods message/fusion/` `listmods drivers/block/ nbd pktcdvd sx8`;;
+		--sata) showlist "HOSTCONTROLLER_SATA" `listmods ata eata libata` `listmods drivers/block/sx8` ;;
 		--usb)  showlist "HOSTCONTROLLER_USB"  `listmods usb/host` "" ;;
 		--modules) showlist2 "MODULES" \(`listmods modules/`\)
 	esac
