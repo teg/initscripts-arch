@@ -110,8 +110,6 @@ if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	fi
 fi
 
-status "Activating Swap" /sbin/swapon -a
-
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
@@ -158,6 +156,8 @@ umount /proc && mount -t proc none /proc
 # now mount all the local filesystems
 /bin/mount -a -t nonfs,nosmbfs,nocifs,noncpfs,nosysfs,nousbfs
 stat_done
+
+status "Activating Swap" /sbin/swapon -a
 
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
