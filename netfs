@@ -4,34 +4,33 @@
 . /etc/rc.d/functions
 
 case "$1" in
-  start)
-    stat_busy "Mounting Network Filesystems"
-    /bin/mount -a -t nfs,smbfs,codafs,cifs
-    if [ $? -gt 0 ]; then
-      stat_fail
-    else
-      add_daemon netfs
-      stat_done
-    fi
-    ;;
-  stop)
-    stat_busy "Unmounting network filesystems"
-    [ ! -z "$PID" ]  && kill $PID &> /dev/null
-      umount -a -t nfs,smbfs,codafs,cifs
-    if [ $? -gt 0 ]; then
-      stat_fail
-    else
-      rm_daemon netfs
-      stat_done
-    fi
-    ;;
-  restart)
-    $0 stop
-    sleep 1
-    $0 start
-    ;;
-  *)
-    echo "usage: $0 {start|stop|restart}"  
+	start)
+		stat_busy "Mounting Network Filesystems"
+		/bin/mount -a -t nfs,smbfs,codafs,cifs
+		if [ $? -gt 0 ]; then
+			stat_fail
+		else
+			add_daemon netfs
+			stat_done
+		fi
+		;;
+	stop)
+		stat_busy "Unmounting network filesystems"
+		umount -a -t nfs,smbfs,codafs,cifs
+		if [ $? -gt 0 ]; then
+			stat_fail
+		else
+			rm_daemon netfs
+			stat_done
+		fi
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	*)
+		echo "usage: $0 {start|stop|restart}"  
 esac
 
 # vim: set ts=2 noet:
