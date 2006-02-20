@@ -250,7 +250,7 @@ if [ "$CONSOLEFONT" != "" ]; then
 			/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}
 		fi
 	done
-	echo 'echo -ne "\e(K"' >>/etc/profile.d/locale.sh
+	echo 'if [ "$TERM" = "linux" ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
 	stat_done
 fi
 
