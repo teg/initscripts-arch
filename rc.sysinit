@@ -23,6 +23,18 @@ printsep
 mount -n -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && mount -n -t sysfs none /sys
 
+if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
+	# Looks like devfs is running, use it
+	status "Starting DevFS Daemon" /sbin/devfsd /dev
+	
+elif [ -x /etc/start_udev -a -d /sys/block ]; then
+	# We have a start_udev script and /sys appears to be mounted, use UDev
+	status "Starting UDev Daemon" /etc/start_udev init
+else
+	# Static /dev, our last resort
+	status "Using static /dev filesystem" /bin/true
+fi
+
 # Load modules from the MODULES array defined in rc.conf
 if ! [ "$load_modules" = "off" ]; then 
 	if [ -f /proc/modules ]; then
@@ -36,15 +48,9 @@ if ! [ "$load_modules" = "off" ]; then
 	fi
 fi
 
-if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
-	# Looks like devfs is running, use it
-	status "Starting DevFS Daemon" /sbin/devfsd /dev
-elif [ -x /etc/start_udev -a -d /sys/block ]; then
-	# We have a start_udev script and /sys appears to be mounted, use UDev
-	status "Starting UDev Daemon" /etc/start_udev
-else
-	# Static /dev, our last resort
-	status "Using static /dev filesystem" /bin/true
+# run udev uevents
+if [ "`pidof -o %PPID /sbin/udevd`" ]; then
+	status "Loading UDev uevents" /etc/start_udev uevents
 fi
 
 # If using an encrypted root fs, we should find the root dev in the initrd
