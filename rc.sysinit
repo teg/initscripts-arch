@@ -223,7 +223,7 @@ if [ "$NISDOMAINNAME" != "" ]; then
 	status "Setting NIS Domain Name: $NISDOMAINNAME" /bin/nisdomainname $NISDOMAINNAME
 fi
 
-# status "Updating Module Dependencies" /sbin/depmod -A
+status "Updating Module Dependencies" /sbin/depmod -A
 
 if [ "$KEYMAP" != "" ]; then
 	status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
