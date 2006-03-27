@@ -40,6 +40,12 @@ if [ "$PREVLEVEL" != "N" ]; then
 	elif [ -x /etc/start_udev -a -d /sys/block ]; then
 		# We have a start_udev script and /sys appears to be mounted, use UDev
 		status "Starting UDev Daemon" /etc/start_udev          
+		if [ "`pidof -o %PPID /sbin/udevd`" ]; then
+			# If an old udevd is kicking around, we'll have to remount pts and shm
+			umount /dev/shm /dev/pts >/dev/null 2>&1
+			mount /dev/pts
+			mount /dev/shm
+		fi
 	else                                                           
 		# Static /dev, our last resort
 		status "Using static /dev filesystem" /bin/true
