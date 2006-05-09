@@ -7,7 +7,7 @@
 . /etc/rc.d/functions
 
 echo " "
-printhl "Arch Linux v0.7.1 $C_OTHER(${C_H2}Noodle$C_OTHER)\n"
+printhl "Arch Linux v0.7.2 $C_OTHER(${C_H2}Gimmick$C_OTHER)\n"
 printhl "${C_H2}http://www.archlinux.org"
 printhl "Copyright 2002-2006 Judd Vinet"
 printhl "Distributed under the GNU General Public License (GPL)"
@@ -243,7 +243,7 @@ if [ "$LOCALE" != "" ]; then
 		stat_busy "Setting Consoles to UTF-8"
 		/usr/bin/kbd_mode -u
 		/usr/bin/dumpkeys | /bin/loadkeys --unicode
-		echo 'if [ "$TERM" = "linux" ]; then echo -ne "\e%G"; fi' >>/etc/profile.d/locale.sh
+		echo 'if [ "$TERM" = "linux" -a isatty ]; then echo -ne "\e%G"; fi' >>/etc/profile.d/locale.sh
 		stat_done
 	fi
 fi
@@ -256,7 +256,7 @@ if [ "$CONSOLEFONT" != "" ]; then
 			/usr/bin/setfont $CONSOLEFONT -C /dev/vc/${i}
 		fi
 	done
-	echo 'if [ "$TERM" = "linux" ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
+	echo 'if [ "$TERM" = "linux" -a isatty ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
 	stat_done
 fi
 
