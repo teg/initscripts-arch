@@ -69,11 +69,7 @@ stat_busy "Unmounting Filesystems"
 stat_done
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
-	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
-		stat_busy "Deactivating LVM1 groups"
-		/sbin/vgchange -a n
-		stat_done
-	elif [ -d /etc/lvm -a -x /sbin/lvm ]; then
+	if [ -d /etc/lvm -a -x /sbin/lvm ]; then
 		/bin/mount -n -t sysfs none /sys 2>/dev/null
 		if [ -d /sys/block ]; then
 			stat_busy "Deactivating LVM2 groups"

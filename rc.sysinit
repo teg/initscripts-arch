@@ -22,12 +22,8 @@ printsep
 # mount /proc and /sys
 mount -n -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && mount -n -t sysfs none /sys
-
-if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
-	# Looks like devfs is running, use it
-	status "Starting DevFS Daemon" /sbin/devfsd /dev
 	
-elif [ -x /etc/start_udev -a -d /sys/block ]; then
+if [ -x /etc/start_udev -a -d /sys/block ]; then
 	# We have a start_udev script and /sys appears to be mounted, use UDev
 	status "Starting UDev Daemon" /etc/start_udev init
 else
@@ -259,10 +255,6 @@ if [ "$CONSOLEFONT" != "" ]; then
 	echo 'if [ "$TERM" = "linux" -a isatty ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
 	stat_done
 fi
-
-# Load USB support
-/sbin/modprobe usbcore >/dev/null 2>&1
-[ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
 
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
