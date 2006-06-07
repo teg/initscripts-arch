@@ -111,12 +111,7 @@ if [ -f /etc/crypttab ]; then
 fi
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
-	if [ -f /etc/lvmtab -a -x /sbin/vgchange ]; then
-		# Kernel 2.4.x, LVM1 groups
-		stat_busy "Activating LVM1 groups"
-		/sbin/vgchange -a y
-		stat_done
-	elif [ -x /sbin/lvm -a -d /sys/block ]; then
+	if [ -x /sbin/lvm -a -d /sys/block ]; then
 		# Kernel 2.6.x, LVM2 groups
 		stat_busy "Activating LVM2 groups"
 		/sbin/lvm vgscan --ignorelockingfailure --mknodes

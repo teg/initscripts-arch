@@ -34,10 +34,7 @@ if [ "$PREVLEVEL" != "N" ]; then
 	/bin/sleep 1
 	stat_done
 
-	if [ -e /dev/.devfsd -a -x /sbin/devfsd ]; then
-		# Looks like devfs is running, use it
-		status "Starting DevFS Daemon" /sbin/devfsd /dev
-	elif [ -x /etc/start_udev -a -d /sys/block ]; then
+	if [ -x /etc/start_udev -a -d /sys/block ]; then
 		# We have a start_udev script and /sys appears to be mounted, use UDev
 		status "Starting UDev Daemon" /etc/start_udev          
 		if [ "`pidof -o %PPID /sbin/udevd`" ]; then
