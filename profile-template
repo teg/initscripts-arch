@@ -27,9 +27,10 @@ DNS2=
 
 #WIFI_WAIT=5            # seconds to wait for the wireless card to
                         # associate before bringing the interface up
-
 #USEWPA="yes"           # start wpa_supplicant with the profile
 #WPAOPTS=""             # use "" for normal operation or specify additional
                         # options (eg, "-D ipw")
                         # see /etc/wpa_supplicant.conf for configuration
+#AUTOWPA="yes"          # automatically configure WPA
+#PASSKEY=""             # wpa passkey/phrase. for use with AUTOWPA
 

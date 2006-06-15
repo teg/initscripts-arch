@@ -107,6 +107,7 @@ start_profile()
 
 	# Configure wireless settings, if necessary
 	[ "$WIFI_INTERFACE" ] || WIFI_INTERFACE=$INTERFACE
+	
 	if [ "$IWOPTS" ]; then
 		iwconfig $WIFI_INTERFACE $IWOPTS
 		[ $? -ne 0 ] && stat_fail && return
@@ -116,8 +117,21 @@ start_profile()
 	# Start wpa_supplicant, if necessary
 	if [ "$USEWPA" = "yes" -o "$USEWPA" = "YES" ]; then
 		ifconfig $WIFI_INTERFACE up
-		wpa_supplicant -wB -i $WIFI_INTERFACE -c /etc/wpa_supplicant.conf $WPAOPTS
-		# I don´t know how we could determine if wpa_supplicant is ready...
+	  
+		WPA_CONF="/etc/wpa_supplicant.conf"	
+		if [ "$AUTOWPA" = "yes" -o "$AUTOWPA" = "YES" ]; then
+			WPA_CONF=`mktemp /tmp/wpa.XXXXXXXX`
+			# file will contain PSK, limit reading
+			chmod 600 $WPA_CONF
+			echo "ctrl_interface=/var/run/wpa_supplicant" > $WPA_CONF
+			wpa_passphrase $ESSID "$PASSKEY" >> $WPA_CONF	
+  		[ $? -ne 0 ] && cat $WPA_CONF && stat_fail && return
+		fi
+			
+		[ "$WPA_OPTS" ] || WPA_OPTS="-Dwext"
+		wpa_supplicant -wB -i ${WIFI_INTERFACE} -c ${WPA_CONF} $WPA_OPTS 
+		
+	  # I don´t know how we could determine if wpa_supplicant is ready	
 		sleep 2
 		let i=0
 		while ! wpa_cli status | grep "wpa_state=COMPLETED" >/dev/null 2>&1; do
