@@ -57,12 +57,13 @@ fi
 
 # If necessary, find md devices and manually assemble RAID arrays
 if [ -f /etc/mdadm.conf -a "`grep ^ARRAY /etc/mdadm.conf 2>/dev/null`" ]; then
-	if [ -d /initrd/dev ]; then
-		# udev won't create these md nodes, so we steal them from the initrd
-		for i in `grep ^ARRAY /etc/mdadm.conf | awk '{print $2}'`; do
-			cp -a /initrd/$i /dev/
-		done
-	fi
+	# udev won't create these md nodes, so we do it ourselves
+	for dev in `grep ^ARRAY /etc/mdadm.conf | awk '{print $2}'`; do
+		path=`echo $dev | sed 's|/[^/]*$||'`
+		node=`echo $dev | sed "s|^$path/||"`
+		minor=`echo $node | sed 's|^[^0-9]*||'`
+		[ ! -f $path/$node ] && /bin/mknod $path/$node b 9 $minor
+	done
 	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
 fi
 
