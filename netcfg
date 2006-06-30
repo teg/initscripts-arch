@@ -222,18 +222,20 @@ menu()
 
 	if [ "$TIMEOUT" != "" ]; then
 		dialog \
+			--output-fd 1 \
 			--timeout $TIMEOUT \
 			--default-item $DEFAULT \
 			--menu "Select the network profile you wish to use\n\n            (timeout in $TIMEOUT seconds)" \
 			13 50 6 \
-			"${profiles[@]}" 2>$ANSWER
+			"${profiles[@]}" >$ANSWER
 		ret=$?
 	else
 		dialog \
+			--output-fd 1 \
 			--default-item $DEFAULT \
 			--menu "Select the network profile you wish to use" \
 			13 50 6 \
-			"${profiles[@]}" 2>$ANSWER
+			"${profiles[@]}" >$ANSWER
 		ret=$?
 	fi
 
