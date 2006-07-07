@@ -23,6 +23,10 @@ printsep
 mount -n -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && mount -n -t sysfs none /sys
 	
+# mount usbfs  
+/sbin/modprobe usbcore >/dev/null 2>&1   
+[ "`grep usbfs /proc/filesystems`" ] && mount -n -t usbfs none /proc/bus/usb
+
 if [ -x /etc/start_udev -a -d /sys/block ]; then
 	# We have a start_udev script and /sys appears to be mounted, use UDev
 	status "Starting UDev Daemon" /etc/start_udev init
@@ -161,9 +165,11 @@ stat_busy "Mounting Local Filesystems"
 /bin/rm -f /etc/mtab*
 # make sure / gets written to /etc/mtab
 /bin/mount -o remount,rw /
-# re-mount /proc and /sys so they can be written to /etc/mtab
+# re-mount /proc , /sys  and usbfs so they can be written to /etc/mtab
+umount /proc/bus/usb
 umount /proc && mount -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && umount /sys && mount -t sysfs none /sys
+[ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
 # now mount all the local filesystems
 /bin/mount -a -t nonfs,nosmbfs,nocifs,noncpfs,nosysfs,nousbfs
 stat_done
