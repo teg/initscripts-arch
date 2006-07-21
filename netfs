@@ -6,7 +6,7 @@
 case "$1" in
 	start)
 		stat_busy "Mounting Network Filesystems"
-		/bin/mount -a -t nfs,smbfs,codafs,cifs
+		/bin/mount -a -t nfs,smbfs,codafs,cifs,shfs,fuse
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else
@@ -16,7 +16,7 @@ case "$1" in
 		;;
 	stop)
 		stat_busy "Unmounting network filesystems"
-		umount -a -t nfs,smbfs,codafs,cifs
+		umount -a -t nfs,smbfs,codafs,cifs,shfs,fuse
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else

@@ -128,8 +128,8 @@ start_profile()
   		[ $? -ne 0 ] && cat $WPA_CONF && stat_fail && return
 		fi
 			
-		[ "$WPA_OPTS" ] || WPA_OPTS="-Dwext"
-		wpa_supplicant -wB -i ${WIFI_INTERFACE} -c ${WPA_CONF} $WPA_OPTS 
+		[ "$WPAOPTS" ] || WPAOPTS="-Dwext"
+		wpa_supplicant -wB -i ${WIFI_INTERFACE} -c ${WPA_CONF} $WPAOPTS 
 		
 	  # I don´t know how we could determine if wpa_supplicant is ready	
 		sleep 2

@@ -89,7 +89,8 @@ if [ -f /etc/crypttab ]; then
 		line=`echo $line | awk '{print $0}'`
 		cname=`echo $line | cut -d' ' -f1`
 		csrc=`echo $line | cut -d' ' -f2`
-		cpass=`echo $line | cut -d' ' -f3-`
+		cpass=`echo $line | cut -d' ' -f3`
+		copts=`echo $line | cut -d' ' -f4-`
 		[ "$cpass" = "" ] && continue
 
 		action=create
@@ -101,15 +102,15 @@ if [ -f /etc/crypttab ]; then
 			# For some fun reason, the parameter ordering varies for
 			# LUKS and non-LUKS devices.  Joy.
 			if `$CS isLuks $csrc 2>/dev/null`; then
-				echo "$cpass2" | $CS luksOpen $csrc $cname >/dev/null
+				echo "$cpass2" | $CS $copts luksOpen $csrc $cname >/dev/null
 			else
-				echo "$cpass2" | $CS create $cname $csrc >/dev/null
+				echo "$cpass2" | $CS $copts create $cname $csrc >/dev/null
 			fi
 		else
 			if `$CS isLuks $csrc 2>/dev/null`; then
-				$CS -d $cpass luksOpen $csrc $cname >/dev/null
+				$CS -d $cpass $copts luksOpen $csrc $cname >/dev/null
 			else
-				$CS -d $cpass create $cname $csrc >/dev/null
+				$CS -d $cpass $copts create $cname $csrc >/dev/null
 			fi
 		fi
 	done </etc/crypttab
@@ -129,13 +130,14 @@ status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
+NETFS="nonfs,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse"
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
 	if [ "`cat /proc/cmdline | grep quiet`" ]; then
-		/sbin/fsck -A -T -C -a $FORCEFSCK >/dev/null 2>&1
+		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >/dev/null 2>&1
 	else
-		/sbin/fsck -A -T -C -a $FORCEFSCK
+		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK
 	fi
 	if [ $? -gt 1 ]; then
 		stat_fail
@@ -171,16 +173,16 @@ umount /proc && mount -t proc none /proc
 [ "`grep sysfs /proc/filesystems`" ] && umount /sys && mount -t sysfs none /sys
 [ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
 # now mount all the local filesystems
-/bin/mount -a -t nonfs,nosmbfs,nocifs,noncpfs,nosysfs,nousbfs
+/bin/mount -a -t $NETFS
 stat_done
 
 status "Activating Swap" /sbin/swapon -a
 
 stat_busy "Configuring System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
-	/sbin/hwclock --utc --hctosys
+	/sbin/hwclock --directisa --utc --hctosys
 else
-	/sbin/hwclock --localtime --hctosys
+	/sbin/hwclock --directisa --localtime --hctosys
 fi
 if [ ! -f /var/lib/hwclock/adjtime ]; then
 	echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
