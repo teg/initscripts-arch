@@ -15,7 +15,7 @@ case "$1" in
 		fi
 		;;
 	stop)
-		stat_busy "Unmounting network filesystems"
+		stat_busy "Unmounting Network Filesystems"
 		umount -a -t nfs,smbfs,codafs,cifs,shfs,fuse
 		if [ $? -gt 0 ]; then
 			stat_fail

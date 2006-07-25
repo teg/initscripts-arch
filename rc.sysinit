@@ -233,20 +233,20 @@ fi
 : >/etc/profile.d/locale.sh
 chmod 755 /etc/profile.d/locale.sh
 # Set user defined locale
-if [ "$LOCALE" != "" ]; then
-	stat_busy "Setting Locale: $LOCALE"
-	echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
-	stat_done
+[ "$LOCALE" != "" ] || LOCALE="en_US"
+stat_busy "Setting Locale: $LOCALE"
+echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
+stat_done
 
 #	If locale is *.utf set console to Unicode mode
-	if [ "`echo $LOCALE | /bin/grep -i utf`" ]; then
-		stat_busy "Setting Consoles to UTF-8"
-		/usr/bin/kbd_mode -u
-		/usr/bin/dumpkeys | /bin/loadkeys --unicode
-		echo 'if [ "$TERM" = "linux" -a isatty ]; then echo -ne "\e%G"; fi' >>/etc/profile.d/locale.sh
-		stat_done
-	fi
+if [ "`echo $LOCALE | /bin/grep -i utf`" ]; then
+	stat_busy "Setting Consoles to UTF-8"
+	/usr/bin/kbd_mode -u
+	/usr/bin/dumpkeys | /bin/loadkeys --unicode
+	echo 'if [ "$TERM" = "linux" -a isatty ]; then echo -ne "\e%G"; fi' >>/etc/profile.d/locale.sh
+	stat_done
 fi
+
 if [ "$CONSOLEFONT" != "" ]; then
 	stat_busy "Loading Console Font: $CONSOLEFONT"
 	for i in `seq 1 12`; do 
