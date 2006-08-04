@@ -92,6 +92,8 @@ if [ "$RUNLEVEL" = "0" ]; then
 else
 	printsep
 	printhl "${C_H2}REBOOTING"
+	# adding kexec support
+	[ -x /usr/sbin/kexec ] && /usr/sbin/kexec -e > /dev/null 2>&1
 	/sbin/reboot -d -f -i
 fi
 
