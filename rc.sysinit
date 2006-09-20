@@ -259,7 +259,17 @@ if [ "$CONSOLEFONT" != "" ]; then
 	echo 'if [ "$TERM" = "linux" -a isatty ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
 	stat_done
 fi
-
+# Adding persistent network/cdrom generated rules
+if [ -f "/dev/.udev/tmp-rules--70-persistent-cd.rules" ]; then
+	stat_busy "Adding persistent cdrom udev rules"
+	/bin/cat /dev/.udev/tmp-rules--70-persistent-cd.rules >> /etc/udev/rules.d/70-persistent-cd.rules
+	stat_done
+fi
+if [ -f "/dev/.udev/tmp-rules--70-persistent-net.rules" ]; then
+	stat_busy "Adding persistent network udev rules"
+	/bin/cat /dev/.udev/tmp-rules--70-persistent-net.rules >> /etc/udev/rules.d/70-persistent-net.rules
+	stat_done
+fi
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
 
