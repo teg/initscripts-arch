@@ -51,9 +51,9 @@ stat_done
 
 stat_busy "Saving System Clock"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
-	/sbin/hwclock --utc --systohc
+	/sbin/hwclock --directisa --utc --systohc
 else
-	/sbin/hwclock --localtime --systohc
+	/sbin/hwclock --directisa --localtime --systohc
 fi
 stat_done
 
