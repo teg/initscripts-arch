@@ -57,6 +57,9 @@ else
 fi
 stat_done
 
+# removing psmouse module to fix some reboot issues on newer laptops
+modprobe -r psmouse >/dev/null 2>&1
+
 # Write to wtmp file before unmounting
 /sbin/halt -w
 
