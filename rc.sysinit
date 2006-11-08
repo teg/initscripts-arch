@@ -137,7 +137,7 @@ if [ -x /sbin/fsck ]; then
 	if [ "`cat /proc/cmdline | grep quiet`" ]; then
 		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >/dev/null 2>&1
 	else
-		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK
+		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK 2>/dev/null
 	fi
 	if [ $? -gt 1 ]; then
 		stat_fail
