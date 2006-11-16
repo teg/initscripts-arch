@@ -179,6 +179,9 @@ stat_done
 status "Activating Swap" /sbin/swapon -a
 
 stat_busy "Configuring System Clock"
+if [ "$TIMEZONE" != "" ]; then
+	/bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+fi
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	/sbin/hwclock --directisa --utc --hctosys
 else
@@ -186,9 +189,6 @@ else
 fi
 if [ ! -f /var/lib/hwclock/adjtime ]; then
 	echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
-fi
-if [ "$TIMEZONE" != "" ]; then
-	/bin/ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 fi
 stat_done
 
