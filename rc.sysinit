@@ -91,9 +91,13 @@ if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	if [ -x /sbin/lvm -a -d /sys/block ]; then
 		# Kernel 2.6.x, LVM2 groups
 		stat_busy "Activating LVM2 groups"
-		/sbin/lvm vgscan --ignorelockingfailure --mknodes
-		/sbin/lvm vgchange --ignorelockingfailure -a y
-		stat_done
+		/sbin/lvm vgscan --ignorelockingfailure --mknodes >/dev/null
+		/sbin/lvm vgchange --ignorelockingfailure -a y >/dev/null
+		if [ $? -ne 0 ]; then
+			stat_fail
+		else
+			stat_done
+		fi
 	fi
 fi
 
