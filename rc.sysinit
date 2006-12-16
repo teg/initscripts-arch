@@ -16,16 +16,22 @@ printsep
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 
-# anything more serious than KERN_WARNING goes to the console
-/bin/dmesg -n 3
-
-# mount /proc and /sys
+# mount /proc
 mount -n -t proc none /proc
-[ "`grep sysfs /proc/filesystems`" ] && mount -n -t sysfs none /sys
-	
+
+# anything more serious than KERN_WARNING goes to the console
+# 'verbose' cmdline parameter enables more messages
+if grep -qw verbose /proc/cmdline; then
+	/bin/dmesg -n 8
+else
+	/bin/dmesg -n 3
+fi
+
+# mount /sys
+grep -qw sysfs /proc/filesystems && mount -n -t sysfs none /sys
 # mount usbfs  
-/sbin/modprobe usbcore >/dev/null 2>&1   
-[ "`grep usbfs /proc/filesystems`" ] && mount -n -t usbfs none /proc/bus/usb
+/sbin/modprobe usbcore >/dev/null 2>&1
+grep -qw usbfs /proc/filesystems && mount -n -t usbfs none /proc/bus/usb
 
 if [ -x /etc/start_udev -a -d /sys/block ]; then
 	# We have a start_udev script and /sys appears to be mounted, use UDev
@@ -49,71 +55,36 @@ if ! [ "$load_modules" = "off" ]; then
 fi
 
 # run udev uevents
-if [ "`pidof -o %PPID /sbin/udevd`" ]; then
+if pidof -o %PPID /sbin/udevd >/dev/null; then
 	status "Loading UDev uevents" /etc/start_udev uevents
 fi
 
 # If using an encrypted root fs, we should find the root dev in the initrd
+# FIXME: obsoleted by initramfs and udev
 if [ -e /initrd/dev/mapper/root ]; then
 	mkdir /dev/mapper 2>/dev/null
 	cp -a /initrd/dev/mapper/root /dev/mapper/root
 fi
 
 # If necessary, find md devices and manually assemble RAID arrays
-if [ -f /etc/mdadm.conf -a "`grep ^ARRAY /etc/mdadm.conf 2>/dev/null`" ]; then
+if [ -f /etc/mdadm.conf -a "$(grep ^ARRAY /etc/mdadm.conf 2>/dev/null)" ]; then
 	# udev won't create these md nodes, so we do it ourselves
-	for dev in `grep ^ARRAY /etc/mdadm.conf | awk '{print $2}'`; do
-		path=`echo $dev | sed 's|/[^/]*$||'`
-		node=`echo $dev | sed "s|^$path/||"`
-		minor=`echo $node | sed 's|^[^0-9]*||'`
+	for dev in $(grep ^ARRAY /etc/mdadm.conf | awk '{print $2}'); do
+		path=$(echo $dev | sed 's|/[^/]*$||')
+		node=$(echo $dev | sed "s|^$path/||")
+		minor=$(echo $node | sed 's|^[^0-9]*||')
 		[ ! -e $path/$node ] && /bin/mknod $path/$node b 9 $minor
 	done
 	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
 fi
 
 # Unmount and free up the old initrd if it exists
+# FIXME: obsoleted by initramfs
 if [ -f /initrd/linuxrc ]; then
 	stat_busy "Freeing memory from Initial Ramdisk"
 	umount /initrd 2>/dev/null
 	/sbin/blockdev --flushbufs /dev/rd/0 2>/dev/null
 	stat_done
-fi
-
-# Set up non-root encrypted partition mappings
-if [ -f /etc/crypttab ]; then
-	CS=/sbin/cryptsetup.static
-	while read line; do
-		[ "$line" = "" ] && continue
-		[ "`echo $line | grep ^#`" ] && continue
-		# remove redundant whitespace and split up tokens
-		line=`echo $line | awk '{print $0}'`
-		cname=`echo $line | cut -d' ' -f1`
-		csrc=`echo $line | cut -d' ' -f2`
-		cpass=`echo $line | cut -d' ' -f3`
-		copts=`echo $line | cut -d' ' -f4-`
-		[ "$cpass" = "" ] && continue
-
-		action=create
-		$CS isLuks $csrc 2>/dev/null && action=luksOpen
-
-		if [ "`echo $cpass | grep \\\"`" ]; then
-			# Trim off the quotes around the password string
-			cpass2=`echo $cpass | sed -e 's|^"||' -e 's|"$||'`
-			# For some fun reason, the parameter ordering varies for
-			# LUKS and non-LUKS devices.  Joy.
-			if `$CS isLuks $csrc 2>/dev/null`; then
-				echo "$cpass2" | $CS $copts luksOpen $csrc $cname >/dev/null
-			else
-				echo "$cpass2" | $CS $copts create $cname $csrc >/dev/null
-			fi
-		else
-			if `$CS isLuks $csrc 2>/dev/null`; then
-				$CS -d $cpass $copts luksOpen $csrc $cname >/dev/null
-			else
-				$CS -d $cpass $copts create $cname $csrc >/dev/null
-			fi
-		fi
-	done </etc/crypttab
 fi
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
@@ -126,6 +97,46 @@ if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	fi
 fi
 
+# Set up non-root encrypted partition mappings
+if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
+	stat_busy "Unlocking encrypted volumes"
+	csfailed=0
+	CS=/sbin/cryptsetup.static
+	do_crypt() {
+		if [ $# -ge 3 ]; then
+			cname="$1"
+			csrc="$2"
+			cpass="$3"
+			shift 3
+			copts="$*"
+			if [ "${cpass:0:1}" != "/" ]; then
+				# For some fun reason, the parameter ordering varies for
+				# LUKS and non-LUKS devices.  Joy.
+				if $CS isLuks $csrc 2>/dev/null; then
+					echo "$cpass" | $CS $copts luksOpen $csrc $cname >/dev/null
+				else
+					echo "$cpass" | $CS $copts create $cname $csrc >/dev/null
+				fi
+			else
+				if $CS isLuks $csrc 2>/dev/null; then
+					$CS -d $cpass $copts luksOpen $csrc $cname >/dev/null
+				else
+					$CS -d $cpass $copts create $cname $csrc >/dev/null
+				fi
+			fi
+			[ $? -ne 0 ] && csfailed=1
+		fi
+	}
+	while read line; do
+		eval do_crypt "$line"
+	done </etc/crypttab
+	if [ $csfailed -eq 0 ]; then
+		stat_done
+	else
+		stat_fail
+	fi
+fi
+
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
@@ -134,25 +145,37 @@ NETFS="nonfs,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse"
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
-	if [ "`cat /proc/cmdline | grep quiet`" ]; then
+	if grep -qw quiet /proc/cmdline; then
 		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >/dev/null 2>&1
 	else
 		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK 2>/dev/null
 	fi
-	if [ $? -gt 1 ]; then
+	fsckret=$?
+	if [ ${fsckret} -gt 1 ]; then
 		stat_fail
-		echo
-		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
-		echo "*                                                          *"
-		echo "*  Please repair manually and reboot. Note that the root   *"
-		echo "*  file system is currently mounted read-only. To remount  *"
-		echo "*  it read-write type: mount -n -o remount,rw /            *"
-		echo "*  When you exit the maintenance shell the system will     *"
-		echo "*  reboot automatically.                                   *"
-		echo "*                                                          *"
-		echo "************************************************************"
-		echo
-		/sbin/sulogin -p
+		if [ $((${fsckret}&2)) -eq 2 ]; then
+			echo
+			echo "********************** REBOOT REQUIRED *********************"
+			echo "*                                                          *"
+			echo "*  The sytem will be rebooted automatically in 15 seconds. *"
+			echo "*                                                          *"
+			echo "************************************************************"
+			echo
+			sleep 15
+		else
+			echo
+			echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+			echo "*                                                          *"
+			echo "*  Please repair manually and reboot. Note that the root   *"
+			echo "*  file system is currently mounted read-only. To remount  *"
+			echo "*  it read-write type: mount -n -o remount,rw /            *"
+			echo "*  When you exit the maintenance shell the system will     *"
+			echo "*  reboot automatically.                                   *"
+			echo "*                                                          *"
+			echo "************************************************************"
+			echo
+			/sbin/sulogin -p
+		fi
 		echo "Automatic reboot in progress..."
 		/bin/umount -a
 		/bin/mount -n -o remount,ro /
@@ -170,8 +193,15 @@ stat_busy "Mounting Local Filesystems"
 # re-mount /proc , /sys  and usbfs so they can be written to /etc/mtab
 umount /proc/bus/usb
 umount /proc && mount -t proc none /proc
-[ "`grep sysfs /proc/filesystems`" ] && umount /sys && mount -t sysfs none /sys
-[ "`grep usbfs /proc/filesystems`" ] && mount -t usbfs none /proc/bus/usb
+grep -qw sysfs /proc/filesystems && umount /sys && mount -t sysfs none /sys
+if grep -qw usbfs /proc/filesystems; then
+	# Some people use custom permissions for their usbfs
+	if grep -qw /proc/bus/usb /etc/fstab; then
+		mount /proc/bus/usb
+	else
+		mount -t usbfs none /proc/bus/usb
+	fi
+fi
 # now mount all the local filesystems
 /bin/mount -a -t $NETFS
 stat_done
@@ -239,7 +269,7 @@ echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
 stat_done
 
 #	If locale is *.utf set console to Unicode mode
-if [ "`echo $LOCALE | /bin/grep -i utf`" ]; then
+if [ "$(echo $LOCALE | /bin/grep -i utf)" ]; then
 	stat_busy "Setting Consoles to UTF-8"
 	/usr/bin/kbd_mode -u
 	/usr/bin/dumpkeys | /bin/loadkeys --unicode
@@ -250,7 +280,7 @@ fi
 
 if [ "$CONSOLEFONT" != "" ]; then
 	stat_busy "Loading Console Font: $CONSOLEFONT"
-	for i in `seq 1 12`; do 
+	for i in $(seq 1 12); do 
 		if [ "$CONSOLEMAP" != "" ]; then
 			/usr/bin/setfont -m $CONSOLEMAP $CONSOLEFONT -C /dev/vc/${i}
 		else

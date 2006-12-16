@@ -76,12 +76,27 @@ stat_busy "Unmounting Filesystems"
 /bin/umount -a
 stat_done
 
+# Kill non-root encrypted partition mappings
+if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
+	stat_busy "Deactivating encrypted volumes"
+	CS=/sbin/cryptsetup.static
+	do_uncrypt() {
+		if [ $# -ge 3 ]; then
+			$CS remove $1 >/dev/null 2>&1
+		fi
+	}
+	while read line; do
+		eval do_uncrypt "$line"
+	done </etc/crypttab
+	stat_done
+fi
+
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	if [ -d /etc/lvm -a -x /sbin/lvm ]; then
 		/bin/mount -n -t sysfs none /sys 2>/dev/null
 		if [ -d /sys/block ]; then
 			stat_busy "Deactivating LVM2 groups"
-			/sbin/lvm vgchange --ignorelockingfailure -a n
+			/sbin/lvm vgchange --ignorelockingfailure -an >/dev/null 2>&1
 			stat_done
 			umount /sys
 		fi
