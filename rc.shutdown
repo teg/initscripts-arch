@@ -78,11 +78,17 @@ stat_done
 
 # Kill non-root encrypted partition mappings
 if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
-	stat_busy "Deactivating encrypted volumes"
+	stat_busy "Deactivating encrypted volumes:"
 	CS=/sbin/cryptsetup.static
 	do_uncrypt() {
 		if [ $# -ge 3 ]; then
+			stat_append "${1}.."
 			$CS remove $1 >/dev/null 2>&1
+			if [ $? -ne 0 ]; then
+				stat_append "failed "
+			else
+				stat_append "ok "
+			fi
 		fi
 	}
 	while read line; do

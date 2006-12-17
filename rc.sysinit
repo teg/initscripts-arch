@@ -103,7 +103,7 @@ fi
 
 # Set up non-root encrypted partition mappings
 if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
-	stat_busy "Unlocking encrypted volumes"
+	stat_busy "Unlocking encrypted volumes:"
 	csfailed=0
 	CS=/sbin/cryptsetup.static
 	do_crypt() {
@@ -113,6 +113,7 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 			cpass="$3"
 			shift 3
 			copts="$*"
+			stat_append "${cname}.."
 			if [ "${cpass:0:1}" != "/" ]; then
 				# For some fun reason, the parameter ordering varies for
 				# LUKS and non-LUKS devices.  Joy.
@@ -128,7 +129,12 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 					$CS -d $cpass $copts create $cname $csrc >/dev/null
 				fi
 			fi
-			[ $? -ne 0 ] && csfailed=1
+			if [ $? -ne 0 ]; then
+				csfailed=1
+				stat_append "failed "
+			else
+				stat_append "ok "
+			fi
 		fi
 	}
 	while read line; do
@@ -142,6 +148,16 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 fi
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
+
+# Set clock early to fix some bugs with filesystem checks
+# Clock is set again later to match rc.conf
+if [ -f /etc/localtime ]; then
+	if [ "$HARDWARECLOCK" = "UTC" ]; then
+		/sbin/hwclock --directisa --utc --hctosys
+	else
+		/sbin/hwclock --directisa --localtime --hctosys
+	fi
+fi
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"

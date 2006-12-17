@@ -24,6 +24,9 @@ if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	C_CLEAR="\033[1;0m"
 fi
 
+SAVE_POSITION="\033[s"
+RESTORE_POSITION="\033[u"
+
 # prefixes:
 
 PREFIX_REG="::"
@@ -51,8 +54,15 @@ stat_bkgd() {
 
 stat_busy() {
 	echo -ne "$C_OTHER$PREFIX_REG $C_MAIN$1$C_CLEAR "
+	echo -ne "${SAVE_POSITION}"
 	deltext
 	echo -ne "   $C_OTHER[${C_BUSY}BUSY$C_OTHER]$C_CLEAR "
+}
+
+stat_append() {
+	echo -ne "${RESTORE_POSITION}"
+	echo -ne "$C_MAIN$1$C_CLEAR"
+	echo -ne "${SAVE_POSITION}"
 }
 
 stat_done() {
