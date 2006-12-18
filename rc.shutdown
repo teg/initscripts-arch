@@ -55,6 +55,10 @@ stat_busy "Saving Random Seed"
 stat_done
 
 stat_busy "Saving System Clock"
+if [ "$TIMEZONE" != "" -a -e /usr/share/zoneinfo/$TIMEZONE ]; then
+	/bin/rm -f /etc/localtime
+	/bin/cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+fi
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	/sbin/hwclock --directisa --utc --systohc
 else
