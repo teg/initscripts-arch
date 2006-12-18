@@ -36,6 +36,7 @@ usage () {
 	echo "    --raid                 add raid to HOOKS="
 	echo "    --encrypt              add encrypt to HOOKS="
 	echo "    --lvm2                 add lvm2 to HOOKS="
+	echo "    --keymap               add keymap to HOOKS="
 	echo ""
 	echo "  For /etc/rc.conf use:"
 	echo "    --net                  show network MODULES"
@@ -70,6 +71,9 @@ fi
 
 # lvm2 switch
 [ "$(echo $* | grep '\-lvm2')" ] && LVM2=1
+
+# lvm2 switch
+[ "$(echo $* | grep '\-keymap')" ] && KEYMAP=1
 
 # vmware switch
 [ "$(echo $* | grep '\-vmware')" ] && VMWARE=1
@@ -363,7 +367,9 @@ while [ $# -gt 0 ]; do
 			fi
 			# keymap, check rc.conf for KEYMAP="us"
 			if [ "$(grep '^KEYMAP="us"' /etc/rc.conf)" ]; then
+				if ! [ "${KEYMAP}" = "1" ]; then
 				START_HOOKS=$(echo $START_HOOKS | sed -e "s/keymap//g")
+				fi
 			fi
 			### TODO raid, check for presence of md devices in /dev
 			#if ! [ "$(ls /dev/md* > /dev/null 2>&1 )" ]; then
