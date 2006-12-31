@@ -37,6 +37,10 @@ usage () {
 	echo "    --encrypt              add encrypt to HOOKS="
 	echo "    --lvm2                 add lvm2 to HOOKS="
 	echo "    --keymap               add keymap to HOOKS="
+	echo "    --usb                  add usb to HOOKS="
+	echo "    --fw                   add fw to HOOKS="
+	echo "    --pcmcia               add pcmcia to HOOKS="
+	echo "    --nfs                  add net to HOOKS="
 	echo ""
 	echo "  For /etc/rc.conf use:"
 	echo "    --net                  show network MODULES"
@@ -72,8 +76,20 @@ fi
 # lvm2 switch
 [ "$(echo $* | grep '\-lvm2')" ] && LVM2=1
 
-# lvm2 switch
+# keymap switch
 [ "$(echo $* | grep '\-keymap')" ] && KEYMAP=1
+
+# usb switch
+[ "$(echo $* | grep '\-usb')" ] && USB=1
+
+# fw switch
+[ "$(echo $* | grep '\-fw')" ] && FW=1
+
+# pcmcia switch
+[ "$(echo $* | grep '\-pcmcia')" ] && PCMCIA=1
+
+# nfs switch
+[ "$(echo $* | grep '\-nfs')" ] && NFS=1
 
 # vmware switch
 [ "$(echo $* | grep '\-vmware')" ] && VMWARE=1
@@ -192,10 +208,10 @@ fi
 sort -u /tmp/modules-plain >> /tmp/modules-stripped
 
 # OTHER modules loading first for speed up!
-grep -v "ide/" /tmp/modules-stripped | grep -v "scsi/" | grep -v "ata/" | \
+grep -v "ide/" /tmp/modules-stripped | grep -v "scsi/" | grep -v "fusion/" | grep -v "block/sx8" | grep -v "message/fusion" | \
+	grep -v  "block/cciss" | grep -v "block/cpqarray" | grep -v "block/DAC960" | grep -v "ata/" | \
 	grep -v "net/" | grep -v "pcmcia/" | grep -v "usb/" | \
 	grep -v "ieee1394/" >> /tmp/modules-sorted
-
 # make a correct order for the modules, internal devices have priority!
 # only use old ide modules if boot parameter 'ide-legacy' is given
 if [ "$IDE_LEGACY" = "1" ]; then
@@ -205,7 +221,10 @@ else
 	grep "ata/ata_generic" /tmp/modules-stripped >> /tmp/modules-sorted
 fi
 grep "scsi/" /tmp/modules-stripped | grep -v "sd_mod" | grep -v "sr_mod" | grep -v "/sg.ko" | grep -v "/st.ko" >> /tmp/modules-sorted
+grep "block/" /tmp/modules-stripped | grep -v "sx8" | grep -v "nbd" | grep -v "pktcdvd" | grep -v "floppy" >> /tmp/modules-sorted
+grep "fusion/" /tmp/modules-stripped >> /tmp/modules-sorted
 grep "ata/"  /tmp/modules-stripped| grep -v "pata" | grep -v "ata_generic" | grep -v "libata" >> /tmp/modules-sorted
+grep "block/" /tmp/modules-stripped | grep "sx8" >> /tmp/modules-sorted
 grep "net/" /tmp/modules-stripped | grep -v "wireless/" | grep -v "usb/" >> /tmp/modules-sorted
 grep "wireless/" /tmp/modules-stripped >> /tmp/modules-sorted
 grep "pcmcia/" /tmp/modules-stripped >> /tmp/modules-sorted
@@ -311,7 +330,7 @@ while [ $# -gt 0 ]; do
 			showlist "PCMCIA " `listmods pcmcia/`
 			showlist "SOUND  " `listmods sound/`
 			showlist "VIDEO  " `listmods video/`
-			showlist "OTHER  " `listmods modules/ agp/ ide/ scsi/ ata/ usb/ ieee1394 net/ isdn/ input/ irda/ pcmcia/ sound/ video/ `
+			showlist "OTHER  " `listmods modules/ agp/ ide/ scsi/ message/fusion block/sx8 block/cciss block/cpqarray block/DAC960 ata/ usb/ ieee1394 net/ isdn/ input/ irda/ pcmcia/ sound/ video/ `
 			;;
 
 		--show-modules-order)
@@ -332,7 +351,7 @@ while [ $# -gt 0 ]; do
 		--show-pcmcia) showlist "PCMCIA " `listmods pcmcia/` ;;
 		--show-sound)  showlist "SOUND  " `listmods sound/` ;;
 		--show-video)  showlist "VIDEO  " `listmods video/` ;;
-		--show-other)  showlist "OTHER  " `listmods .ko agp/ ide/ scsi/ ata/ usb/ ieee1394 net/ isdn/ input/ irda/ pcmcia/ sound/ video` ;;
+		--show-other)  showlist "OTHER  " `listmods .ko agp/ ide/ scsi/ message/fusion block/sx8 block/cciss block/cpqarray block/DAC960 ata/ usb/ ieee1394 net/ isdn/ input/ irda/ pcmcia/ sound/ video` ;;
 		--hostcontroller)  showlist2 "MODULES" \"`listmods ide/pci` `listmods ata/pata` `listmods ata/ata_generic` `listmods scsi/ /sg.ko /st.ko sr_mod sd_mod` `listmods message/fusion/` `listmods drivers/block/  nbd pktcdvd sx8 floppy` `listmods ata/ pata ata_generic` `listmods drivers/block/sx8`\" | sed -e 's/"\ /"/g' -e 's/\ "/"/g' -e 's/\ \ /\ /g'
 				;;
                 --net)  if [ "$(showlist2 "MODULES"  \(`listmods drivers/net/ irda ppp_generic slhc` `listmods drivers/usb/net/`\) | sed -e 's/(\ /(/g' -e 's/\ )/)/g' -e 's/\ \ /\ /g' | grep '8139cp')" ] ; then
@@ -348,7 +367,7 @@ while [ $# -gt 0 ]; do
 		--modules) showlist2 "MODULES" \(`listmods modules/`\) | sed -e 's/(\  /(/g' -e 's/\ )/)/g' -e 's/\ \ /\ /g'
 			 ;;
 		--hooks) 
-			START_HOOKS="base udev autodetect ide pata scsi sata raid usbinput keymap encrypt lvm2 filesystems"
+			START_HOOKS="base udev autodetect ide pata scsi sata usb fw pcmcia net raid usbinput keymap encrypt lvm2 filesystems"
 			# remove the ones that don't exist on the system
 			for i in ${START_HOOKS}; do
 				if ! [ -e "/lib/initcpio/install/$i" ]; then 
@@ -388,6 +407,18 @@ while [ $# -gt 0 ]; do
 			fi
 			if ! [ "$LVM2" = "1" ]; then
 				START_HOOKS=$(echo $START_HOOKS | sed -e "s/lvm2//g")
+			fi
+			if ! [ "$USB" = "1" ]; then
+				START_HOOKS=$(echo $START_HOOKS | sed -e "s/usb//g")
+			fi
+			if ! [ "$FW" = "1" ]; then
+				START_HOOKS=$(echo $START_HOOKS | sed -e "s/fw//g")
+			fi
+			if ! [ "$PCMCIA" = "1" ]; then
+				START_HOOKS=$(echo $START_HOOKS | sed -e "s/pcmcia//g")
+			fi
+			if ! [ "$NFS" = "1" ]; then
+				START_HOOKS=$(echo $START_HOOKS | sed -e "s/net//g")
 			fi
 			echo "HOOKS=\"$START_HOOKS\"" | sed -e 's/"\ /"/g' -e 's/\ "/"/g' -e 's/\ \ /\ /g'
 		;;
