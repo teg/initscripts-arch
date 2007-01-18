@@ -409,7 +409,7 @@ while [ $# -gt 0 ]; do
 				START_HOOKS=$(echo $START_HOOKS | sed -e "s/lvm2//g")
 			fi
 			if ! [ "$USB" = "1" ]; then
-				START_HOOKS=$(echo $START_HOOKS | sed -e "s/usb//g")
+				START_HOOKS=$(echo $START_HOOKS | sed -e "s/usb\ //g")
 			fi
 			if ! [ "$FW" = "1" ]; then
 				START_HOOKS=$(echo $START_HOOKS | sed -e "s/fw//g")
