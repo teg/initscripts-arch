@@ -21,7 +21,7 @@ mount -n -t proc none /proc
 
 # anything more serious than KERN_WARNING goes to the console
 # 'verbose' cmdline parameter enables more messages
-if grep -qw verbose /proc/cmdline; then
+if grep -qw " verbose" /proc/cmdline; then
 	/bin/dmesg -n 8
 else
 	/bin/dmesg -n 3
