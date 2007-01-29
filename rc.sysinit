@@ -90,6 +90,7 @@ fi
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
 	if [ -x /sbin/lvm -a -d /sys/block ]; then
 		# Kernel 2.6.x, LVM2 groups
+		/sbin/modprobe -q dm-mod 2>/dev/null
 		stat_busy "Activating LVM2 groups"
 		/sbin/lvm vgscan --ignorelockingfailure --mknodes >/dev/null
 		/sbin/lvm vgchange --ignorelockingfailure -a y >/dev/null
@@ -103,6 +104,7 @@ fi
 
 # Set up non-root encrypted partition mappings
 if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
+	/sbin/modprobe -q dm-mod 2>/dev/null
 	stat_busy "Unlocking encrypted volumes:"
 	csfailed=0
 	CS=/sbin/cryptsetup.static
@@ -144,6 +146,13 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 		stat_done
 	else
 		stat_fail
+	fi
+	# Maybe someone has LVM on an encrypted block device
+	if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
+		if [ -x /sbin/lvm -a -d /sys/block ]; then
+			/sbin/lvm vgscan --ignorelockingfailure --mknodes >/dev/null
+			/sbin/lvm vgchange --ignorelockingfailure -a y >/dev/null
+		fi
 	fi
 fi
 
