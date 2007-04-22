@@ -52,6 +52,24 @@ if ! [ "$load_modules" = "off" ]; then
 		done
 		stat_done
 	fi
+	if [ -d /proc/acpi ]; then
+		stat_busy "Loading standard ACPI modules"
+		ACPI_MODULES="ac battery button fan processor thermal"
+		k="$(echo $BLACKLIST ${MOD_BLACKLIST[@]} | sed 's|-|_|g')"
+		j="$(echo ${MODULES[@]} | sed 's|-|_|g')"
+		#add disabled MODULES (!) to blacklist - much requested feature
+		for m in ${j}; do
+    			[ "$m" != "${m#!}" ] && k="${k} ${m#!}"
+		done
+		# add disablemodules= from commandline to blacklist
+		k="${k} $(echo ${disablemodules} | sed 's|-|_|g' | sed 's|,| |g')"
+		for n in ${ACPI_MODULES}; do
+            		if ! echo ${k} | /bin/grep "\<$n\>" 2>&1 >/dev/null; then
+                		/sbin/modprobe $n > /dev/null 2>&1
+            		fi
+		done	
+		stat_done
+	fi		
 fi
 
 # run udev uevents
