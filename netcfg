@@ -55,8 +55,8 @@ stop_profile()
 	if [ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ]; then
 		# if the dhcp client received an unlimited lease then it just exits,
 		# so check for .pid file before trying to kill it.
-		if [ -f /etc/dhcpc/dhcpcd-${INTERFACE}.pid ]; then
-			kill `cat /etc/dhcpc/dhcpcd-${INTERFACE}.pid`
+		if [ -f /var/run/dhcpcd-${INTERFACE}.pid ]; then
+			kill `cat /var/run/dhcpcd-${INTERFACE}.pid`
 		fi
 	fi
 
@@ -147,7 +147,7 @@ start_profile()
 
 	if [ "$IFOPTS" = "dhcp" -o "$IFOPTS" = "DHCP" ]; then
 		# remove the .pid file if it exists
-		rm -f /etc/dhcpc/dhcpcd-${INTERFACE}.{pid,cache} >/dev/null 2>&1
+		rm -f /var/run/dhcpcd-${INTERFACE}.{pid,cache} >/dev/null 2>&1
 		dhcpcd $DHCPCD_ARGS $INTERFACE
 		[ $? -ne 0 ] && stat_fail && return
 	else

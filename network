@@ -41,7 +41,7 @@ ifup()
 	eval ifcfg="\$${1}"
 	if [ "$ifcfg" = "dhcp" ]; then
 		# remove the .pid file if it exists
-		rm -f /etc/dhcpc/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
+		rm -f /var/run/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
 		/sbin/dhcpcd $DHCPCD_ARGS ${1}
 	else
 		/sbin/ifconfig $ifcfg
@@ -57,8 +57,8 @@ ifdown()
 	fi
 	eval ifcfg="\$${1}"
 	if [ "$ifcfg" = "dhcp" ]; then
-		if [ -f /etc/dhcpc/dhcpcd-${1}.pid ]; then
-			kill `cat /etc/dhcpc/dhcpcd-${1}.pid`
+		if [ -f /var/run/dhcpcd-${1}.pid ]; then
+			kill `cat /var/run/dhcpcd-${1}.pid`
 		else
 			# No .pid file, just bring the interface itself down
 			/sbin/ifconfig ${1} down
