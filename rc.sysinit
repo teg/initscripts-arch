@@ -7,7 +7,7 @@
 . /etc/rc.d/functions
 
 echo " "
-printhl "Arch Linux v0.8 $C_OTHER(${C_H2}Voodoo$C_OTHER)\n"
+printhl "Arch Linux $C_OTHER(${C_H2}Duke$C_OTHER)\n"
 printhl "${C_H2}http://www.archlinux.org"
 printhl "Copyright 2002-2007 Judd Vinet"
 printhl "Distributed under the GNU General Public License (GPL)"
@@ -28,7 +28,7 @@ else
 fi
 
 # mount /sys
-grep -qw sysfs /proc/filesystems && mount -n -t sysfs none /sys
+mount -n -t sysfs none /sys
 # mount usbfs  
 /sbin/modprobe usbcore >/dev/null 2>&1
 grep -qw usbfs /proc/filesystems && mount -n -t usbfs none /proc/bus/usb
@@ -188,7 +188,7 @@ fi
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
-NETFS="nonfs,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse"
+NETFS="nonfs,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse,nofuseblk"
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
@@ -239,8 +239,9 @@ stat_busy "Mounting Local Filesystems"
 /bin/mount -o remount,rw /
 # re-mount /proc , /sys  and usbfs so they can be written to /etc/mtab
 umount /proc/bus/usb
-umount /proc && mount -t proc none /proc
-grep -qw sysfs /proc/filesystems && umount /sys && mount -t sysfs none /sys
+if [ -e /proc/mounts ]; then
+	grep -e "/proc " -e "/sys " -e "/dev " /proc/mounts >> /etc/mtab
+fi
 if grep -qw usbfs /proc/filesystems; then
 	# Some people use custom permissions for their usbfs
 	if grep -qw /proc/bus/usb /etc/fstab; then
