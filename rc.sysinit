@@ -134,9 +134,27 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 			shift 3
 			copts="$*"
 			stat_append "${cname}.."
-			if [ "${cpass:0:1}" != "/" ]; then
+			if [ "${cpass}" = "SWAP" ]; then
+				# This is DANGEROUS! The only possible safety check
+				# is to not proceed in case we find a LUKS device
+				# This may cause dataloss if it is not used carefully
+				if $CS isLuks $csrc 2>/dev/null; then
+					false
+				else
+					$CS -d /dev/urandom $copts create $cname $csrc >/dev/null
+					if [ $? -eq 0 ]; then
+						stat_append "creating swapspace.."
+						mkswap -L $cname /dev/mapper/$cname >/dev/null
+					fi
+				fi
+			elif [ "${cpass:0:1}" != "/" ]; then
 				# For some fun reason, the parameter ordering varies for
 				# LUKS and non-LUKS devices.  Joy.
+				if [ "${cpass}" = "ASK" ]; then
+					echo -ne "\nEnter passphrase for '${cname}' volume: "
+					read -r -s cpass < /dev/console
+				fi
+
 				if $CS isLuks $csrc 2>/dev/null; then
 					echo "$cpass" | $CS $copts luksOpen $csrc $cname >/dev/null
 				else
