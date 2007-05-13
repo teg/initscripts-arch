@@ -77,7 +77,7 @@ stat_busy "Deactivating Swap"
 stat_done
 
 stat_busy "Unmounting Filesystems"
-/bin/umount -a
+/bin/umount -a -t noramfs,notmpfs,nosysfs,noproc
 stat_done
 
 # Kill non-root encrypted partition mappings
@@ -102,14 +102,10 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 fi
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
-	if [ -d /etc/lvm -a -x /sbin/lvm ]; then
-		/bin/mount -n -t sysfs none /sys 2>/dev/null
-		if [ -d /sys/block ]; then
-			stat_busy "Deactivating LVM2 groups"
-			/sbin/lvm vgchange --ignorelockingfailure -an >/dev/null 2>&1
-			stat_done
-			umount /sys
-		fi
+	if [ -x /sbin/lvm -a -d /sys/block ]; then
+		stat_busy "Deactivating LVM2 groups"
+		/sbin/lvm vgchange --ignorelockingfailure -an >/dev/null 2>&1
+		stat_done
 	fi
 fi
 
@@ -125,8 +121,8 @@ if [ "$RUNLEVEL" = "0" ]; then
 else
 	printsep
 	printhl "${C_H2}REBOOTING"
-	# adding kexec support
-	[ -x /usr/sbin/kexec ] && /usr/sbin/kexec -e > /dev/null 2>&1
+	# if kexec is installed and a kernel is loaded, use it
+	[ -x /sbin/kexec ] && /sbin/kexec -e > /dev/null 2>&1
 	/sbin/reboot -d -f -i
 fi
 
