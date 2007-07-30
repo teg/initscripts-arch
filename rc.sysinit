@@ -7,7 +7,7 @@
 . /etc/rc.d/functions
 
 echo " "
-printhl "Arch Linux $C_OTHER(${C_H2}Duke$C_OTHER)\n"
+printhl "Arch Linux $C_OTHER(${C_H2}Don't Panic$C_OTHER)\n"
 printhl "${C_H2}http://www.archlinux.org"
 printhl "Copyright 2002-2007 Judd Vinet"
 printhl "Distributed under the GNU General Public License (GPL)"
