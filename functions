@@ -3,12 +3,25 @@
 # functions
 #
 
-STAT_COL=$[`stty size | awk 'BEGIN { RS=" " }; END { print $1 }'` - 13]
+# width:
+
+STAT_COL=$(stty size)
+# strip the rows number, we just want columns
+STAT_COL=${STAT_COL##* }
+if [ "$STAT_COL" = "0" ]; then
+	# if output was 0 (serial console), set default width to 80
+	STAT_COL=80
+elif [ ! -t 1 ]; then
+	# disable color on output to non-tty
+	STAT_COL=80
+	USECOLOR=""
+fi
+# we use 13 characters for our own stuff
+STAT_COL=$[$STAT_COL - 13]
 
 # colors:
 
 if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
-
 	C_MAIN="\033[1;37m"       # main text
 	C_OTHER="\033[1;34m"      # prefix & brackets
 	C_SEPARATOR="\033[1;30m"  # separator
@@ -24,8 +37,11 @@ if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	C_CLEAR="\033[1;0m"
 fi
 
-SAVE_POSITION="\033[s"
-RESTORE_POSITION="\033[u"
+if [ -t 1 ]; then
+	SAVE_POSITION="\033[s"
+	RESTORE_POSITION="\033[u"
+	DEL_TEXT="\033[$(($STAT_COL+4))G"
+fi
 
 # prefixes:
 
@@ -35,7 +51,7 @@ PREFIX_HL=" >"
 # functions:
 
 deltext() {
-	echo -ne "\033[$(($STAT_COL+4))G"
+	echo -ne "$DEL_TEXT"
 }
 
 printhl() {

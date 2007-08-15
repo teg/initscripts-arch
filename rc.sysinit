@@ -341,7 +341,7 @@ if [ "$(echo $LOCALE | /bin/grep -i utf)" ]; then
 	/usr/bin/kbd_mode -u
 	/usr/bin/dumpkeys | /bin/loadkeys --unicode
 	# the $CONSOLE check helps us avoid this when running scripts from cron
-	echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a isatty ]; then echo -ne "\e%G"; fi' >>/etc/profile.d/locale.sh
+	echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then echo -ne "\e%G"; fi' >>/etc/profile.d/locale.sh
 	stat_done
 fi
 
@@ -355,7 +355,7 @@ if [ "$CONSOLEFONT" != "" ]; then
 		fi
 	done
 	# the $CONSOLE check helps us avoid this when running scripts from cron
-	echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a isatty ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
+	echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then echo -ne "\e(K"; fi' >>/etc/profile.d/locale.sh
 	stat_done
 fi
 # Adding persistent network/cdrom generated rules
