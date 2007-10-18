@@ -131,7 +131,7 @@ start_profile()
 		[ "$WPAOPTS" ] || WPAOPTS="-Dwext"
 		wpa_supplicant -wB -i ${WIFI_INTERFACE} -c ${WPA_CONF} $WPAOPTS 
 		
-	  # I don�t know how we could determine if wpa_supplicant is ready	
+	  # I don't know how we could determine if wpa_supplicant is ready	
 		sleep 2
 		let i=0
 		while ! wpa_cli status | grep "wpa_state=COMPLETED" >/dev/null 2>&1; do
