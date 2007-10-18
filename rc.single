@@ -10,14 +10,14 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	# Shutdown daemons
 	let i=${#DAEMONS[@]}
 	while [[ i -gt 0 ]]; do
-		if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
+		if [[ $(echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l) -eq 1 ]]; then
 			/etc/rc.d/${DAEMONS[$i]#@} stop
 		fi
 		let i=i-1
 	done
 	# find any leftover daemons and shut them down
 	if [ -d /var/run/daemons ]; then
-		for daemon in `ls /var/run/daemons`; do
+		for daemon in $(ls /var/run/daemons); do
 			/etc/rc.d/$daemon stop
 		done
 	fi
@@ -37,7 +37,7 @@ if [ "$PREVLEVEL" != "N" ]; then
 	if [ -x /etc/start_udev -a -d /sys/block ]; then
 		# We have a start_udev script and /sys appears to be mounted, use UDev
 		status "Starting UDev Daemon" /etc/start_udev
-		if [ "`pidof -o %PPID /sbin/udevd`" ]; then
+		if [ "$(pidof -o %PPID /sbin/udevd)" ]; then
 			# If an old udevd is kicking around, we'll have to remount pts and shm
 			umount /dev/shm /dev/pts >/dev/null 2>&1
 			mount /dev/pts

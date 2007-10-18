@@ -26,14 +26,14 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	# Shutdown daemons
 	let i=${#DAEMONS[@]}
 	while [[ i -ge 0 ]]; do
-		if [[ `echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l` -eq 1 ]]; then
-			/etc/rc.d/${DAEMONS[$i]#@} stop
+		if [[ $(echo ${DAEMONS[$i]} | grep '^[^\!]' | wc -l) -eq 1 ]]; then
+			[ -f /var/run/daemons/${DAEMONS[$i]#@} ] && /etc/rc.d/${DAEMONS[$i]#@} stop
 		fi
 		let i=i-1
 	done
-	# find any leftover daemons and shut them down
+	# find any leftover daemons and shut them down in reverse order
 	if [ -d /var/run/daemons ]; then
-		for daemon in `ls /var/run/daemons`; do
+		for daemon in $(ls -1t /var/run/daemons); do
 			/etc/rc.d/$daemon stop
 		done
 	fi

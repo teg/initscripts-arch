@@ -56,7 +56,7 @@ stop_profile()
 		# if the dhcp client received an unlimited lease then it just exits,
 		# so check for .pid file before trying to kill it.
 		if [ -f /var/run/dhcpcd-${INTERFACE}.pid ]; then
-			kill `cat /var/run/dhcpcd-${INTERFACE}.pid`
+			kill $(cat /var/run/dhcpcd-${INTERFACE}.pid)
 		fi
 	fi
 
@@ -71,7 +71,7 @@ stop_profile()
 stop_all()
 {
 	[ -d $STATE_DIR ] || return
-	for prof in `ls $STATE_DIR`; do
+	for prof in $(ls $STATE_DIR); do
 		unset INTERFACE
 		. $STATE_DIR/$prof
 		stop_profile $INTERFACE
@@ -120,7 +120,7 @@ start_profile()
 	  
 		WPA_CONF="/etc/wpa_supplicant.conf"	
 		if [ "$AUTOWPA" = "yes" -o "$AUTOWPA" = "YES" ]; then
-			WPA_CONF=`mktemp /tmp/wpa.XXXXXXXX`
+			WPA_CONF=$(mktemp /tmp/wpa.XXXXXXXX)
 			# file will contain PSK, limit reading
 			chmod 600 $WPA_CONF
 			echo "ctrl_interface=/var/run/wpa_supplicant" > $WPA_CONF
@@ -131,7 +131,7 @@ start_profile()
 		[ "$WPAOPTS" ] || WPAOPTS="-Dwext"
 		wpa_supplicant -wB -i ${WIFI_INTERFACE} -c ${WPA_CONF} $WPAOPTS 
 		
-	  # I don´t know how we could determine if wpa_supplicant is ready	
+	  # I donï¿½t know how we could determine if wpa_supplicant is ready	
 		sleep 2
 		let i=0
 		while ! wpa_cli status | grep "wpa_state=COMPLETED" >/dev/null 2>&1; do
@@ -185,7 +185,7 @@ start_profile()
 
 menu()
 {
-	if [ "`ls $PROFILE_DIR 2>/dev/null | grep -v ^template$`" = "" -o ! -d $PROFILE_DIR ]; then
+	if [ "$(ls $PROFILE_DIR 2>/dev/null | grep -v ^template$)" = "" -o ! -d $PROFILE_DIR ]; then
 		echo "No profiles found.  Add profiles in $PROFILE_DIR"
 		return
 	fi
@@ -193,7 +193,7 @@ menu()
 	unset profiles
 	DEFAULT=
 	i=0
-	for prof in `ls $PROFILE_DIR`; do
+	for prof in $(ls $PROFILE_DIR); do
 		# ignore the template
 		[ "$prof" = "template" ] && continue
 		NAME=$prof
@@ -218,7 +218,7 @@ menu()
 	# if no default yet, use the first entry
 	[ "$DEFAULT" = "" ] && DEFAULT=${profiles[0]}
 
-	ANSWER=`mktemp` || exit 1
+	ANSWER=$(mktemp) || exit 1
 
 	if [ "$TIMEOUT" != "" ]; then
 		dialog \
@@ -242,7 +242,7 @@ menu()
 	case $ret in
 		1) ;;                                # cancel - do nothing
 		255) start_profile $DEFAULT ;;       # timeout - use default
-		0)   start_profile `cat $ANSWER` ;;  # user selection
+		0)   start_profile $(cat $ANSWER) ;;  # user selection
 		# abnormal
 		*) echo "abnormal ret code from dialog: $ret" ;;
 	esac
@@ -254,7 +254,7 @@ menu()
 #  Begin
 #
 
-if [ "`id -u`" != "0" ]; then
+if [ "$(id -u)" != "0" ]; then
 	echo "This script should be run as root."
 	exit 1
 fi
