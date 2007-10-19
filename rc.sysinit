@@ -33,14 +33,6 @@ mount -n -t sysfs none /sys
 /sbin/modprobe usbcore >/dev/null 2>&1
 grep -qw usbfs /proc/filesystems && mount -n -t usbfs none /proc/bus/usb
 
-stat_busy "Bringing up loopback interface"
-ifconfig lo 127.0.0.1 up
-if [ $? -ne 0 ]; then
-  stat_fail
-else
-  stat_done
-fi
-
 if [ -x /etc/start_udev -a -d /sys/block ]; then
 	# We have a start_udev script and /sys appears to be mounted, use UDev
 	status "Starting UDev Daemon" /etc/start_udev init
