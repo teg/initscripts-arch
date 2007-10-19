@@ -145,6 +145,8 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 			shift 3
 			copts="$*"
 			stat_append "${cname}.."
+			# For some fun reason, the parameter ordering varies for
+			# LUKS and non-LUKS devices.  Joy.
 			if [ "${cpass}" = "SWAP" ]; then
 				# This is DANGEROUS! The only possible safety check
 				# is to not proceed in case we find a LUKS device
@@ -158,14 +160,15 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 						mkswap -L $cname /dev/mapper/$cname >/dev/null
 					fi
 				fi
-			elif [ "${cpass:0:1}" != "/" ]; then
-				# For some fun reason, the parameter ordering varies for
-				# LUKS and non-LUKS devices.  Joy.
-				if [ "${cpass}" = "ASK" ]; then
-					echo -ne "\nEnter passphrase for '${cname}' volume: "
-					read -r -s cpass < /dev/console
-				fi
+			elif [ "${cpass}" = "ASK" ]; then
+				echo -e "\nOpening '${cname}' volume:"
 
+				if $CS isLuks $csrc 2>/dev/null; then
+					$CS $copts luksOpen $csrc $cname < /dev/console
+				else
+					$CS $copts create $cname $csrc < /dev/console
+				fi
+			elif [ "${cpass:0:1}" != "/" ]; then
 				if $CS isLuks $csrc 2>/dev/null; then
 					echo "$cpass" | $CS $copts luksOpen $csrc $cname >/dev/null
 				else
