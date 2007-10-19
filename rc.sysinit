@@ -85,12 +85,15 @@ if pidof -o %PPID /sbin/udevd >/dev/null; then
 	status "Loading UDev uevents" /etc/start_udev uevents
 fi
 
-stat_busy "Bringing up loopback interface"
-ifconfig lo 127.0.0.1 up
-if [ $? -ne 0 ]; then
-  stat_fail
-else
-  stat_done
+# bring up the loopback interface
+if [ -d /sys/class/net/lo ]; then
+	stat_busy "Bringing up loopback interface"
+	ifconfig lo 127.0.0.1 up
+	if [ $? -ne 0 ]; then
+		stat_fail
+	else
+		stat_done
+	fi
 fi
 
 # If using an encrypted root fs, we should find the root dev in the initrd
