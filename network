@@ -59,12 +59,11 @@ ifdown()
 	if [ "$ifcfg" = "dhcp" ]; then
 		if [ -f /var/run/dhcpcd-${1}.pid ]; then
 			kill $(cat /var/run/dhcpcd-${1}.pid)
-		else
-			# No .pid file, just bring the interface itself down
-			/sbin/ifconfig ${1} down
 		fi
+		# Bring the interface itself down (in case it didn't happen above)
+		/sbin/ifconfig ${1} down >/dev/null 2>&1
 	else
-		/sbin/ifconfig $ifcfg down
+		/sbin/ifconfig $ifcfg down >/dev/null 2>&1
 	fi
 	return $?
 }
