@@ -19,8 +19,21 @@ fi
 # we use 13 characters for our own stuff
 STAT_COL=$[$STAT_COL - 13]
 
-# colors:
+# disable colors on broken terminals
+TERM_COLORS="$(tput colors 2>/dev/null)"
+if [ -n "${TERM_COLORS}" ]; then
+	case "${TERM_COLORS}" in
+		*[!0-9]*)
+			USECOLOR=""
+			;;
+		*)
+			[ "${TERM_COLORS}" -lt 8 ] && USECOLOR=""
+			;;
+	esac
+fi
+unset TERM_COLORS
 
+# colors:
 if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	C_MAIN="\033[1;37m"       # main text
 	C_OTHER="\033[1;34m"      # prefix & brackets
