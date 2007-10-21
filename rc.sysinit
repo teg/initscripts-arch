@@ -366,7 +366,7 @@ if [ -n "$CONSOLEFONT" ]; then
 	if [ -n "$CONSOLEMAP" ] && echo "$LOCALE" | /bin/grep -qi utf ; then
 		CONSOLEMAP=""
 	fi
-	for i in $(seq 1 63); do 
+	for i in $(seq 1 63); do
 		if [ -n "$CONSOLEMAP" ]; then
 			/usr/bin/setfont -m $CONSOLEMAP $CONSOLEFONT -C /dev/vc/${i}
 		else
