@@ -30,6 +30,8 @@ if [ -n "${TERM_COLORS}" ]; then
 			[ "${TERM_COLORS}" -lt 8 ] && USECOLOR=""
 			;;
 	esac
+else
+	USECOLOR=""
 fi
 unset TERM_COLORS
 
