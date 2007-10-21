@@ -348,7 +348,7 @@ stat_done
 if echo "$LOCALE" | /bin/grep -qi utf ; then
 	stat_busy "Setting Consoles to UTF-8"
 	/usr/bin/kbd_mode -u
-	for i in $(seq 1 12); do
+	for i in $(seq 1 63); do
 		echo -ne "\e%G" >/dev/vc/${i}
 	done
 	stat_done
