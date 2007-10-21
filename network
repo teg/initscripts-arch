@@ -32,7 +32,7 @@ ifup()
 		return 1
 	fi
 	# don't bring up an interface that's already up
-	[ "`/sbin/ifconfig ${1} 2>/dev/null | grep UP`" ] && return 0
+	[ "$(/sbin/ifconfig ${1} 2>/dev/null | grep UP)" ] && return 0
 	eval iwcfg="\$wlan_${1}"
 	if [ "$iwcfg" != "" ]; then
 		sh -c "/usr/sbin/iwconfig $iwcfg"
@@ -58,7 +58,7 @@ ifdown()
 	eval ifcfg="\$${1}"
 	if [ "$ifcfg" = "dhcp" ]; then
 		if [ -f /var/run/dhcpcd-${1}.pid ]; then
-			kill `cat /var/run/dhcpcd-${1}.pid`
+			kill $(cat /var/run/dhcpcd-${1}.pid)
 		else
 			# No .pid file, just bring the interface itself down
 			/sbin/ifconfig ${1} down
@@ -132,7 +132,7 @@ bridge_up()
 	for br in ${BRIDGE_INTERFACES[@]}; do
 		if [ "$br" = "${br#!}" ]; then
 			# if the bridge already exists, remove it
-			if [ "`/sbin/ifconfig $br 2>/dev/null`" ]; then
+			if [ "$(/sbin/ifconfig $br 2>/dev/null)" ]; then
 				/sbin/ifconfig $br down
 				/usr/sbin/brctl delbr $br
 			fi
