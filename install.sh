@@ -18,7 +18,4 @@ done
 gcc $CFLAGS -o minilogd minilogd.c || exit 1
 install -D -m755 minilogd ${DESTDIR}/sbin/minilogd || exit 1
 
-install -D -m755 netcfg ${DESTDIR}/usr/bin/netcfg || exit 1
-install -D -m644 profile-template ${DESTDIR}/etc/network-profiles/template || exit 1
-
 install -D -m755 makedevs ${DESTDIR}/sbin/makedevs || exit 1

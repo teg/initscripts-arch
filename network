@@ -163,26 +163,6 @@ case "$1" in
 			exit
 		fi
 
-		# See if we're using network profiles
-		if [ "$NET" ]; then
-			# This env var is passed from the kernel boot line
-			if [ "$NET" = "menu" ]; then
-				/usr/bin/netcfg --menu --timeout 5
-			else
-				/usr/bin/netcfg $NET
-			fi
-		elif [ "$NET_PROFILES" ]; then
-			if [ "$NET_PROFILES" = "menu" ]; then
-				/usr/bin/netcfg --menu --timeout 5
-			else
-				for prof in ${NET_PROFILES[@]}; do
-					if [ "$prof" = "${prof#!}" ]; then
-						/usr/bin/netcfg -c $prof
-					fi
-				done
-			fi
-		fi
-
 		stat_busy "Starting Network"
 		error=0
 		# bring up bridge interfaces
@@ -213,9 +193,6 @@ case "$1" in
 		#	echo "Network is not running.  Try 'network start'"
 		#	exit
 		#fi
-
-		# shutdown any profiles started by netcfg (or from NET_PROFILES in rc.conf)
-		/usr/bin/netcfg --stopall
 
 		stat_busy "Stopping Network"
 		rm_daemon network
