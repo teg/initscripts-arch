@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # /etc/rc.sysinit
 #
@@ -35,9 +35,15 @@ mount -n -t sysfs none /sys
 /sbin/modprobe usbcore >/dev/null 2>&1
 grep -qw usbfs /proc/filesystems && mount -n -t usbfs none /proc/bus/usb
 
-if [ -x /etc/start_udev -a -d /sys/block ]; then
-	# We have a start_udev script and /sys appears to be mounted, use UDev
-	status "Starting UDev Daemon" /etc/start_udev init
+if [ -x /sbin/udevadm -a -d /sys/block ]; then
+	# We have udev and /sys appears to be mounted, use UDev
+	#status "Starting UDev Daemon" /etc/start_udev init
+	stat_busy "Starting UDev Daemon"
+	mount -n -t ramfs none /dev
+	mkdir /dev/pts
+	mkdir /dev/shm
+	/sbin/udevd --daemon
+	stat_done
 else
 	# Static /dev, our last resort
 	status "Using static /dev filesystem" /bin/true
@@ -76,7 +82,11 @@ fi
 
 # run udev uevents
 if pidof -o %PPID /sbin/udevd >/dev/null; then
-	status "Loading UDev uevents" /etc/start_udev uevents
+	#status "Loading UDev uevents" /etc/start_udev uevents
+	stat_busy "Loading UDev uevents"
+	/sbin/udevadm trigger
+	/sbin/udevadm settle
+	stat_done
 fi
 
 # bring up the loopback interface
