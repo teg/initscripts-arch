@@ -142,5 +142,13 @@ ck_daemon() {
 	return 0
 }
 
+source_functions() {
+  if [ -d /etc/rc.d/functions.d/ ]; then
+    for f in /etc/rc.d/functions.d/*; do
+      . $f
+    done
+  fi
+}
+
 # End of file
 # vim: set ts=2 noet:
