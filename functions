@@ -21,7 +21,9 @@ STAT_COL=$[$STAT_COL - 13]
 
 # disable colors on broken terminals
 TERM_COLORS="$(tput colors 2>/dev/null)"
-if [ -n "${TERM_COLORS}" ]; then
+if [ $? = 3 ]; then
+		TERM_COLORS=8
+elif [ -n "${TERM_COLORS}" ]; then
 	case "${TERM_COLORS}" in
 		*[!0-9]*)
 			USECOLOR=""
