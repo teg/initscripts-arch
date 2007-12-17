@@ -411,5 +411,11 @@ fi
 # Screen blanks after 15 minutes idle time
 /usr/bin/setterm -blank 15
 
+# Save our dmesg output from this boot
+if [ -f /var/log/dmesg.log ]; then
+		rm /var/log/dmesg.log
+fi
+/bin/dmesg > /var/log/dmesg.log
+
 # End of file
 # vim: set ts=2 noet:
