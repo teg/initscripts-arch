@@ -15,11 +15,12 @@ printhl "Copyright 2002-2007 Judd Vinet"
 printhl "Distributed under the GNU General Public License (GPL)"
 printsep
 
+# mount /proc and our RAM /dev
+mount -n -t ramfs none /dev
+mount -n -t proc none /proc
+
 # start up our mini logger until syslog takes over
 /sbin/minilogd
-
-# mount /proc
-mount -n -t proc none /proc
 
 # anything more serious than KERN_WARNING goes to the console
 # 'verbose' cmdline parameter enables more messages
@@ -49,7 +50,6 @@ if [ -x /sbin/udevadm -a -d /sys/block ]; then
 	# We have udev and /sys appears to be mounted, use UDev
 	#status "Starting UDev Daemon" /etc/start_udev init
 	stat_busy "Starting UDev Daemon"
-	mount -n -t ramfs none /dev
 	mkdir /dev/pts
 	mkdir /dev/shm
 	/sbin/udevd --daemon
