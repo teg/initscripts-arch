@@ -35,6 +35,16 @@ mount -n -t sysfs none /sys
 /sbin/modprobe usbcore >/dev/null 2>&1
 grep -qw usbfs /proc/filesystems && mount -n -t usbfs none /proc/bus/usb
 
+# Set clock early to fix some bugs with filesystem checks
+# Clock is set again later to match rc.conf
+if [ -f /etc/localtime ]; then
+	if [ "$HARDWARECLOCK" = "UTC" ]; then
+		/sbin/hwclock --directisa --utc --hctosys --noadjfile
+	else
+		/sbin/hwclock --directisa --localtime --hctosys --noadjfile
+	fi
+fi
+
 if [ -x /sbin/udevadm -a -d /sys/block ]; then
 	# We have udev and /sys appears to be mounted, use UDev
 	#status "Starting UDev Daemon" /etc/start_udev init
@@ -219,16 +229,6 @@ if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
 fi
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
-
-# Set clock early to fix some bugs with filesystem checks
-# Clock is set again later to match rc.conf
-if [ -f /etc/localtime ]; then
-	if [ "$HARDWARECLOCK" = "UTC" ]; then
-		/sbin/hwclock --directisa --utc --hctosys --noadjfile
-	else
-		/sbin/hwclock --directisa --localtime --hctosys --noadjfile
-	fi
-fi
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
