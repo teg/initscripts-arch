@@ -12,19 +12,6 @@
 # dhcpcd settings
 [ -f /etc/conf.d/dhcpcd ] && . /etc/conf.d/dhcpcd
 
-# Special wrapper for hotplug ifup calls
-#  (make sure hotplug doesn't bring up disabled interfaces)
-hotplug_ifup()
-{
-	[ "$1" != "" ] || return 1
-	for ifline in ${INTERFACES[@]}; do
-		# if the interface is disabled then this will be skipped
-		if [ "$ifline" = "$1" ]; then
-			ifup $ifline
-		fi
-	done
-}
-
 ifup()
 {
 	if [ "$1" = "" ]; then
