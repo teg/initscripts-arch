@@ -36,14 +36,20 @@ mount -n -t sysfs none /sys
 /sbin/modprobe usbcore >/dev/null 2>&1
 grep -qw usbfs /proc/filesystems && mount -n -t usbfs none /proc/bus/usb
 
+HWCLOCK_PARAMS="--hctosys"
+if [ "$HARDWARECLOCK" = "UTC" ]; then
+		HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
+else
+		HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
+fi
+if [ "$USEDIRECTISA" != "no" ]; then
+		 HWCLOCK_PARAMS="$HWCLOCK_PARAMS --directisa"
+fi
+
 # Set clock early to fix some bugs with filesystem checks
 # Clock is set again later to match rc.conf
 if [ -f /etc/localtime ]; then
-	if [ "$HARDWARECLOCK" = "UTC" ]; then
-		/sbin/hwclock --directisa --utc --hctosys --noadjfile
-	else
-		/sbin/hwclock --directisa --localtime --hctosys --noadjfile
-	fi
+  /sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 fi
 
 if [ -x /sbin/udevadm -a -d /sys/block ]; then
@@ -308,11 +314,8 @@ if [ "$TIMEZONE" != "" -a -e /usr/share/zoneinfo/$TIMEZONE ]; then
 	/bin/rm -f /etc/localtime
 	/bin/cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 fi
-if [ "$HARDWARECLOCK" = "UTC" ]; then
-	/sbin/hwclock --directisa --utc --hctosys
-else
-	/sbin/hwclock --directisa --localtime --hctosys
-fi
+
+/sbin/hwclock $HWCLOCK_PARAMS
 stat_done
 
 if [ -f /var/run/random-seed ]; then
