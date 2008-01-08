@@ -19,6 +19,11 @@ printsep
 mount -n -t ramfs none /dev
 mount -n -t proc none /proc
 
+# Create our default nodes that minilogd may need
+/bin/mknod /dev/null c 1 3
+/bin/mknod /dev/zero c 1 5
+/bin/mknod /dev/console c 5 1
+
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 
