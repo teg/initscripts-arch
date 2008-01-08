@@ -1,4 +1,3 @@
-
 /* minilogd.c
  * 
  * A pale imitation of syslogd. Most notably, doesn't write anything
@@ -43,7 +42,7 @@ void freeBuffer() {
 	strncpy(addr.sun_path,_PATH_LOG,sizeof(addr.sun_path)-1);
 	/* wait for klogd to hit syslog */
 	sleep(2);
-	sock = socket(AF_LOCAL, SOCK_DGRAM,0);
+	sock = socket(AF_LOCAL, SOCK_STREAM,0);
 	conn=connect(sock,(struct sockaddr *) &addr,sizeof(addr));
 	while (x<buflines) {
 		if (!conn) {
@@ -72,7 +71,8 @@ void cleanup(int exitcode) {
 
 void runDaemon(int sock) {
 	struct sockaddr_un addr;
-	int x,len,addrlen,done=0;
+	int x,len,done=0;
+	socklen_t addrlen;
 	char *message;
 	struct stat s1,s2;
 	struct pollfd pfds;
