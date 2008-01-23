@@ -59,11 +59,19 @@ if [ "$TIMEZONE" != "" -a -e /usr/share/zoneinfo/$TIMEZONE ]; then
 	/bin/rm -f /etc/localtime
 	/bin/cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 fi
+
+HWCLOCK_PARAMS="--systohc"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	/sbin/hwclock --directisa --utc --systohc
+	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
 else
 	/sbin/hwclock --directisa --localtime --systohc
+	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
 fi
+if [ "$USEDIRECTISA" != "no" ]; then
+	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --directisa"
+fi
+/sbin/hwclock $HWCLOCK_PARAMS
 stat_done
 
 # removing psmouse module to fix some reboot issues on newer laptops
@@ -127,4 +135,4 @@ else
 fi
 
 # End of file
-# vim: set ts=2 noet:
+# vim: set ts=2 sw=2 noet:
