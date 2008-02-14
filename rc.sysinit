@@ -243,7 +243,7 @@ status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
-NETFS="nonfs,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse,nofuseblk"
+NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse,nofuseblk"
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
