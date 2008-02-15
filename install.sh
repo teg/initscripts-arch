@@ -1,6 +1,7 @@
 #!/bin/sh
 
-install -d -m755 ${DESTDIR}/etc/{rc.d,conf.d} || exit 1
+install -d -m755 ${DESTDIR}/etc/rc.d || exit 1
+install -d -m755 ${DESTDIR}/etc/conf.d || exit 1
 install -d -m755 ${DESTDIR}/etc/rc.d/functions.d/ || exit 1
 
 for i in inittab rc.conf; do

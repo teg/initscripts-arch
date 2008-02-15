@@ -30,7 +30,8 @@ ifup()
 	eval ifcfg="\$${1}"
 	if [ "$ifcfg" = "dhcp" ]; then
 		# remove the .pid file if it exists
-		rm -f /var/run/dhcpcd-${1}.{pid,cache} >/dev/null 2>&1
+		rm -f /var/run/dhcpcd-${1}.pid >/dev/null 2>&1
+		rm -f /var/run/dhcpcd-${1}.cache >/dev/null 2>&1
 		/sbin/dhcpcd $DHCPCD_ARGS ${1}
 	else
 		/sbin/ifconfig $ifcfg
@@ -59,9 +60,9 @@ iflist()
 {
 	for ifline in ${INTERFACES[@]}; do
 		if [ "$ifline" = "${ifline#!}" ]; then
-			echo -en " $ifline:\t"
+			printf " $ifline:\t"
 		else
-			echo -en "$ifline:\t"
+			printf "$ifline:\t"
 		fi
 		eval real_ifline=\$${ifline#!}
 		echo $real_ifline
@@ -94,9 +95,9 @@ rtlist()
 {
 	for rtline in ${ROUTES[@]}; do
 		if [ "$rtline" = "${rtline#!}" ]; then
-			echo -en " $rtline:\t"
+			printf " $rtline:\t"
 		else
-			echo -en "$rtline:\t"
+			printf "$rtline:\t"
 		fi
 		eval real_rtline=\$${rtline#!}
 		echo $real_rtline

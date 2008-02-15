@@ -1,6 +1,5 @@
-#!/bin/bash
 #
-# functions
+# initscripts functions
 #
 
 # width:
@@ -17,7 +16,7 @@ elif [ ! -t 1 ]; then
 	USECOLOR=""
 fi
 # we use 13 characters for our own stuff
-STAT_COL=$[$STAT_COL - 13]
+STAT_COL=$(($STAT_COL - 13))
 
 # disable colors on broken terminals
 TERM_COLORS="$(tput colors 2>/dev/null)"
@@ -68,44 +67,44 @@ PREFIX_HL=" >"
 # functions:
 
 deltext() {
-	echo -ne "$DEL_TEXT"
+	printf "${DEL_TEXT}"
 }
 
 printhl() {
-	echo -e "$C_OTHER$PREFIX_HL $C_H1$1$C_CLEAR "
+	printf "${C_OTHER}${PREFIX_HL} ${C_H1}${1}${C_CLEAR} \n"
 }
 
 printsep() {
-	echo -e "\n$C_SEPARATOR   ------------------------------\n"
+	printf "\n${C_SEPARATOR}   ------------------------------\n"
 }
 
 stat_bkgd() {
-	echo -ne "$C_OTHER$PREFIX_REG $C_MAIN$1$C_CLEAR "
+	printf "${C_OTHER}${PREFIX_REG} ${C_MAIN}${1}${C_CLEAR} "
 	deltext
-	echo -ne "   $C_OTHER[${C_BKGD}BKGD$C_OTHER]$C_CLEAR "
+	printf "   ${C_OTHER}[${C_BKGD}BKGD${C_OTHER}]${C_CLEAR} "
 }
 
 stat_busy() {
-	echo -ne "$C_OTHER$PREFIX_REG $C_MAIN$1$C_CLEAR "
-	echo -ne "${SAVE_POSITION}"
+	printf "${C_OTHER}${PREFIX_REG} ${C_MAIN}${1}${C_CLEAR} "
+	printf "${SAVE_POSITION}"
 	deltext
-	echo -ne "   $C_OTHER[${C_BUSY}BUSY$C_OTHER]$C_CLEAR "
+	printf "   ${C_OTHER}[${C_BUSY}BUSY${C_OTHER}]${C_CLEAR} "
 }
 
 stat_append() {
-	echo -ne "${RESTORE_POSITION}"
-	echo -ne "$C_MAIN$1$C_CLEAR"
-	echo -ne "${SAVE_POSITION}"
+	printf "${RESTORE_POSITION}"
+	printf "${C_MAIN}${1}${C_CLEAR}"
+	printf "${SAVE_POSITION}"
 }
 
 stat_done() {
 	deltext
-	echo -e "   $C_OTHER[${C_DONE}DONE$C_OTHER]$C_CLEAR "
+	printf "   ${C_OTHER}[${C_DONE}DONE${C_OTHER}]${C_CLEAR} \n"
 }
 
 stat_fail() {
 	deltext
-	echo -e "   $C_OTHER[${C_FAIL}FAIL$C_OTHER]$C_CLEAR "
+	printf "   ${C_OTHER}[${C_FAIL}FAIL${C_OTHER}]${C_CLEAR} \n"
 }
 
 stat_die() {
