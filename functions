@@ -146,8 +146,8 @@ ck_daemon() {
 
 source_functions() {
   if [ -d /etc/rc.d/functions.d/ ]; then
-    for f in /etc/rc.d/functions.d/*; do
-      . $f
+    for f in $(ls /etc/rc.d/functions.d/); do
+      . /etc/rc.d/functions.d/$f
     done
   fi
 }
