@@ -60,6 +60,7 @@ fi
 if [ -x /sbin/udevadm -a -d /sys/block ]; then
 	# We have udev and /sys appears to be mounted, use UDev
 	#status "Starting UDev Daemon" /etc/start_udev init
+
 	stat_busy "Starting UDev Daemon"
 	mkdir /dev/pts
 	mkdir /dev/shm
@@ -105,9 +106,12 @@ fi
 if pidof -o %PPID /sbin/udevd >/dev/null; then
 	#status "Loading UDev uevents" /etc/start_udev uevents
 	stat_busy "Loading UDev uevents"
+	udevstart="$(date +%s%0N)"
 	/sbin/udevadm trigger
 	/sbin/udevadm settle
 	stat_done
+	udevend="$(date +%s%0N)"
+  printhl "   UDev uevent processing time: $((($udevend-$udevstart)/1000000))ms\n"
 fi
 
 # bring up the loopback interface
