@@ -303,7 +303,7 @@ if [ -e /proc/mounts ]; then
 fi
 if grep -qw usbfs /proc/filesystems; then
 	# Some people use custom permissions for their usbfs
-	if grep -qw /proc/bus/usb /etc/fstab; then
+	if grep -v "^#" /etc/fstab | grep -qw /proc/bus/usb ; then
 		mount /proc/bus/usb
 	else
 		mount -t usbfs none /proc/bus/usb
