@@ -25,6 +25,16 @@ mount -n -t proc none /proc
 /bin/mknod /dev/zero c 1 5
 /bin/mknod /dev/console c 5 1
 
+# More initial /dev setup that udev doesn't do
+ln -snf /proc/self/fd /dev/fd
+ln -snf /proc/self/fd/0 /dev/stdin
+ln -snf /proc/self/fd/1 /dev/stdout
+ln -snf /proc/self/fd/2 /dev/stderr
+ln -snf /proc/kcore /dev/core
+mkdir /dev/pts
+mkdir /dev/shm
+
+
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 
