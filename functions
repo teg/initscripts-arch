@@ -4,7 +4,7 @@
 
 # width:
 
-STAT_COL=$(stty size)
+STAT_COL=$(/bin/stty size)
 # strip the rows number, we just want columns
 STAT_COL=${STAT_COL##* }
 if [ "$STAT_COL" = "0" ]; then
@@ -19,7 +19,7 @@ fi
 STAT_COL=$(($STAT_COL - 13))
 
 # disable colors on broken terminals
-TERM_COLORS="$(tput colors 2>/dev/null)"
+TERM_COLORS="$(/bin/tput colors 2>/dev/null)"
 if [ $? = 3 ]; then
 	TERM_COLORS=8
 elif [ -n "${TERM_COLORS}" ]; then
@@ -130,12 +130,12 @@ status() {
 # daemons:
 
 add_daemon() {
-	[ -d /var/run/daemons ] || mkdir -p /var/run/daemons
-	touch /var/run/daemons/$1
+	[ -d /var/run/daemons ] || /bin/mkdir -p /var/run/daemons
+	/bin/touch /var/run/daemons/$1
 }
 
 rm_daemon() {
-	rm -f /var/run/daemons/$1
+	/bin/rm -f /var/run/daemons/$1
 }
 
 ck_daemon() {
@@ -145,7 +145,7 @@ ck_daemon() {
 
 source_functions() {
 	if [ -d /etc/rc.d/functions.d/ ]; then
-		for f in $(ls /etc/rc.d/functions.d/); do
+		for f in $(/bin/ls /etc/rc.d/functions.d/); do
 			. /etc/rc.d/functions.d/$f
 		done
 	fi

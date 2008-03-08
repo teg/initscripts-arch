@@ -33,7 +33,7 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	done
 	# find any leftover daemons and shut them down in reverse order
 	if [ -d /var/run/daemons ]; then
-		for daemon in $(ls -1t /var/run/daemons); do
+		for daemon in $(/bin/ls -1t /var/run/daemons); do
 			/etc/rc.d/$daemon stop
 		done
 	fi
@@ -73,7 +73,7 @@ fi
 stat_done
 
 # removing psmouse module to fix some reboot issues on newer laptops
-modprobe -r psmouse >/dev/null 2>&1
+/sbin/modprobe -r psmouse >/dev/null 2>&1
 
 # Write to wtmp file before unmounting
 /sbin/halt -w
@@ -87,7 +87,7 @@ stat_busy "Unmounting Filesystems"
 stat_done
 
 # Kill non-root encrypted partition mappings
-if [ -f /etc/crypttab -a -n "$(grep -v ^# /etc/crypttab | grep -v ^$)" ]; then
+if [ -f /etc/crypttab -a -n "$(/bin/grep -v ^# /etc/crypttab | /bin/grep -v ^$)" ]; then
 	stat_busy "Deactivating encrypted volumes:"
 	CS=/sbin/cryptsetup.static
 	do_uncrypt() {
