@@ -143,6 +143,14 @@ ck_daemon() {
 	return 0
 }
 
+ck_depends() {
+	for daemon in $@; do
+		if ck_daemon $daemon; then
+			/etc/rc.d/$daemon start
+		fi
+	done
+}
+
 source_functions() {
 	if [ -d /etc/rc.d/functions.d/ ]; then
 		for f in $(/bin/ls /etc/rc.d/functions.d/); do
