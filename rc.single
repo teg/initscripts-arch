@@ -19,7 +19,7 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	done
 	# find any leftover daemons and shut them down
 	if [ -d /var/run/daemons ]; then
-		for daemon in $(ls /var/run/daemons); do
+		for daemon in $(/bin/ls /var/run/daemons); do
 			/etc/rc.d/$daemon stop
 		done
 	fi
