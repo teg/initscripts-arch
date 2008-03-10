@@ -18,5 +18,3 @@ done
 
 gcc $CFLAGS -o minilogd minilogd.c || exit 1
 install -D -m755 minilogd ${DESTDIR}/sbin/minilogd || exit 1
-
-install -D -m755 makedevs ${DESTDIR}/sbin/makedevs || exit 1
