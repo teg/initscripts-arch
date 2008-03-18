@@ -53,7 +53,7 @@ fi
 /bin/grep -qw usbfs /proc/filesystems && /bin/mount -n -t usbfs none /proc/bus/usb
 
 # enable rtc access
-/bin/mkdir /dev/misc/bin/
+/bin/mkdir /dev/misc/
 /bin/mknod /dev/misc/rtc0 c 252 0
 /bin/ln -s /dev/misc/rtc0 /dev/rtc
 /sbin/modprobe rtc-cmos >/dev/null 2>&1
