@@ -34,7 +34,6 @@ printsep
 /bin/mkdir /dev/pts
 /bin/mkdir /dev/shm
 
-
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 
@@ -79,8 +78,6 @@ if [ -x /sbin/udevadm -a -d /sys/block ]; then
 	#status "Starting UDev Daemon" /etc/start_udev init
 
 	stat_busy "Starting UDev Daemon"
-	/bin/mkdir /dev/pts
-	/bin/mkdir /dev/shm
 	/sbin/udevd --daemon
 	stat_done
 else
@@ -454,7 +451,7 @@ fi
 
 # Save our dmesg output from this boot
 if [ -f /var/log/dmesg.log ]; then
-		/bin/rm /var/log/dmesg.log
+	/bin/rm /var/log/dmesg.log
 fi
 /bin/dmesg > /var/log/dmesg.log
 
