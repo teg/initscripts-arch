@@ -52,10 +52,13 @@ fi
 /bin/grep -qw usbfs /proc/filesystems && /bin/mount -n -t usbfs none /proc/bus/usb
 
 # enable rtc access
-/bin/mkdir /dev/misc/
-/bin/mknod /dev/misc/rtc0 c 252 0
-/bin/ln -s /dev/misc/rtc0 /dev/rtc
 /sbin/modprobe rtc-cmos >/dev/null 2>&1
+RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null); RTC_MAJOR="${RTC_MAJOR%% *}"
+if [ -n "$RTC_MAJOR" ]; then
+	/bin/mkdir /dev/misc/
+	/bin/mknod /dev/misc/rtc0 c $RTC_MAJOR 0
+	/bin/ln -s /dev/misc/rtc0 /dev/rtc
+fi
 
 HWCLOCK_PARAMS="--hctosys"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
@@ -70,7 +73,7 @@ fi
 # Set clock early to fix some bugs with filesystem checks
 # Clock is set again later to match rc.conf
 if [ -f /etc/localtime ]; then
-  /sbin/hwclock $HWCLOCK_PARAMS --noadjfile
+	/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 fi
 
 if [ -x /sbin/udevadm -a -d /sys/block ]; then
