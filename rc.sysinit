@@ -137,13 +137,6 @@ if [ -d /sys/class/net/lo ]; then
 	fi
 fi
 
-# If using an encrypted root fs, we should find the root dev in the initrd
-# FIXME: obsoleted by initramfs and udev
-if [ -e /initrd/dev/mapper/root ]; then
-	/bin/mkdir /dev/mapper 2>/dev/null
-	/bin/cp -a /initrd/dev/mapper/root /dev/mapper/root
-fi
-
 # If necessary, find md devices and manually assemble RAID arrays
 if [ -f /etc/mdadm.conf -a "$(/bin/grep ^ARRAY /etc/mdadm.conf 2>/dev/null)" ]; then
 	# udev won't create these md nodes, so we do it ourselves
@@ -154,15 +147,6 @@ if [ -f /etc/mdadm.conf -a "$(/bin/grep ^ARRAY /etc/mdadm.conf 2>/dev/null)" ]; 
 		[ ! -e $path/$node ] && /bin/mknod $path/$node b 9 $minor
 	done
 	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
-fi
-
-# Unmount and free up the old initrd if it exists
-# FIXME: obsoleted by initramfs
-if [ -f /initrd/linuxrc ]; then
-	stat_busy "Freeing memory from Initial Ramdisk"
-	/bin/umount /initrd 2>/dev/null
-	/sbin/blockdev --flushbufs /dev/rd/0 2>/dev/null
-	stat_done
 fi
 
 if [ "$USELVM" = "yes" -o "$USELVM" = "YES" ]; then
