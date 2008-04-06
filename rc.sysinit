@@ -47,9 +47,6 @@ fi
 
 # mount /sys
 /bin/mount -n -t sysfs none /sys
-# mount usbfs  
-/sbin/modprobe usbcore >/dev/null 2>&1
-/bin/grep -qw usbfs /proc/filesystems && /bin/mount -n -t usbfs none /proc/bus/usb
 
 # enable rtc access
 /sbin/modprobe rtc-cmos >/dev/null 2>&1
@@ -264,7 +261,7 @@ status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
-NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,nousbfs,noshfs,nofuse,nofuseblk"
+NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk"
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
@@ -313,18 +310,9 @@ stat_busy "Mounting Local Filesystems"
 /bin/rm -f /etc/mtab*
 # make sure / gets written to /etc/mtab
 /bin/mount -o remount,rw /
-# re-mount /proc , /sys  and usbfs so they can be written to /etc/mtab
-/bin/umount /proc/bus/usb
+# re-mount /proc and /sys so they can be written to /etc/mtab
 if [ -e /proc/mounts ]; then
 	/bin/grep -e "/proc " -e "/sys " -e "/dev " /proc/mounts >> /etc/mtab
-fi
-if /bin/grep -qw usbfs /proc/filesystems; then
-	# Some people use custom permissions for their usbfs
-	if /bin/grep -v "^#" /etc/fstab | /bin/grep -qw /proc/bus/usb ; then
-		/bin/mount /proc/bus/usb
-	else
-		/bin/mount -t usbfs none /proc/bus/usb
-	fi
 fi
 # now mount all the local filesystems
 /bin/mount -a -t $NETFS
