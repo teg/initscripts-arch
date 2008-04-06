@@ -18,10 +18,6 @@ ifup()
 		echo "usage: $0 ifup <interface_name>"
 		return 1
 	fi
-	# don't bring up an interface that's already up
-	[ "$(/sbin/ifconfig ${1} 2>/dev/null |\
-				/bin/grep -v 'inet6 addr: fe80:' |\
-				/bin/grep -e 'inet addr:' -e 'inet6 addr:')" ] && return 0
 	eval iwcfg="\$wlan_${1}"
 	if [ "$iwcfg" != "" ]; then
 		/usr/sbin/iwconfig $iwcfg
