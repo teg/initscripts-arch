@@ -123,7 +123,7 @@ if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	/sbin/udevadm settle
 	stat_done
 	udevend="$(/bin/date +%s%0N)"
-	printhl "   UDev uevent processing time: $((($udevend-$udevstart)/1000000))ms\n"
+	printhl "   UDev uevent processing time: $((($udevend-$udevstart)/1000000))ms"
 fi
 
 # bring up the loopback interface
