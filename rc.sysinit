@@ -419,9 +419,6 @@ if [ -f "/dev/.udev/tmp-rules--70-persistent-net.rules" ]; then
 	stat_done
 fi
 
-# Screen blanks after 15 minutes idle time
-/usr/bin/setterm -blank 15
-
 # Save our dmesg output from this boot
 if [ -f /var/log/dmesg.log ]; then
 	/bin/rm /var/log/dmesg.log
