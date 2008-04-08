@@ -84,7 +84,7 @@ else
 fi
 
 # Load modules from the MODULES array defined in rc.conf
-if ! [ "$load_modules" = "off" ]; then 
+if ! [ "$load_modules" = "off" ]; then
 	if [ -f /proc/modules ]; then
 		stat_busy "Loading Modules"
 		for mod in "${MODULES[@]}"; do
@@ -106,12 +106,12 @@ if ! [ "$load_modules" = "off" ]; then
 		# add disablemodules= from commandline to blacklist
 		k="${k} $(echo ${disablemodules} | /bin/sed 's|-|_|g' | /bin/sed 's|,| |g')"
 		for n in ${ACPI_MODULES}; do
-            		if ! echo ${k} | /bin/grep "\<$n\>" 2>&1 >/dev/null; then
-                		/sbin/modprobe $n > /dev/null 2>&1
-            		fi
-		done	
+			if ! echo ${k} | /bin/grep "\<$n\>" 2>&1 >/dev/null; then
+				/sbin/modprobe $n > /dev/null 2>&1
+			fi
+		done
 		stat_done
-	fi		
+	fi
 fi
 
 # run udev uevents
