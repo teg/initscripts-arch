@@ -71,7 +71,7 @@ if [ -f /etc/localtime ]; then
 	/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 fi
 
-echo -e '\000\000\000\000' > /proc/sys/kernel/hotplug
+echo > /proc/sys/kernel/hotplug
 
 if [ -x /sbin/udevadm -a -d /sys/block ]; then
 	# We have udev and /sys appears to be mounted, use UDev
