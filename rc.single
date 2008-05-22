@@ -6,8 +6,6 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-source_functions
-
 if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	# Shutdown daemons
 	let i=${#DAEMONS[@]}

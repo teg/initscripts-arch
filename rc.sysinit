@@ -6,8 +6,6 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-source_functions
-
 echo " "
 printhl "Arch Linux $C_OTHER(${C_H2}Core Dump$C_OTHER)\n"
 printhl "${C_H2}http://www.archlinux.org"

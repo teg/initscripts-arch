@@ -151,13 +151,12 @@ ck_depends() {
 	done
 }
 
-source_functions() {
-	if [ -d /etc/rc.d/functions.d/ ]; then
-		for f in $(/bin/ls /etc/rc.d/functions.d/); do
-			. /etc/rc.d/functions.d/$f
-		done
-	fi
-}
+#Source additional functions at the end to allow overrides
+if [ -d /etc/rc.d/functions.d/ ]; then
+	for f in $(/bin/ls /etc/rc.d/functions.d/); do
+		. /etc/rc.d/functions.d/$f
+	done
+fi
 
 # End of file
 # vim: set ts=2 noet:
