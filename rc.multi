@@ -13,10 +13,9 @@
 for daemon in "${DAEMONS[@]}"; do
 	if [ "$daemon" = "${daemon#!}" ]; then
 		if [ "$daemon" = "${daemon#@}" ]; then
-			/etc/rc.d/$daemon start
+			start_daemon $daemon
 		else
-			stat_bkgd "Starting ${daemon:1}"
-			(/etc/rc.d/${daemon:1} start) &>/dev/null &
+			start_daemon_bkgd ${daemon:1}
 		fi
 	fi
 done

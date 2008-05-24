@@ -151,6 +151,19 @@ ck_depends() {
 	done
 }
 
+start_daemon() {
+	/etc/rc.d/$1 start
+}
+
+start_daemon_bkgd() {
+	stat_bkgd "Starting $1"
+	(/etc/rc.d/$1 start) &>/dev/null &
+}
+
+stop_daemon() {
+	/etc/rc.d/$1 stop
+}
+
 #Source additional functions at the end to allow overrides
 if [ -d /etc/rc.d/functions.d/ ]; then
 	for f in $(/bin/ls /etc/rc.d/functions.d/); do
