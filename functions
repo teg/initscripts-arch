@@ -165,11 +165,9 @@ stop_daemon() {
 }
 
 #Source additional functions at the end to allow overrides
-if [ -d /etc/rc.d/functions.d/ ]; then
-	for f in $(/bin/ls /etc/rc.d/functions.d/); do
-		. /etc/rc.d/functions.d/$f
-	done
-fi
+for f in /etc/rc.d/functions.d/*; do
+  [ -e $f ] && . /etc/rc.d/functions.d/$f
+done
 
 # End of file
 # vim: set ts=2 noet:
