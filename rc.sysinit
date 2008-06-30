@@ -7,7 +7,7 @@
 . /etc/rc.d/functions
 
 echo " "
-printhl "Arch Linux $C_OTHER(${C_H2}Core Dump$C_OTHER)\n"
+printhl "Arch Linux\n"
 printhl "${C_H2}http://www.archlinux.org"
 printhl "Copyright 2002-2007 Judd Vinet"
 printhl "Copyright 2007-2008 Aaron Griffin"
