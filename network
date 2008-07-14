@@ -18,11 +18,9 @@ ifup()
 		echo "usage: $0 ifup <interface_name>"
 		return 1
 	fi
-	eval iwcfg="\$wlan_${1}"
-	if [ "$iwcfg" != "" ]; then
-		/usr/sbin/iwconfig $iwcfg
-		/bin/sleep 2
-	fi
+
+	wi_up $1 || return 1
+
 	eval ifcfg="\$${1}"
 	if [ "$ifcfg" = "dhcp" ]; then
 		# remove the .pid file if it exists
@@ -33,6 +31,23 @@ ifup()
 		/sbin/ifconfig $ifcfg
 	fi
 	return $?
+}
+
+wi_up()
+{
+	eval iwcfg="\$wlan_${1}"
+	[ "$iwcfg" = "" ] && return 0
+
+	/usr/sbin/iwconfig $iwcfg
+	[[ -z "$WIRELESS_TIMEOUT" ]] && WIRELESS_TIMEOUT=2
+	sleep $WIRELESS_TIMEOUT
+
+	bssid=`iwgetid $1 -ra`
+	if [[ "$bssid" = "00:00:00:00:00:00" ]]; then
+		printhl "Could not associate $1 - try increasing WIRELESS_TIMEOUT and check network is WEP or has no security"
+		return 1
+	fi
+	return 0
 }
 
 ifdown()
