@@ -83,7 +83,7 @@ stat_busy "Deactivating Swap"
 stat_done
 
 stat_busy "Unmounting Filesystems"
-/bin/umount -a -t noramfs,notmpfs,nosysfs,noproc
+/bin/umount -a -r -t noramfs,notmpfs,nosysfs,noproc
 stat_done
 
 # Kill non-root encrypted partition mappings
