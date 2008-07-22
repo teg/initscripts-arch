@@ -87,7 +87,11 @@ rtup()
 		return 1
 	fi
 	eval routecfg="\$${1}"
-	/sbin/route add $routecfg
+	if grep -q :: <<< $routecfg; then
+			/sbin/route -A inet6 add $routecfg
+	else
+			/sbin/route add $routecfg
+	fi
 	return $?
 }
 
@@ -98,7 +102,11 @@ rtdown()
 		return 1
 	fi
 	eval routecfg="\$${1}"
-	/sbin/route del $routecfg
+	if grep -q :: <<< $routecfg; then
+			/sbin/route -A inet6 del $routecfg
+	else
+			/sbin/route del $routecfg
+	fi
 	return $?
 }
 
