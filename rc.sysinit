@@ -75,6 +75,11 @@ if [ -x /sbin/udevadm -a -d /sys/block ]; then
 	# We have udev and /sys appears to be mounted, use UDev
 	#status "Starting UDev Daemon" /etc/start_udev init
 
+	#Create these required device nodes if they're missing
+	[ -f /dev/console ] || /bin/mknod /dev/console c 5 1
+	[ -f /dev/null ] || /bin/mknod -m 666 /dev/null c 1 3
+	[ -f /dev/zero ] || /bin/mknod -m 666 /dev/zero c 1 5
+
 	stat_busy "Starting UDev Daemon"
 	/sbin/udevd --daemon
 	stat_done
