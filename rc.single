@@ -34,15 +34,15 @@ if [ "$PREVLEVEL" != "N" ]; then
 	/bin/sleep 1
 	stat_done
 
-	if [ -x /etc/start_udev -a -d /sys/block ]; then
-		# We have a start_udev script and /sys appears to be mounted, use UDev
-		status "Starting UDev Daemon" /etc/start_udev
-		if [ "$(/bin/pidof -o %PPID /sbin/udevd)" ]; then
-			# If an old udevd is kicking around, we'll have to remount pts and shm
-			/bin/umount /dev/shm /dev/pts >/dev/null 2>&1
-			/bin/mount /dev/pts
-			/bin/mount /dev/shm
-		fi
+	if [ -x /sbin/udevadm -a -d /sys/block ]; then
+		# We have udev and /sys appears to be mounted, use UDev
+		stat_busy "Starting UDev Daemon"
+		/sbin/udevd --daemon
+		stat_done
+		stat_busy "Loading UDev uevents"
+		/sbin/udevadm trigger
+		/sbin/udevadm settle
+		stat_done
 	else
 		# Static /dev, our last resort
 		status "Using static /dev filesystem" /bin/true
