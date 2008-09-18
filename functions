@@ -166,7 +166,7 @@ stop_daemon() {
 
 #Source additional functions at the end to allow overrides
 for f in /etc/rc.d/functions.d/*; do
-  [ -e $f ] && . /etc/rc.d/functions.d/$f
+  [ -e $f ] && . $f
 done
 
 # End of file
