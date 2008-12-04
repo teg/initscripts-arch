@@ -36,6 +36,9 @@ else
 fi
 unset TERM_COLORS
 
+# clear the TZ envvar, so daemons always respect /etc/localtime
+unset TZ
+
 # colors:
 if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	C_MAIN="\033[1;37;40m"      # main text
