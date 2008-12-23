@@ -325,6 +325,7 @@ stat_busy "Removing Leftover Files"
 /bin/rm -f /forcefsck &>/dev/null
 (cd /var/run && /usr/bin/find . ! -type d -exec /bin/rm -f -- {} \; )
 : > /var/run/utmp
+/bin/chmod 0664 /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
 /bin/mkdir /tmp/.ICE-unix && /bin/chmod 1777 /tmp/.ICE-unix
 /bin/mkdir /tmp/.X11-unix && /bin/chmod 1777 /tmp/.X11-unix
