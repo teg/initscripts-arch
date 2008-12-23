@@ -18,6 +18,9 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 
+#define MAX_BUF_LINES 10000
+#define BUF_LINE_SIZE 8192
+
 static int we_own_log=0;
 static char **buffer=NULL;
 static int buflines=0;
@@ -103,16 +106,16 @@ void runDaemon(int sock) {
 			cleanup(-1);
 		}
 		if ( (x>0) && pfds.revents & (POLLIN | POLLPRI)) {
-			message = calloc(8192,sizeof(char));
+			message = calloc(BUF_LINE_SIZE,sizeof(char));
 			recvsock = accept(sock,(struct sockaddr *) &addr, &addrlen);
 			alarm(2);
 			signal(SIGALRM, alarm_handler);
-			len = read(recvsock,message,8192);
+			len = read(recvsock,message,BUF_LINE_SIZE);
 			alarm(0);
 			close(recvsock);
 			if (len>0) {
 				/*printf("line recv'd: %s\n", message);*/
-				if (buflines < 200000) {
+				if (buflines < MAX_BUF_LINES) {
 					if (buffer)
 						buffer = realloc(buffer,(buflines+1)*sizeof(char *));
 					else
