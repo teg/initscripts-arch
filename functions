@@ -167,6 +167,26 @@ stop_daemon() {
 	/etc/rc.d/$1 stop
 }
 
+# Status functions
+status_started() {
+  deltext
+  echo -ne "   $C_OTHER[${C_STRT}STARTED$C_OTHER]$C_CLEAR "
+}
+
+status_stopped() {
+  deltext
+  echo -ne "   $C_OTHER[${C_STRT}STOPPED$C_OTHER]$C_CLEAR "
+}
+
+ck_status() {
+  if ck_daemon $1; then
+    status_started
+  else
+    status_stopped
+  fi		
+}
+
+
 #Source additional functions at the end to allow overrides
 for f in /etc/rc.d/functions.d/*; do
   [ -e $f ] && . $f
