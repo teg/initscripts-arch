@@ -242,44 +242,53 @@ FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk"
 
+fsck_reboot() {
+	echo "Automatic reboot in progress..."
+	/bin/umount -a
+	/bin/mount -n -o remount,ro /
+	/sbin/reboot -f
+	exit 0
+}
+
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
 	if /bin/grep -qw quiet /proc/cmdline; then
-		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >/dev/null 2>&1
+		FSCK_OUT=/dev/null
+		FSCK_ERR=/dev/null
 	else
-		/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK 2>/dev/null
+		FSCK_OUT=/dev/stdout
+		FSCK_ERR=/dev/null
 	fi
+	/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
 	if [ ${fsckret} -gt 1 ]; then
 		stat_fail
-		if [ $((${fsckret}&2)) -eq 2 ]; then
-			echo
-			echo "********************** REBOOT REQUIRED *********************"
-			echo "*                                                          *"
-			echo "* The system will be rebooted automatically in 15 seconds. *"
-			echo "*                                                          *"
-			echo "************************************************************"
-			echo
-			/bin/sleep 15
-		else
-			echo
-			echo "*****************  FILESYSTEM CHECK FAILED  ****************"
-			echo "*                                                          *"
-			echo "*  Please repair manually and reboot. Note that the root   *"
-			echo "*  file system is currently mounted read-only. To remount  *"
-			echo "*  it read-write type: mount -n -o remount,rw /            *"
-			echo "*  When you exit the maintenance shell the system will     *"
-			echo "*  reboot automatically.                                   *"
-			echo "*                                                          *"
-			echo "************************************************************"
-			echo
-			/sbin/sulogin -p
-		fi
-		echo "Automatic reboot in progress..."
-		/bin/umount -a
-		/bin/mount -n -o remount,ro /
-		/sbin/reboot -f
-		exit 0
+	fi
+	if [ $((${fsckret}&2)) -eq 2 ]; then
+		echo
+		echo "********************** REBOOT REQUIRED *********************"
+		echo "*                                                          *"
+		echo "* The system will be rebooted automatically in 15 seconds. *"
+		echo "*                                                          *"
+		echo "************************************************************"
+		echo
+		/bin/sleep 15
+		fsck_reboot
+	fi
+	if [ ${fsckret} -gt 1 -a ${fsckret} -ne 32 ]; then
+		echo
+		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+		echo "*                                                          *"
+		echo "*  Please repair manually and reboot. Note that the root   *"
+		echo "*  file system is currently mounted read-only. To remount  *"
+		echo "*  it read-write type: mount -n -o remount,rw /            *"
+		echo "*  When you exit the maintenance shell the system will     *"
+		echo "*  reboot automatically.                                   *"
+		echo "*                                                          *"
+		echo "************************************************************"
+		echo
+		/sbin/sulogin -p
+		fsck_reboot
 	fi
 	stat_done
 fi
