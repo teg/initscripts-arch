@@ -320,9 +320,10 @@ fi
 /sbin/hwclock $HWCLOCK_PARAMS
 stat_done
 
-if [ -f /var/run/random-seed ]; then
+RANDOM_SEED=/var/lib/misc/random-seed
+if [ -f $RANDOM_SEED ]; then
 	stat_busy "Initializing Random Seed"
-	/bin/cat /var/run/random-seed >/dev/urandom
+	/bin/cat $RANDOM_SEED > /dev/urandom
 	stat_done
 fi
 

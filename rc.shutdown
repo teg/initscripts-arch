@@ -51,7 +51,16 @@ stat_busy "Sending SIGKILL To Processes"
 stat_done
 
 stat_busy "Saving Random Seed"
-/bin/dd if=/dev/urandom of=/var/run/random-seed count=1 bs=512 2> /dev/null
+RANDOM_SEED=/var/lib/misc/random-seed
+: > $RANDOM_SEED
+/bin/chmod 0600 $RANDOM_SEED
+POOL_FILE=/proc/sys/kernel/random/poolsize
+if [ -r $POOL_FILE ]; then
+	POOL_SIZE=$(/bin/cat $POOL_FILE)
+else
+	POOL_SIZE=512
+fi
+/bin/dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
 stat_done
 
 stat_busy "Saving System Clock"
