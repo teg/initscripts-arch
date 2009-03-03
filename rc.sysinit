@@ -252,13 +252,8 @@ fsck_reboot() {
 
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
-	if /bin/grep -qw quiet /proc/cmdline; then
-		FSCK_OUT=/dev/null
-		FSCK_ERR=/dev/null
-	else
-		FSCK_OUT=/dev/stdout
-		FSCK_ERR=/dev/null
-	fi
+	FSCK_OUT=/dev/stdout
+	FSCK_ERR=/dev/null
 	/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
 	if [ ${fsckret} -gt 1 ]; then
