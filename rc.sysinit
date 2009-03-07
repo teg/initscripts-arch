@@ -19,19 +19,8 @@ printsep
 /bin/mount -n -t proc none /proc
 /bin/mount -n -t sysfs none /sys
 
-# Create our default nodes that minilogd may need
-/bin/mknod /dev/null c 1 3
-/bin/mknod /dev/zero c 1 5
-/bin/mknod /dev/console c 5 1
-
-# More initial /dev setup that udev doesn't do
-/bin/ln -snf /proc/self/fd /dev/fd
-/bin/ln -snf /proc/self/fd/0 /dev/stdin
-/bin/ln -snf /proc/self/fd/1 /dev/stdout
-/bin/ln -snf /proc/self/fd/2 /dev/stderr
-/bin/ln -snf /proc/kcore /dev/core
-/bin/mkdir /dev/pts
-/bin/mkdir /dev/shm
+# Copy static device nodes to /dev
+/bin/cp -a /lib/udev/devices/* /dev/
 
 # start up our mini logger until syslog takes over
 /sbin/minilogd
