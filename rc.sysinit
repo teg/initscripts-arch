@@ -301,6 +301,7 @@ if [ "$TIMEZONE" != "" -a -e "/usr/share/zoneinfo/$TIMEZONE" ]; then
 	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
 
+/sbin/hwclock --adjust #Adjust for system drift
 /sbin/hwclock $HWCLOCK_PARAMS
 stat_done
 

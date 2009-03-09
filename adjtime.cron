@@ -1,0 +1,3 @@
+#!/bin/sh
+# Update our hwclock for system drift
+/sbin/hwclock --adjust
