@@ -10,7 +10,10 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 #include <syslog.h>
+#define __USE_BSD
 #include <unistd.h>
 
 #include <sys/poll.h>
