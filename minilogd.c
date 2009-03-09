@@ -58,6 +58,7 @@ void freeBuffer() {
 		free(buffer[x]);
 		x++;
 	}
+	free(buffer);
 }
 
 void cleanup(int exitcode) {
