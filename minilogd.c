@@ -78,8 +78,8 @@ void cleanup(int exitcode) {
 void runDaemon(int sock) {
 	struct sockaddr_un addr;
 	int x,len,done=0;
-	socklen_t addrlen;
-	char *message;
+	socklen_t addrlen = sizeof(struct sockaddr_un);
+	char *message = NULL;
 	struct stat s1,s2;
 	struct pollfd pfds;
 
