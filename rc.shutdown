@@ -52,6 +52,7 @@ stat_done
 
 stat_busy "Saving Random Seed"
 RANDOM_SEED=/var/lib/misc/random-seed
+[ -d $(dirname $RANDOM_SEED) ] || mkdir -p $(dirname $RANDOM_SEED)
 : > $RANDOM_SEED
 /bin/chmod 0600 $RANDOM_SEED
 POOL_FILE=/proc/sys/kernel/random/poolsize
