@@ -190,8 +190,10 @@ ck_status() {
 
 #Source additional functions at the end to allow overrides
 for f in /etc/rc.d/functions.d/*; do
-  [ -e $f ] && . $f
+  if [ -e $f ]; then
+    . $f
+  fi
 done
 
 # End of file
-# vim: set ts=2 noet:
+# vim: set ft=sh sw=2 ts=2 et:
