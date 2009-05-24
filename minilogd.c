@@ -110,7 +110,9 @@ void runDaemon(int sock) {
 			cleanup(-1);
 		}
 		if ( (x>0) && pfds.revents & (POLLIN | POLLPRI)) {
-			message = calloc(BUF_LINE_SIZE,sizeof(char));
+			if (message == NULL) {
+				message = calloc(BUF_LINE_SIZE,sizeof(char));
+			}
 			recvsock = accept(sock,(struct sockaddr *) &addr, &addrlen);
 			alarm(2);
 			signal(SIGALRM, alarm_handler);
@@ -126,6 +128,7 @@ void runDaemon(int sock) {
 						buffer = malloc(sizeof(char *));
 					message[strlen(message)]='\n';
 					buffer[buflines]=message;
+					message = NULL;
 					buflines++;
 				}
 			}
@@ -148,6 +151,7 @@ void runDaemon(int sock) {
 			printf("st_mtime: %d %d\n", s1.st_mtime, s2.st_mtime);*/
 		}
 	}
+	free(message);
 	cleanup(0);
 }
 
