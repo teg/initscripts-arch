@@ -13,7 +13,9 @@
 #include <string.h>
 #include <strings.h>
 #include <syslog.h>
-#define __USE_BSD
+#ifndef  __USE_BSD
+#  define __USE_BSD
+#endif
 #include <unistd.h>
 
 #include <sys/poll.h>
