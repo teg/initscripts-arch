@@ -412,11 +412,7 @@ if [ -f "/dev/.udev/tmp-rules--70-persistent-net.rules" ]; then
 	stat_done
 fi
 
-# Save our dmesg output from this boot
-if [ -f /var/log/dmesg.log ]; then
-	/bin/rm /var/log/dmesg.log
-fi
-/bin/dmesg > /var/log/dmesg.log
+/bin/dmesg >| /var/log/dmesg.log
 
 # End of file
 # vim: set ts=2 noet:
