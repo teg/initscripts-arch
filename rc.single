@@ -34,8 +34,7 @@ if [ "$PREVLEVEL" != "N" ]; then
 	/bin/sleep 1
 	stat_done
 
-	if [ -x /sbin/udevadm -a -d /sys/block ]; then
-		# We have udev and /sys appears to be mounted, use UDev
+	if [ -x /sbin/udevadm ]; then
 		stat_busy "Starting UDev Daemon"
 		/sbin/udevd --daemon
 		stat_done

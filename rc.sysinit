@@ -60,8 +60,7 @@ fi
 
 echo > /proc/sys/kernel/hotplug
 
-if [ -x /sbin/udevadm -a -d /sys/block ]; then
-	# We have udev and /sys appears to be mounted, use UDev
+if [ -x /sbin/udevadm ]; then
 	stat_busy "Starting UDev Daemon"
 	/sbin/udevd --daemon
 	stat_done
