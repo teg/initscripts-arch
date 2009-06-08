@@ -227,7 +227,7 @@ case "$1" in
 		/bin/sleep 2
 		$0 start
 		;;
-	hotplug_ifup|ifup|ifdown|iflist|rtup|rtdown|rtlist)
+	ifup|ifdown|iflist|rtup|rtdown|rtlist)
 		$1 $2
 		;;
 	*)
