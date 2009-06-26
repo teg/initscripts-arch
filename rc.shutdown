@@ -73,13 +73,17 @@ fi
 HWCLOCK_PARAMS="--systohc"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
-else
+elif
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
+else
+	HWCLOCK_PARAMS=""
 fi
 if [ "$USEDIRECTISA" = "yes" -o "$USEDIRECTISA" = "YES" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --directisa"
 fi
-/sbin/hwclock $HWCLOCK_PARAMS
+if [ "$HWCLOCK_PARAMS" != "" ]; then
+	/sbin/hwclock $HWCLOCK_PARAMS
+fi
 stat_done
 
 # removing psmouse module to fix some reboot issues on newer laptops
