@@ -69,6 +69,13 @@ else
 	status "Using static /dev filesystem" true
 fi
 
+# Trigger udev uevents
+if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
+  stat_busy "Triggering UDev uevents"
+  /sbin/udevadm trigger &
+  stat_done
+fi
+
 # Load modules from the MODULES array defined in rc.conf
 if ! [ "$load_modules" = "off" ]; then
 	if [ -f /proc/modules ]; then
@@ -100,11 +107,10 @@ if ! [ "$load_modules" = "off" ]; then
 	fi
 fi
 
-# run udev uevents
+# Wait for udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
-	stat_busy "Loading UDev uevents"
+	stat_busy "Waiting for UDev uevents to be processed"
 	udevstart="$(/bin/date +%s%0N)"
-	/sbin/udevadm trigger
 	/sbin/udevadm settle
 	stat_done
 	udevend="$(/bin/date +%s%0N)"
