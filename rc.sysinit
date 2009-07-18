@@ -37,9 +37,8 @@ fi
 /sbin/modprobe rtc-cmos >/dev/null 2>&1
 RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null); RTC_MAJOR="${RTC_MAJOR%% *}"
 if [ -n "$RTC_MAJOR" ]; then
-	/bin/mkdir /dev/misc/
-	/bin/mknod /dev/misc/rtc0 c $RTC_MAJOR 0
-	/bin/ln -s /dev/misc/rtc0 /dev/rtc
+	/bin/mknod /dev/rtc0 c $RTC_MAJOR 0
+	/bin/ln -s /dev/rtc0 /dev/rtc
 fi
 
 HWCLOCK_PARAMS="--hctosys"
