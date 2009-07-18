@@ -73,7 +73,7 @@ fi
 HWCLOCK_PARAMS="--systohc"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
-elif
+elif [ "$HARDWARECLOCK" = "localtime" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
 else
 	HWCLOCK_PARAMS=""
