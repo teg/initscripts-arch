@@ -96,7 +96,7 @@ stat_busy() {
 
 stat_append() {
 	printf "${RESTORE_POSITION}"
-	printf "${C_MAIN}${1}${C_CLEAR}"
+	printf -- "${C_MAIN}${1}${C_CLEAR}"
 	printf "${SAVE_POSITION}"
 }
 
