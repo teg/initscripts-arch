@@ -26,7 +26,7 @@ case "$1" in
 		rc=$?
 		/bin/umount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs
 		rc=$(($rc+$?))
-		if [ $? -gt 0 ]; then
+		if [ $rc -gt 0 ]; then
 			stat_fail
 		else
 			rm_daemon netfs
