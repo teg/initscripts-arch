@@ -233,7 +233,7 @@ status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
 [ -f /forcefsck ] && FORCEFSCK="-- -f"
-NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk"
+NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs"
 
 fsck_reboot() {
 	echo "Automatic reboot in progress..."
@@ -291,7 +291,7 @@ if [ -e /proc/mounts ]; then
 	/bin/grep -e "/proc " -e "/sys " -e "/dev " /proc/mounts >> /etc/mtab
 fi
 # now mount all the local filesystems
-/bin/mount -a -t $NETFS
+/bin/mount -a -t $NETFS -O no_netdev
 stat_done
 
 status "Activating Swap" /sbin/swapon -a

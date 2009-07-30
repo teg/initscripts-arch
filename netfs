@@ -4,11 +4,16 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
+rc=0
+
 case "$1" in
 	start)
 		stat_busy "Mounting Network Filesystems"
-		/bin/mount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,fuse,fuseblk
-		if [ $? -gt 0 ]; then
+		/bin/mount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs
+		rc=$?
+		/bin/mount -a -O _netdev
+		rc=$(($rc+$?))
+		if [ $rc -gt 0 ]; then
 			stat_fail
 		else
 			add_daemon netfs
@@ -17,7 +22,10 @@ case "$1" in
 		;;
 	stop)
 		stat_busy "Unmounting Network Filesystems"
-		umount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,fuse,fuseblk
+		/bin/umount -a -O _netdev
+		rc=$?
+		/bin/umount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs
+		rc=$(($rc+$?))
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else
