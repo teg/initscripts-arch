@@ -4,16 +4,17 @@
 
 # width:
 
-STAT_COL=$(/bin/stty size)
-# strip the rows number, we just want columns
-STAT_COL=${STAT_COL##* }
-if [ "$STAT_COL" = "0" ]; then
-	# if output was 0 (serial console), set default width to 80
-	STAT_COL=80
-elif [ ! -t 1 ]; then
-	# disable color on output to non-tty
-	STAT_COL=80
-	USECOLOR=""
+# disable color on output to non-tty
+STAT_COL=80
+USECOLOR=""
+if [ -t 1 ]; then
+  STAT_COL=$(/bin/stty size)
+  # strip the rows number, we just want columns
+  STAT_COL=${STAT_COL##* }
+  if [ "$STAT_COL" = "0" ]; then
+    # if output was 0 (serial console), set default width to 80
+    STAT_COL=80
+  fi
 fi
 # we use 13 characters for our own stuff
 STAT_COL=$(($STAT_COL - 13))
@@ -60,6 +61,10 @@ if [ -t 1 ]; then
 	SAVE_POSITION="\033[s"
 	RESTORE_POSITION="\033[u"
 	DEL_TEXT="\033[$(($STAT_COL+4))G"
+else
+	SAVE_POSITION=""
+	RESTORE_POSITION=""
+	DEL_TEXT=""
 fi
 
 # prefixes:
