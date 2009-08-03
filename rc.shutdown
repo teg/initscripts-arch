@@ -26,7 +26,7 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	# Find daemons NOT in the DAEMONS array. Shut these down first
 	if [ -d /var/run/daemons ]; then
 		for daemon in $(/bin/ls -1t /var/run/daemons); do
-		  if ! in_array $daemon ${DAEMONS}; then
+		  if ! in_array $daemon ${DAEMONS[@]}; then
 				stop_daemon $daemon
 		  fi
 		done
