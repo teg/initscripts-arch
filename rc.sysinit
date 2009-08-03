@@ -15,7 +15,7 @@ printhl "Distributed under the GNU General Public License (GPL)"
 printsep
 
 # mount /proc, /sys and our RAM /dev
-/bin/mount -n -t ramfs none /dev
+/bin/mount -n -t tmpfs none /dev -o mode=0755
 /bin/mount -n -t proc none /proc
 /bin/mount -n -t sysfs none /sys
 
