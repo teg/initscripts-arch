@@ -159,17 +159,13 @@ status() {
 #          1 - not found
 # Copied from makepkg
 in_array() {
-  local needle=$1; shift
-  [ -z "$1" ] && return 1 # Not Found
-  local item
-  for item in "$@"; do
-    local c="${item:0:1}"
-    if [ "$c" == "!" -o "$c" == "@" ]; then
-      item="${item:1}"
-    fi
-    [ "$item" = "$needle" ] && return 0 # Found
-  done
-  return 1 # Not Found
+	local needle=$1; shift
+	[ -z "$1" ] && return 1 # Not Found
+	local item
+	for item in "$@"; do
+		[ "$item" = "$needle" ] && return 0 # Found
+	done
+	return 1 # Not Found
 }
 
 # daemons:
