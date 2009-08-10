@@ -128,7 +128,19 @@ bond_up()
 	for ifline in ${BOND_INTERFACES[@]}; do
 		if [ "$ifline" = "${ifline#!}" ]; then
 			eval bondcfg="\$bond_${ifline}"
-			/sbin/ifenslave $ifline $bondcfg || error=1
+			if [ -n "${bondcfg}" ]; then
+				/sbin/ifenslave $ifline $bondcfg || error=1
+			fi
+		fi
+	done
+}
+
+bond_down()
+{
+	for ifline in ${BOND_INTERFACES[@]}; do
+		if [ "$ifline" = "${ifline#!}" ]; then
+			eval bondcfg="\$bond_${ifline}"
+			/sbin/ifenslave -d $ifline $bondcfg || error=1
 		fi
 	done
 }
@@ -146,6 +158,15 @@ bridge_up()
 			eval brifs="\$bridge_${br}"
 			for brif in $brifs; do
 				if [ "$brif" = "${brif#!}" ]; then
+					for ifline in ${BOND_INTERFACES[@]}; do
+						if [ "$brif" = "$ifline" ] && [ "$ifline" = "${ifline#!}" ]; then
+							ifup $ifline
+							eval bondcfg="\$bond_${ifline}"
+							/sbin/ifenslave $ifline $bondcfg || error=1
+							unset bond_${ifline}
+						fi
+					done
+
 					/usr/sbin/brctl addif $br $brif || error=1
 				fi
 			done
@@ -209,6 +230,8 @@ case "$1" in
 				rtdown $rtline || error=1
 			fi
 		done
+		# bring down bond interfaces
+		bond_down
 		for ifline in ${INTERFACES[@]}; do
 			if [ "$ifline" = "${ifline#!}" ]; then
 				ifdown $ifline || error=1
