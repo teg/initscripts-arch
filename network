@@ -19,6 +19,8 @@ ifup()
 		return 1
 	fi
 
+	/sbin/ifconfig $1 up
+
 	wi_up $1 || return 1
 
 	eval ifcfg="\$${1}"
