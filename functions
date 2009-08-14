@@ -5,36 +5,28 @@
 # width:
 
 STAT_COL=80
-if [ -t 1 ]; then
-  # stty will fail when stdin isn't a terminal (but we're in this block, so stdout is)
-  if [ -t 0 ]; then
-    STAT_COL="$(/bin/stty size)"
-    # stty gives "rows cols"; strip the rows number, we just want columns
-    STAT_COL="${STAT_COL##* }"
-  else
-    # tput will fail at boot time if /usr/share/terminfo isn't yet mounted
-    # or TERM is otherwise unrecognized
-    STAT_COL="$(/bin/tput cols 2>/dev/null)"
-  fi
-  if [ "0$STAT_COL" -eq 0 ]; then
-    # if output was 0 (serial console), set default width to 80
-    USECOLOR=""
-    STAT_COL=80
-  fi
-else
+if [ ! -t 1 ]; then
   USECOLOR=""
+
+# stty will fail when stdin isn't a terminal
+elif [ -t 0 ]; then
+  STAT_COL="$(/bin/stty size)"
+  # stty gives "rows cols"; strip the rows number, we just want columns
+  STAT_COL="${STAT_COL##* }"
+
+else
+  # is /usr/share/terminfo already mounted, and TERM recognized?
+  /bin/tput cols &>/dev/null
+  if [ $? -eq 0 ]; then
+    STAT_COL=$(/bin/tput cols)
+  fi
+fi
+if [ "0$STAT_COL" -eq 0 ]; then
+  # if output was 0 (serial console), set default width to 80
   STAT_COL=80
+  USECOLOR=""
 fi
 
-if [ -t 1 ]; then
-  STAT_COL=$(/bin/stty size)
-  # strip the rows number, we just want columns
-  STAT_COL=${STAT_COL##* }
-  if [ "$STAT_COL" = "0" ]; then
-    # if output was 0 (serial console), set default width to 80
-    STAT_COL=80
-  fi
-fi
 # we use 13 characters for our own stuff
 STAT_COL=$(($STAT_COL - 13))
 
