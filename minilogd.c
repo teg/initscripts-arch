@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <stdarg.h>
 #include <syslog.h>
 #ifndef  __USE_BSD
 #  define __USE_BSD
@@ -45,13 +46,13 @@ void freeBuffer() {
 	int sock;
 	int x=0,conn;
 
-	bzero(&addr,sizeof(addr));
+	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_LOCAL;
 	strncpy(addr.sun_path,_PATH_LOG,sizeof(addr.sun_path)-1);
 	/* wait for klogd to hit syslog */
 	sleep(2);
 	sock = socket(AF_LOCAL, SOCK_STREAM,0);
-	conn=connect(sock,(struct sockaddr *) &addr,sizeof(addr));
+	conn=connect(sock,(struct sockaddr *) &addr,(socklen_t)sizeof(addr));
 	while (x<buflines) {
 		if (!conn) {
 			/*printf("to syslog: %s\n", buffer[x]);*/
@@ -72,7 +73,8 @@ void cleanup(int exitcode) {
 	}
 	/* Don't try to free buffer if we were called from a signal handler */
 	if (exitcode<=0) {
-		if (buffer) freeBuffer();
+		if (buffer)
+			freeBuffer();
 		exit(exitcode);
 	} else
 		exit(exitcode+128);
@@ -80,8 +82,9 @@ void cleanup(int exitcode) {
 
 void runDaemon(int sock) {
 	struct sockaddr_un addr;
-	int x,len,done=0;
-	socklen_t addrlen = sizeof(struct sockaddr_un);
+	int x,done=0;
+	ssize_t len;
+	socklen_t addrlen = (socklen_t)sizeof(struct sockaddr_un);
 	char *message = NULL;
 	struct stat s1,s2;
 	struct pollfd pfds;
@@ -103,15 +106,16 @@ void runDaemon(int sock) {
 	/* Get stat info on /dev/log so we can later check to make sure we
 	 * still own it... */
 	if (stat(_PATH_LOG,&s1) != 0)
-		memset(&s1, '\0', sizeof(struct stat));
+		memset(&s1, 0, sizeof(struct stat));
 	while (!done) {
 		pfds.fd = sock;
 		pfds.events = POLLIN|POLLPRI;
+		pfds.revents = 0;
 		if ( ( (x=poll(&pfds,1,500))==-1) && errno !=EINTR) {
 			perror("poll");
 			cleanup(-1);
 		}
-		if ( (x>0) && pfds.revents & (POLLIN | POLLPRI)) {
+		if ( (x>0) && (pfds.revents & (POLLIN | POLLPRI))) {
 			if (message == NULL) {
 				message = calloc(BUF_LINE_SIZE,sizeof(char));
 			}
@@ -170,13 +174,13 @@ int main(int argc, char **argv) {
 	dup2(sock,1);
 	dup2(sock,2);
 
-	bzero(&addr, sizeof(addr));
+	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_LOCAL;
 	strncpy(addr.sun_path,_PATH_LOG,sizeof(addr.sun_path)-1);
 	sock = socket(AF_LOCAL, SOCK_STREAM,0);
 	unlink(_PATH_LOG);
 	/* Bind socket before forking, so we know if the server started */
-	if (!bind(sock,(struct sockaddr *) &addr, sizeof(addr))) {
+	if (!bind(sock,(struct sockaddr *) &addr, (socklen_t)sizeof(addr))) {
 		we_own_log = 1;
 		listen(sock,5);
 		if ((pid=fork())==-1) {
