@@ -80,7 +80,7 @@ elif [ "$HARDWARECLOCK" = "localtime" ]; then
 else
 	HWCLOCK_PARAMS=""
 fi
-if [ "$HWCLOCK_PARAMS" != "" ]; then
+if [ -n "$HWCLOCK_PARAMS" ]; then
 	/sbin/hwclock $HWCLOCK_PARAMS
 fi
 stat_done

@@ -35,7 +35,8 @@ fi
 
 # enable rtc access
 /sbin/modprobe rtc-cmos >/dev/null 2>&1
-RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null); RTC_MAJOR="${RTC_MAJOR%% *}"
+RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null)
+RTC_MAJOR="${RTC_MAJOR%% *}"
 if [ -n "$RTC_MAJOR" ]; then
 	/bin/mknod /dev/rtc0 c $RTC_MAJOR 0
 	/bin/ln -s /dev/rtc0 /dev/rtc
@@ -44,13 +45,15 @@ fi
 HWCLOCK_PARAMS="--hctosys"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
-else
+elif [ "$HARDWARECLOCK" = "localtime" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
+else
+	HWCLOCK_PARAMS=""
 fi
 
 # Set clock early to fix some bugs with filesystem checks
 # Clock is set again later to match rc.conf
-if [ -f /etc/localtime ]; then
+if [ -n "$HWCLOCK_PARAMS" -a -f /etc/localtime ]; then
 	/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 fi
 
@@ -302,8 +305,10 @@ if [ "$TIMEZONE" != "" -a -e "/usr/share/zoneinfo/$TIMEZONE" ]; then
 	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
 
-/sbin/hwclock --adjust #Adjust for system drift
-/sbin/hwclock $HWCLOCK_PARAMS
+if [ -n "$HWCLOCK_PARAMS" ]; then
+	/sbin/hwclock --adjust #Adjust for system drift
+	/sbin/hwclock $HWCLOCK_PARAMS
+fi
 stat_done
 
 RANDOM_SEED=/var/lib/misc/random-seed
