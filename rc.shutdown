@@ -80,9 +80,6 @@ elif [ "$HARDWARECLOCK" = "localtime" ]; then
 else
 	HWCLOCK_PARAMS=""
 fi
-if [ "$USEDIRECTISA" = "yes" -o "$USEDIRECTISA" = "YES" ]; then
-	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --directisa"
-fi
 if [ "$HWCLOCK_PARAMS" != "" ]; then
 	/sbin/hwclock $HWCLOCK_PARAMS
 fi

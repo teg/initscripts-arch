@@ -47,9 +47,6 @@ if [ "$HARDWARECLOCK" = "UTC" ]; then
 else
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
 fi
-if [ "$USEDIRECTISA" = "yes" -o "$USEDIRECTISA" = "YES" ]; then
-	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --directisa"
-fi
 
 # Set clock early to fix some bugs with filesystem checks
 # Clock is set again later to match rc.conf
