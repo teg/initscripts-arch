@@ -71,7 +71,7 @@ fi
 # Trigger udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
   stat_busy "Triggering UDev uevents"
-  /sbin/udevadm trigger &
+  /sbin/udevadm trigger
   stat_done
 fi
 
