@@ -164,7 +164,7 @@ in_array() {
   local item
   for item in "$@"; do
     local c="${item:0:1}"
-    if [ "$c" == "!" -o "$c" == "@" ]; then
+    if [ "x$c" = "x@" ]; then
       item="${item:1}"
     fi
     [ "$item" = "$needle" ] && return 0 # Found
