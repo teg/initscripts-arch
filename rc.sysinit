@@ -59,14 +59,9 @@ fi
 
 echo > /proc/sys/kernel/hotplug
 
-if [ -x /sbin/udevadm ]; then
-	stat_busy "Starting UDev Daemon"
-	/sbin/udevd --daemon
-	stat_done
-else
-	# Static /dev, our last resort
-	status "Using static /dev filesystem" true
-fi
+stat_busy "Starting UDev Daemon"
+/sbin/udevd --daemon
+stat_done
 
 # Trigger udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then

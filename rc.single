@@ -26,27 +26,33 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 fi
 
 if [ "$PREVLEVEL" != "N" ]; then
+	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
 	/sbin/killall5 -15 &> /dev/null
 	/bin/sleep 5
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-	/sbin/killall5 -9
+	/sbin/killall5 -9 &> /dev/null
 	/bin/sleep 1
 	stat_done
 
-	if [ -x /sbin/udevadm ]; then
-		stat_busy "Starting UDev Daemon"
-		/sbin/udevd --daemon
-		stat_done
-		stat_busy "Loading UDev uevents"
-		/sbin/udevadm trigger
+	stat_busy "Starting UDev Daemon"
+	/sbin/udevd --daemon
+	stat_done
+
+	# Trigger udev uevents
+	if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
+	  stat_busy "Triggering UDev uevents"
+	  /sbin/udevadm trigger
+	  stat_done
+	fi
+
+	# Wait for udev uevents
+	if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
+		stat_busy "Waiting for UDev uevents to be processed"
 		/sbin/udevadm settle
 		stat_done
-	else
-		# Static /dev, our last resort
-		status "Using static /dev filesystem" /bin/true
 	fi
 
 	# try syslog-NG first, then fall back to good ol' syslogd
