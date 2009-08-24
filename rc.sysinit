@@ -109,11 +109,8 @@ fi
 # Wait for udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	stat_busy "Waiting for UDev uevents to be processed"
-	udevstart="$(/bin/date +%s%0N)"
 	/sbin/udevadm settle
 	stat_done
-	udevend="$(/bin/date +%s%0N)"
-	printhl "   UDev uevent processing time: $((($udevend-$udevstart)/1000000))ms"
 fi
 
 # bring up the loopback interface
