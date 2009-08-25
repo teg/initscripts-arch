@@ -6,6 +6,8 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
+run_hook start rc.shutdown
+
 # avoid staircase effect
 /bin/stty onlcr
 
@@ -41,6 +43,8 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	done
 fi
 
+run_hook prekillall rc.shutdown
+
 # Terminate all processes
 stat_busy "Sending SIGTERM To Processes"
 /sbin/killall5 -15 &> /dev/null
@@ -51,6 +55,8 @@ stat_busy "Sending SIGKILL To Processes"
 /sbin/killall5 -9 &> /dev/null
 /bin/sleep 1
 stat_done
+
+run_hook postkillall rc.shutdown
 
 stat_busy "Saving Random Seed"
 RANDOM_SEED=/var/lib/misc/random-seed
@@ -131,6 +137,8 @@ fi
 stat_busy "Remounting Root Filesystem Read-only"
 /bin/mount -n -o remount,ro /
 stat_done
+
+run_hook poweroff rc.shutdown
 
 # Power off or reboot
 if [ "$RUNLEVEL" = "0" ]; then
