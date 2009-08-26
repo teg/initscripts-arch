@@ -6,7 +6,7 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-run_hook start rc.single
+run_hook single_start
 
 if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 	# Find daemons NOT in the DAEMONS array. Shut these down first
@@ -28,7 +28,7 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 fi
 
 if [ "$PREVLEVEL" != "N" ]; then
-	run_hook prekillall rc.single
+	run_hook single_prekillall
 
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
@@ -41,13 +41,13 @@ if [ "$PREVLEVEL" != "N" ]; then
 	/bin/sleep 1
 	stat_done
 
-	run_hook postkillall rc.single
+	run_hook single_postkillall
 
 	stat_busy "Starting UDev Daemon"
 	/sbin/udevd --daemon
 	stat_done
 
-	run_hook udevlaunched rc.single
+	run_hook single_udevlaunched
 
 	# Trigger udev uevents
 	if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
@@ -63,7 +63,7 @@ if [ "$PREVLEVEL" != "N" ]; then
 		stat_done
 	fi
 
-	run_hook udevsettled rc.single
+	run_hook single_udevsettled
 
 	# try syslog-NG first, then fall back to good ol' syslogd
 	if [ -x /etc/rc.d/syslog-ng ]; then
@@ -74,7 +74,7 @@ if [ "$PREVLEVEL" != "N" ]; then
 	fi
 fi
 
-run_hook end rc.single
+run_hook single_end
 
 if [ "$RUNLEVEL" = "1" ]; then
 	printsep

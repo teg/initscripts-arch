@@ -239,26 +239,31 @@ ck_status() {
 #    ...
 #  }
 #  add_hook hook_name function_name
-# It's allowed to register several hook functions for the same hook
-#
-# The function takes the filename of the script that launched it as an argument
+# It is allowed to register several hook functions for the same hook
+# Is is also allowed to register the same hook function for several hooks
 #
 # Currently, the following hooks exist:
-# start: at the beginning of rc.{multi,shutdown,single,sysinit}
-# end: at the end of rc.{multi,single,sysinit}
-# udevlaunched: after udev has been launched in rc.sysinit and rc.single
-# udevsettled: after uevents have settled in rc.sysinit and rc.single
-# premount: before local filesystems are mounted, but after root is mounted read-write in rc.sysinit
-# prekillall: before all processes are being killed in rc.shutdown and rc.single
-# postkillall: after all processes have been killed in rc.shutdown and rc.single
-# poweroff: directly before powering off in rc.shutdown
+# sysinit_start: at the beginning of rc.sysinit
+# multi_start: at the beginning of rc.multi
+# single_start: at the beginning of rc.single
+# shutdown_start: at the beginning of rc.shutdown
+# sysinit_end: at the end of rc.sysinit
+# multi_end: at the end of rc.multi
+# single_end: at the end of rc.single
+# sysinit_udevlaunched: after udev has been launched in rc.sysinit
+# single_udevlaunched: after udev has been launched in rc.single
+# sysinit_udevsettled: after uevents have settled in rc.sysinit
+# single_udevsettled: after uevents have settled in rc.single
+# sysinit_premount: before local filesystems are mounted, but after root is mounted read-write in rc.sysinit
+# shutdown_prekillall: before all processes are being killed in rc.shutdown
+# single_prekillall: before all processes are being killed in rc.single
+# shutdown_postkillall: after all processes have been killed in rc.shutdown
+# single_postkillall: after all processes have been killed in rc.single
+# shutdown_poweroff: directly before powering off in rc.shutdown
 #
 # Make sure to never override the add_hook and run_hook functions via functions.d
 
 declare -A hook_funcs
-for hook in start end udevlaunched udevsettled premount prekillall postkillall poweroff; do
-	hook_funcs["${hook}"]=""
-done
 
 add_hook() {
 	[ -z "$1" -o -z "$2" ] && return 1
@@ -270,7 +275,7 @@ run_hook() {
 
 	[ -z "$1" ] && return 1
 	for func in ${hook_funcs["$1"]}; do
-		${func} "$2"
+		${func}
 	done
 }
 

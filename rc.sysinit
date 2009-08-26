@@ -14,7 +14,7 @@ printhl "Copyright 2007-2009 Aaron Griffin"
 printhl "Distributed under the GNU General Public License (GPL)"
 printsep
 
-run_hook start rc.sysinit
+run_hook sysinit_start
 
 # mount /proc, /sys and our RAM /dev
 /bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -65,7 +65,7 @@ stat_busy "Starting UDev Daemon"
 /sbin/udevd --daemon
 stat_done
 
-run_hook udevlaunched rc.sysinit
+run_hook sysinit_udevlaunched
 
 # Trigger udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
@@ -112,7 +112,7 @@ if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	stat_done
 fi
 
-run_hook udevsettled rc.sysinit
+run_hook sysinit_udevsettled
 
 # bring up the loopback interface
 if [ -d /sys/class/net/lo ]; then
@@ -288,7 +288,7 @@ stat_busy "Mounting Local Filesystems"
 if [ -e /proc/mounts ]; then
 	/bin/grep -e "/proc " -e "/sys " -e "/dev " /proc/mounts >> /etc/mtab
 fi
-run_hook premount rc.sysinit
+run_hook sysinit_premount
 # now mount all the local filesystems
 /bin/mount -a -t $NETFS -O no_netdev
 stat_done
@@ -419,7 +419,7 @@ fi
 
 /bin/dmesg >| /var/log/dmesg.log
 
-run_hook end rc.sysinit
+run_hook sysinit_end
 
 # End of file
 # vim: set ts=2 noet:
