@@ -22,7 +22,12 @@ ifup()
 	eval ifcfg="\$${1}"
 
 	# Get the name of the interface from the first token in the string
-	ifname=${ifcfg%% *}
+
+	if [ "$ifcfg" = "dhcp" ]; then
+		ifname="$1"
+	else
+		ifname=${ifcfg%% *}
+	fi
 
 	/sbin/ifconfig $ifname up
 
