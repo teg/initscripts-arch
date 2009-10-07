@@ -281,7 +281,7 @@ fi
 
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
-/bin/rm -f /etc/mtab*
+: > /etc/mtab
 # make sure / gets written to /etc/mtab
 /bin/mount -o remount,rw /
 # Write /proc, /sys and /dev to /etc/mtab
