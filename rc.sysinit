@@ -281,7 +281,7 @@ fi
 
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
-: > /etc/mtab
+: >| /etc/mtab
 # make sure / gets written to /etc/mtab
 /bin/mount -o remount,rw /
 # Write /proc, /sys and /dev to /etc/mtab
@@ -324,7 +324,7 @@ stat_busy "Removing Leftover Files"
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 /bin/rm -f /forcefsck &>/dev/null
 (cd /var/run && /usr/bin/find . ! -type d -exec /bin/rm -f -- {} \; )
-: > /var/run/utmp
+: >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
 /bin/mkdir /tmp/.ICE-unix && /bin/chmod 1777 /tmp/.ICE-unix
@@ -346,7 +346,7 @@ fi
 status "Updating Module Dependencies" /sbin/depmod -A
 
 # Flush old locale settings
-: >/etc/profile.d/locale.sh
+: >| /etc/profile.d/locale.sh
 /bin/chmod 755 /etc/profile.d/locale.sh
 # Set user defined locale
 [ -z "$LOCALE" ] && LOCALE="en_US"
