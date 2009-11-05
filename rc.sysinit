@@ -35,15 +35,6 @@ else
 	/bin/dmesg -n 3
 fi
 
-# enable rtc access
-/sbin/modprobe rtc-cmos >/dev/null 2>&1
-RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null)
-RTC_MAJOR="${RTC_MAJOR%% *}"
-if [ -n "$RTC_MAJOR" ]; then
-	/bin/mknod /dev/rtc0 c $RTC_MAJOR 0
-	/bin/ln -s /dev/rtc0 /dev/rtc
-fi
-
 HWCLOCK_PARAMS="--hctosys"
 if [ "$HARDWARECLOCK" = "UTC" ]; then
 	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
@@ -53,10 +44,21 @@ else
 	HWCLOCK_PARAMS=""
 fi
 
-# Set clock early to fix some bugs with filesystem checks
-# Clock is set again later to match rc.conf
-if [ -n "$HWCLOCK_PARAMS" -a -f /etc/localtime ]; then
-	/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
+if [ -n "$HWCLOCK_PARAMS" ]; then
+	# enable rtc access
+	/sbin/modprobe rtc-cmos >/dev/null 2>&1
+	RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null)
+	RTC_MAJOR="${RTC_MAJOR%% *}"
+	if [ -n "$RTC_MAJOR" ]; then
+		/bin/mknod /dev/rtc0 c $RTC_MAJOR 0
+		/bin/ln -s /dev/rtc0 /dev/rtc
+	fi
+
+	# Set clock early to fix some bugs with filesystem checks
+	# Clock is set again later to match rc.conf
+	if [ -f /etc/localtime ]; then
+		/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
+	fi
 fi
 
 echo > /proc/sys/kernel/hotplug
