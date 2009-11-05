@@ -111,13 +111,6 @@ fi
 
 # If necessary, find md devices and manually assemble RAID arrays
 if [ -f /etc/mdadm.conf -a "$(/bin/grep ^ARRAY /etc/mdadm.conf 2>/dev/null)" ]; then
-	# udev won't create these md nodes, so we do it ourselves
-	for dev in $(/bin/grep ^ARRAY /etc/mdadm.conf | /bin/awk '{print $2}'); do
-		path=$(echo $dev | /bin/sed 's|/[^/]*$||')
-		node=$(echo $dev | /bin/sed "s|^$path/||")
-		minor=$(echo $node | /bin/sed 's|^[^0-9]*||')
-		[ ! -e $path/$node ] && /bin/mknod $path/$node b 9 $minor
-	done
 	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
 fi
 
