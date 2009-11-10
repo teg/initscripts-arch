@@ -279,9 +279,6 @@ stat_done
 status "Activating Swap" /sbin/swapon -a
 
 stat_busy "Configuring System Clock"
-if [ ! -f /var/lib/hwclock/adjtime ]; then
-	echo "0.0 0 0.0" > /var/lib/hwclock/adjtime
-fi
 if [ "$TIMEZONE" != "" -a -e "/usr/share/zoneinfo/$TIMEZONE" ]; then
 	/bin/rm -f /etc/localtime
 	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
