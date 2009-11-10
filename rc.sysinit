@@ -281,9 +281,13 @@ if [ "$TIMEZONE" != "" -a -e "/usr/share/zoneinfo/$TIMEZONE" ]; then
 	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
 
+clock_pid=""
 if [ -n "$HWCLOCK_PARAMS" ]; then
+	(
 	/sbin/hwclock --adjust #Adjust for system drift
 	/sbin/hwclock $HWCLOCK_PARAMS
+	) &
+	clock_pid=$!
 fi
 stat_done
 
@@ -396,7 +400,12 @@ fi
 
 /bin/dmesg >| /var/log/dmesg.log
 
+# final hwclock setting needs to be done at this point
+if [ -n "$clock_pid" ]; then
+	wait $clock_pid
+fi
+
 run_hook sysinit_end
 
 # End of file
-# vim: set ts=2 noet:
+# vim: set ts=2 sw=2 noet:
