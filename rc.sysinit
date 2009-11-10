@@ -54,8 +54,14 @@ if [ -n "$HWCLOCK_PARAMS" ]; then
 		/bin/ln -s /dev/rtc0 /dev/rtc
 	fi
 
-	# Set clock early to fix some bugs with filesystem checks
-	# Clock is set again later to match rc.conf
+	# Do a clock set here for a few reasons:
+	# 1. Make creation time on udev nodes sane (FS#8665)
+	# 2. Filesystem checks can depend on system time
+	# 3. This will set the clock, if using non-UTC, off the last known
+	#    configured timezone. Any new timezone put in rc.conf is copied over at
+	#    a later time.
+	# This does *NOT* take into account a time adjustment file as /var may not be
+	# mounted yet. A second set occurs later to match rc.conf.
 	if [ -f /etc/localtime ]; then
 		/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 	fi
@@ -283,8 +289,14 @@ fi
 
 clock_pid=""
 if [ -n "$HWCLOCK_PARAMS" ]; then
+	# This time, we set the clock for real. Use the adjustment file now that
+	# /var will definitely be available, and then set the system clock once
+	# the hardware clock has been adjusted accordingly. The backgrounding magic
+	# is due to the fact that the second call to hwclock will almost always
+	# take ~1 second because of the clock granularity, and we might as well
+	# stay busy.
 	(
-	/sbin/hwclock --adjust #Adjust for system drift
+	/sbin/hwclock --adjust
 	/sbin/hwclock $HWCLOCK_PARAMS
 	) &
 	clock_pid=$!
