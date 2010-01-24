@@ -41,10 +41,9 @@ while [ $i -ge 0 ]; do
 	let i=i-1
 done
 
-run_hook shutdown_prekillall
-
 # Terminate all processes
 stat_busy "Sending SIGTERM To Processes"
+run_hook shutdown_prekillall
 /sbin/killall5 -15 &> /dev/null
 /bin/sleep 5
 stat_done
