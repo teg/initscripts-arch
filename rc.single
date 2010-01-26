@@ -28,10 +28,10 @@ if [ "$PREVLEVEL" = "3" -o "$PREVLEVEL" = "5" ]; then
 fi
 
 if [ "$PREVLEVEL" != "N" ]; then
-	run_hook single_prekillall
 
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
+	run_hook single_prekillall
 	/sbin/killall5 -15 &> /dev/null
 	/bin/sleep 5
 	stat_done
