@@ -228,8 +228,11 @@ if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
 	FSCK_OUT=/dev/stdout
 	FSCK_ERR=/dev/null
-	/sbin/fsck -A -T -C -a -t $NETFS $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
+	FSCK_FD=
+	run_hook sysinit_prefsck
+	/sbin/fsck -A -T -C$FSCK_FD -a -t $NETFS $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
+	run_hook sysinit_postfsck
 	if [ ${fsckret} -gt 1 ]; then
 		stat_fail
 	fi
