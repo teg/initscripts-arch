@@ -232,10 +232,10 @@ if [ -x /sbin/fsck ]; then
 	run_hook sysinit_prefsck
 	/sbin/fsck -A -T -C$FSCK_FD -a -t $NETFS $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
-	run_hook sysinit_postfsck
 	if [ ${fsckret} -gt 1 ]; then
 		stat_fail
 	fi
+	run_hook sysinit_postfsck
 	if [ $((${fsckret}&2)) -eq 2 ]; then
 		echo
 		echo "********************** REBOOT REQUIRED *********************"
