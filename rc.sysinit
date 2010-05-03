@@ -141,7 +141,19 @@ if [ -f /etc/crypttab -a -n "$(/bin/grep -v ^# /etc/crypttab | /bin/grep -v ^$)"
 	/sbin/modprobe -q dm-mod 2>/dev/null
 	stat_busy "Unlocking encrypted volumes:"
 	csfailed=0
-	CS=/sbin/cryptsetup.static
+	# Arch cryptsetup packages traditionally contained the binaries
+	#  /usr/sbin/cryptsetup
+	#  /sbin/cryptsetup.static
+	# By default, initscripts used the /sbin/cryptsetup.static.
+	# Newer packages will only have /sbin/cryptsetup and no static binary
+	# This ensures maximal compatibility with the old and new layout
+	if [ -x /sbin/cryptsetup ]; then
+		CS=/sbin/cryptsetup
+	elif [ -x /usr/sbin/cryptsetup ]; then
+		CS=/usr/sbin/cryptsetup
+	else
+		CS=/sbin/cryptsetup.static
+	fi
 	do_crypt() {
 		if [ $# -ge 3 ]; then
 			cname="$1"
