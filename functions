@@ -289,6 +289,9 @@ set_consolefont() {
 	if [ $? -ne 0 ]; then
 		stat_fail
 	else
+		if [ -n "$CONSOLEMAP" ]; then
+			echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033(K"; fi' >>/etc/profile.d/locale.sh
+		fi
 		stat_done
 	fi
     fi
