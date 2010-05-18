@@ -242,7 +242,7 @@ if [ -x /sbin/fsck ]; then
 	FSCK_ERR=/dev/null
 	FSCK_FD=
 	run_hook sysinit_prefsck
-	/sbin/fsck -A -T -C$FSCK_FD -a -t $NETFS $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
+	/sbin/fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
 	if [ ${fsckret} -gt 1 ]; then
 		stat_fail
