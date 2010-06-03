@@ -17,9 +17,19 @@ printsep
 run_hook sysinit_start
 
 # mount /proc, /sys and our RAM /dev
-/bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
-/bin/mount -n -t proc none /proc
-/bin/mount -n -t sysfs none /sys
+if ! /bin/mountpoint -q /proc; then
+  /bin/mount -n -t proc none /proc
+fi
+if ! /bin/mountpoint -q /sys; then
+  /bin/mount -n -t sysfs none /sys
+fi
+if ! /bin/mountpoint -q /dev; then
+  if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
+    /bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
+  else
+    /bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
+  fi
+fi
 
 # Copy static device nodes to /dev
 /bin/cp -a /lib/udev/devices/* /dev/
