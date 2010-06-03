@@ -51,7 +51,7 @@ if [ "$PREVLEVEL" != "N" ]; then
 	if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	  stat_busy "Triggering UDev uevents"
 	  /sbin/udevadm control --property=STARTUP=1
-	  /sbin/udevadm trigger
+	  /sbin/udevadm trigger --action=add
 	  stat_done
 	fi
 
