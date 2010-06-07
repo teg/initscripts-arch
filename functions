@@ -1,30 +1,25 @@
-#
+#!/bin/bash
 # initscripts functions
 #
 
 # width:
 
 STAT_COL=80
-if [ ! -t 1 ]; then
-  USECOLOR=""
-
-# stty will fail when stdin isn't a terminal
-elif [ -t 0 ]; then
-  STAT_COL="$(/bin/stty size)"
-  # stty gives "rows cols"; strip the rows number, we just want columns
-  STAT_COL="${STAT_COL##* }"
-
-else
-  # is /usr/share/terminfo already mounted, and TERM recognized?
-  /bin/tput cols &>/dev/null
-  if [ $? -eq 0 ]; then
+if [[ ! -t 1 ]]; then
+    USECOLOR=""
+elif [[ -t 0 ]]; then
+    # stty will fail when stdin isn't a terminal
+    STAT_COL="$(/bin/stty size)"
+    # stty gives "rows cols"; strip the rows number, we just want columns
+    STAT_COL="${STAT_COL##* }"
+elif /bin/tput cols &>/dev/null; then
+    # is /usr/share/terminfo already mounted, and TERM recognized?
     STAT_COL=$(/bin/tput cols)
-  fi
 fi
-if [ "0$STAT_COL" -eq 0 ]; then
-  # if output was 0 (serial console), set default width to 80
-  STAT_COL=80
-  USECOLOR=""
+if ((STAT_COL==0)); then
+    # if output was 0 (serial console), set default width to 80
+    STAT_COL=80
+    USECOLOR=""
 fi
 
 # we use 13 characters for our own stuff
@@ -32,19 +27,12 @@ STAT_COL=$(($STAT_COL - 13))
 
 # disable colors on broken terminals
 TERM_COLORS="$(/bin/tput colors 2>/dev/null)"
-if [ $? = 3 ]; then
-	TERM_COLORS=8
-elif [ -n "${TERM_COLORS}" ]; then
-	case "${TERM_COLORS}" in
-		*[!0-9]*)
-			USECOLOR=""
-			;;
-		*)
-			[ "${TERM_COLORS}" -lt 8 ] && USECOLOR=""
-			;;
-	esac
-else
-	USECOLOR=""
+if (($? != 3)); then
+    case $TERM_COLORS in
+	*[!0-9]*) USECOLOR="";;
+	[0-7])    USECOLOR="";;
+	'')       USECOLOR="";;
+    esac
 fi
 unset TERM_COLORS
 
@@ -52,8 +40,9 @@ unset TERM_COLORS
 unset TZ
 
 # colors:
-if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
+if [[ $USECOLOR = YES || $USECOLOR = yes ]]; then
 	C_MAIN="\033[1;37;40m"      # main text
+
 	C_OTHER="\033[1;34;40m"     # prefix & brackets
 	C_SEPARATOR="\033[1;30;40m" # separator
 
@@ -68,7 +57,7 @@ if [ "$USECOLOR" = "YES" -o "$USECOLOR" = "yes" ]; then
 	C_CLEAR="\033[1;0m"
 fi
 
-if [ -t 1 ]; then
+if [[ -t 1 ]]; then
 	SAVE_POSITION="\033[s"
 	RESTORE_POSITION="\033[u"
 	DEL_TEXT="\033[$(($STAT_COL+4))G"
@@ -167,38 +156,39 @@ in_array() {
 # daemons:
 
 add_daemon() {
-	[ -d /var/run/daemons ] || /bin/mkdir -p /var/run/daemons
-	/bin/touch /var/run/daemons/$1
+	[[ -d /var/run/daemons ]] || /bin/mkdir -p /var/run/daemons
+	> /var/run/daemons/"$1"
 }
 
 rm_daemon() {
-	/bin/rm -f /var/run/daemons/$1
+	/bin/rm -f /var/run/daemons/"$1"
 }
 
 ck_daemon() {
-	[ -f /var/run/daemons/$1 ] && return 1
-	return 0
+	[[ ! -f /var/run/daemons/$1 ]]
 }
 
-ck_depends() {
-	for daemon in $@; do
-		if ck_daemon $daemon; then
-			/etc/rc.d/$daemon start
-		fi
-	done
+have_daemon() {
+    [[ -x /etc/rc.d/$1 ]]
 }
 
 start_daemon() {
-	/etc/rc.d/$1 start
+    have_daemon "$1" && /etc/rc.d/"$1" start
+}
+
+ck_depends() {
+    for daemon in "$@"; do
+	ck_daemon "$daemon" && start_daemon "$daemon"
+    done
 }
 
 start_daemon_bkgd() {
 	stat_bkgd "Starting $1"
-	(/etc/rc.d/$1 start) &>/dev/null &
+	have_daemon "$1" && (start_daemon "$1") &>/dev/null &
 }
 
 stop_daemon() {
-	/etc/rc.d/$1 stop
+	have_daemon "$1" && /etc/rc.d/"$1" stop
 }
 
 # Status functions
@@ -213,12 +203,11 @@ status_stopped() {
 }
 
 ck_status() {
-  ck_daemon $1
-  if [ $? -eq 1 ]; then
+  if ! ck_daemon "$1"; then
     status_started
   else
     status_stopped
-  fi		
+  fi
 }
 
 ###############################
