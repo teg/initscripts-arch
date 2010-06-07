@@ -123,14 +123,12 @@ stat_die() {
 status() {
 	stat_busy "$1"
 	shift
-	$* >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
+	if "$@" >/dev/null 2>&1; then
 		stat_done
 		return 0
-	else
-		stat_fail
-		return 1
 	fi
+	stat_fail
+	return 1
 }
 
 #  usage : in_array( $needle, $haystack )
