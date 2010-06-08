@@ -297,13 +297,7 @@ fi
 
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
-: >| /etc/mtab
-# make sure / gets written to /etc/mtab
-/bin/mount -o remount,rw /
-# Write /proc, /sys and /dev to /etc/mtab
-if [ -e /proc/mounts ]; then
-	/bin/grep -e "/proc " -e "/sys " -e "/dev " /proc/mounts >> /etc/mtab
-fi
+cat /proc/mounts >| /etc/mtab
 run_hook sysinit_premount
 # now mount all the local filesystems
 /bin/mount -a -t $NETFS -O no_netdev
