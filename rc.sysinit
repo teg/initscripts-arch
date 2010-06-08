@@ -249,7 +249,7 @@ fsck_reboot() {
 if [ -x /sbin/fsck ]; then
 	stat_busy "Checking Filesystems"
 	FSCK_OUT=/dev/stdout
-	FSCK_ERR=/dev/null
+	FSCK_ERR=/dev/stdout
 	FSCK_FD=
 	run_hook sysinit_prefsck
 	/sbin/fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
