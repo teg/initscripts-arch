@@ -56,12 +56,20 @@ fi
 
 if [ -n "$HWCLOCK_PARAMS" ]; then
 	# enable rtc access
-	/sbin/modprobe rtc-cmos >/dev/null 2>&1
-	RTC_MAJOR=$(/bin/grep -w rtc /proc/devices 2>/dev/null)
-	RTC_MAJOR="${RTC_MAJOR%% *}"
-	if [ -n "$RTC_MAJOR" ]; then
-		/bin/mknod /dev/rtc0 c $RTC_MAJOR 0
-		/bin/ln -s /dev/rtc0 /dev/rtc
+	/sbin/modprobe -q rtc-cmos
+	# some custom kernels use rtc/genrtc, try to load those too
+	/sbin/modprobe -q rtc
+	/sbin/modprobe -q genrtc
+	# If devtmpfs is used, the required RTC device already exists now
+	# Otherwise, create whatever device is available
+	if [ ! -c /dev/rtc -a ! -c /dev/rtc0 ]; then
+		if [ -f /sys/class/rtc/rtc0/dev ]; then
+			IFS=: read -r major minor < /sys/class/rtc/rtc0/dev
+			/bin/mknod /dev/rtc0 c $major $minor
+		elif [ -f /sys/class/misc/rtc/dev ]; then
+			IFS=: read -r major minor < /sys/class/misc/rtc/dev
+			/bin/mknod /dev/rtc c $major $minor
+		fi
 	fi
 
 	# Do a clock set here for a few reasons:
