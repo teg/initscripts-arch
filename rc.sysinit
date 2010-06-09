@@ -17,12 +17,9 @@ printsep
 run_hook sysinit_start
 
 # mount /proc, /sys and our RAM /dev
-if ! /bin/mountpoint -q /proc; then
-  /bin/mount -n -t proc none /proc
-fi
-if ! /bin/mountpoint -q /sys; then
-  /bin/mount -n -t sysfs none /sys
-fi
+/bin/mountpoint -q /proc || /bin/mount -n -t proc none /proc
+/bin/mountpoint -q /sys  || /bin/mount -n -t sysfs none /sys
+
 if ! /bin/mountpoint -q /dev; then
   if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
     /bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -46,30 +43,23 @@ else
 fi
 
 HWCLOCK_PARAMS="--hctosys"
-if [ "$HARDWARECLOCK" = "UTC" ]; then
-	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
-elif [ "$HARDWARECLOCK" = "localtime" ]; then
-	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
-else
-	HWCLOCK_PARAMS=""
-fi
+case $HARDWARECLOCK in
+    UTC) HWCLOCK_PARAMS+=" --utc";;
+    localtime) HWCLOCK_PARAMS+=" --localtime";;
+    *) HWCLOCK_PARAMS="";;
+esac
 
-if [ -n "$HWCLOCK_PARAMS" ]; then
+if [[ $HWCLOCK_PARAMS ]]; then
 	# enable rtc access
-	/sbin/modprobe -q rtc-cmos
-	# some custom kernels use rtc/genrtc, try to load those too
-	/sbin/modprobe -q rtc
-	/sbin/modprobe -q genrtc
+	/sbin/modprobe -q -a rtc-cmos rtc genrtc
 	# If devtmpfs is used, the required RTC device already exists now
 	# Otherwise, create whatever device is available
-	if [ ! -c /dev/rtc -a ! -c /dev/rtc0 ]; then
-		if [ -f /sys/class/rtc/rtc0/dev ]; then
-			IFS=: read -r major minor < /sys/class/rtc/rtc0/dev
-			/bin/mknod /dev/rtc0 c $major $minor
-		elif [ -f /sys/class/misc/rtc/dev ]; then
-			IFS=: read -r major minor < /sys/class/misc/rtc/dev
-			/bin/mknod /dev/rtc c $major $minor
-		fi
+	if ! [[ -c /dev/rtc || -c /dev/rtc0 ]]; then
+            for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
+                [[ -e $dev ]] || continue
+		IFS=: read -r major minor < "$dev"
+		/bin/mknod /dev/rtc c $major $minor
+	    done
 	fi
 
 	# Do a clock set here for a few reasons:
@@ -80,7 +70,7 @@ if [ -n "$HWCLOCK_PARAMS" ]; then
 	#    a later time.
 	# This does *NOT* take into account a time adjustment file as /var may not be
 	# mounted yet. A second set occurs later to match rc.conf.
-	if [ -f /etc/localtime ]; then
+	if [[ -f /etc/localtime ]]; then
 		/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 	fi
 fi
@@ -102,16 +92,14 @@ if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 fi
 
 # Load modules from the MODULES array defined in rc.conf
-if ! [ "$load_modules" = "off" ]; then
-	if [ -f /proc/modules ]; then
-		stat_busy "Loading Modules"
-		for mod in "${MODULES[@]}"; do
-			if [ "$mod" = "${mod#!}" ]; then
-				/sbin/modprobe $mod
-			fi
-		done
-		stat_done
+if [[ $load_modules != off && -f /proc/modules ]]; then
+    stat_busy "Loading Modules"
+    for mod in "${MODULES[@]}"; do
+	if [[ $mod = ${mod#!} ]]; then
+	    /sbin/modprobe $mod
 	fi
+    done
+    stat_done
 fi
 
 # Wait for udev uevents
@@ -125,18 +113,11 @@ fi
 run_hook sysinit_udevsettled
 
 # bring up the loopback interface
-if [ -d /sys/class/net/lo ]; then
-	stat_busy "Bringing up loopback interface"
-	/sbin/ifconfig lo 127.0.0.1 up
-	if [ $? -ne 0 ]; then
-		stat_fail
-	else
-		stat_done
-	fi
-fi
+[[ -d /sys/class/net/lo ]] && \
+    status "Bringing up loopback interface" /sbin/ifconfig lo 127.0.0.1 up
 
 # If necessary, find md devices and manually assemble RAID arrays
-if [ -f /etc/mdadm.conf -a "$(/bin/grep ^ARRAY /etc/mdadm.conf 2>/dev/null)" ]; then
+if [[ -f /etc/mdadm.conf ]] && /bin/grep -q ^ARRAY /etc/mdadm.conf; then
 	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
 fi
 
@@ -243,7 +224,7 @@ fi
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
-[ -f /forcefsck ] && FORCEFSCK="-- -f"
+[[ -f /forcefsck ]] && FORCEFSCK="-- -f"
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs"
 
 fsck_reboot() {
@@ -254,7 +235,7 @@ fsck_reboot() {
 	exit 0
 }
 
-if [ -x /sbin/fsck ]; then
+if [[ -x /sbin/fsck ]]; then
 	stat_busy "Checking Filesystems"
 	FSCK_OUT=/dev/stdout
 	FSCK_ERR=/dev/stdout
@@ -262,11 +243,11 @@ if [ -x /sbin/fsck ]; then
 	run_hook sysinit_prefsck
 	/sbin/fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
-	if [ ${fsckret} -gt 1 ]; then
+	if ((fsckret > 1)); then
 		stat_fail
 	fi
 	run_hook sysinit_postfsck
-	if [ $((${fsckret}&2)) -eq 2 ]; then
+	if (( ( fsckret & 2) == 2)); then
 		echo
 		echo "********************** REBOOT REQUIRED *********************"
 		echo "*                                                          *"
@@ -276,8 +257,7 @@ if [ -x /sbin/fsck ]; then
 		echo
 		/bin/sleep 15
 		fsck_reboot
-	fi
-	if [ ${fsckret} -gt 1 -a ${fsckret} -ne 32 ]; then
+	elif ((fsckret > 1 && fsckret != 32)); then
 		echo
 		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
 		echo "*                                                          *"
@@ -310,13 +290,13 @@ stat_done
 status "Activating Swap" /sbin/swapon -a
 
 stat_busy "Configuring System Clock"
-if [ "$TIMEZONE" != "" -a -e "/usr/share/zoneinfo/$TIMEZONE" ]; then
+if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
 	/bin/rm -f /etc/localtime
 	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
 
 clock_pid=""
-if [ -n "$HWCLOCK_PARAMS" ]; then
+if [[ $HWCLOCK_PARAMS ]]; then
 	# This time, we set the clock for real. Use the adjustment file now that
 	# /var will definitely be available, and then set the system clock once
 	# the hardware clock has been adjusted accordingly. The backgrounding magic
@@ -332,7 +312,7 @@ fi
 stat_done
 
 RANDOM_SEED=/var/lib/misc/random-seed
-if [ -f $RANDOM_SEED ]; then
+if [[ -f $RANDOM_SEED ]]; then
 	stat_busy "Initializing Random Seed"
 	/bin/cat $RANDOM_SEED > /dev/urandom
 	stat_done
@@ -344,7 +324,7 @@ stat_busy "Removing Leftover Files"
 /bin/rm -f /var/lock/* &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 /bin/rm -f /forcefsck &>/dev/null
-(cd /var/run && /usr/bin/find . ! -type d -exec /bin/rm -f -- {} \; )
+(cd /var/run && /usr/bin/find . \! -type d -delete  )
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
@@ -354,14 +334,14 @@ stat_done
 
 #status "Updating Shared Library Links" /sbin/ldconfig
 
-if [ "$HOSTNAME" != "" ]; then
-	status "Setting Hostname: $HOSTNAME" /bin/hostname $HOSTNAME
+if [[ $HOSTNAME ]]; then
+	status "Setting Hostname: $HOSTNAME" /bin/hostname "$HOSTNAME"
 fi
 
 # Set the NIS domain name, if necessary
-[ -f /etc/conf.d/nisdomainname ] && . /etc/conf.d/nisdomainname
-if [ "$NISDOMAINNAME" != "" ]; then
-	status "Setting NIS Domain Name: $NISDOMAINNAME" /bin/nisdomainname $NISDOMAINNAME
+[[ -f /etc/conf.d/nisdomainname ]] && . /etc/conf.d/nisdomainname
+if [[ $NISDOMAINNAME ]]; then
+	status "Setting NIS Domain Name: $NISDOMAINNAME" /bin/nisdomainname "$NISDOMAINNAME"
 fi
 
 status "Updating Module Dependencies" /sbin/depmod -A
@@ -370,12 +350,12 @@ status "Updating Module Dependencies" /sbin/depmod -A
 : >| /etc/profile.d/locale.sh
 /bin/chmod 755 /etc/profile.d/locale.sh
 # Set user defined locale
-[ -z "$LOCALE" ] && LOCALE="en_US"
+[[ $LOCALE ]] || LOCALE="en_US"
 stat_busy "Setting Locale: $LOCALE"
 echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
 stat_done
 
-if echo "$LOCALE" | /bin/grep -qi utf ; then
+if [[ ${LOCALE,,} =~ utf ]]; then
 	stat_busy "Setting Consoles to UTF-8 mode"
 	# UTF-8 consoles are default since 2.6.24 kernel
 	# this code is needed not only for older kernels,
@@ -385,9 +365,11 @@ if echo "$LOCALE" | /bin/grep -qi utf ; then
 		printf "\033%%G" > ${i}
 	done
 	# the $CONSOLE check helps us avoid this when running scripts from cron
-	echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033%%G"; fi' >>/etc/profile.d/locale.sh
+	cat <<"EOF" >>/etc/profile.d/locale.sh
+if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033%%G"; fi
+EOF
 	stat_done
-	[ -n "$KEYMAP" ] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q -u $KEYMAP
+	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q -u "$KEYMAP"
 else
 	stat_busy "Setting Consoles to legacy mode"
 	# make non-UTF-8 consoles work on 2.6.24 and newer kernels
@@ -396,30 +378,28 @@ else
 		printf "\033%%@" > ${i}
 	done
 	# the $CONSOLE check helps us avoid this when running scripts from cron
-	echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033%%@"; fi' >>/etc/profile.d/locale.sh
+	cat <<"EOF" >>/etc/profile.d/locale.sh
+if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033%%@"; fi
+EOF
 	stat_done
-	[ -n "$KEYMAP" ] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
+	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
 fi
 
 # Set console font if required
 set_consolefont
 
 # Adding persistent network/cdrom generated rules
-if [ -f "/dev/.udev/tmp-rules--70-persistent-cd.rules" ]; then
-	stat_busy "Adding persistent cdrom udev rules"
-	/bin/cat /dev/.udev/tmp-rules--70-persistent-cd.rules >> /etc/udev/rules.d/70-persistent-cd.rules
-	stat_done
-fi
-if [ -f "/dev/.udev/tmp-rules--70-persistent-net.rules" ]; then
-	stat_busy "Adding persistent network udev rules"
-	/bin/cat /dev/.udev/tmp-rules--70-persistent-net.rules >> /etc/udev/rules.d/70-persistent-net.rules
-	stat_done
-fi
+for f in cd net; do
+    [[ -f /dev/.udev/tmp-rules--70-persistent-$f.rules ]] || continue
+    stat_busy "Adding persistent $f udev rules"
+    /bin/cat "/dev/.udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
+    stat_done
+done
 
 /bin/dmesg >| /var/log/dmesg.log
 
 # final hwclock setting needs to be done at this point
-if [ -n "$clock_pid" ]; then
+if [[ $clock_pid ]]; then
 	wait $clock_pid
 fi
 
