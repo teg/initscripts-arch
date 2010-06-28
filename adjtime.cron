@@ -4,14 +4,12 @@
 . /etc/rc.conf
 
 HWCLOCK_PARAMS="--adjust"
-if [ "$HARDWARECLOCK" = "UTC" ]; then
-	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc"
-elif [ "$HARDWARECLOCK" = "localtime" ]; then
-	HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime"
-else
-	HWCLOCK_PARAMS=""
-fi
+case $HARDWARECLOCK in
+    UTC) HWCLOCK_PARAMS+=" --utc";;
+    localtime) HWCLOCK_PARAMS+=" --localtime";;
+    *) HWCLOCK_PARAMS="";;
+esac
 
-if [ -n "$HWCLOCK_PARAMS" ]; then
-	/sbin/hwclock $HWCLOCK_PARAMS
+if [[ $HWCLOCK_PARAMS ]]; then
+    /sbin/hwclock $HWCLOCK_PARAMS
 fi
