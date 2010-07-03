@@ -234,55 +234,50 @@ ck_status() {
 # single_postkillall: after all processes have been killed in rc.single
 # shutdown_poweroff: directly before powering off in rc.shutdown
 #
-# Make sure to never override the add_hook and run_hook functions via functions.d
+# Declare add_hook and run_hook as read-only to prevent overwriting them.
+# Too bad we cannot do the same thing with hook_funcs
 
 declare -A hook_funcs
 
 add_hook() {
-	[ -z "$1" -o -z "$2" ] && return 1
-	hook_funcs["$1"]="${hook_funcs["$1"]} $2"
+	[[ $1 && $2 ]] || return 1
+	hook_funcs["$1"]+=" $2"
 }
 
 run_hook() {
-	local func
-
-	[ -z "$1" ] && return 1
-	for func in ${hook_funcs["$1"]}; do
-		${func}
-	done
+    [[ $1 ]] || return 1
+    local func
+    for func in ${hook_funcs["$1"]}; do
+	"${func}"
+    done
 }
+
+declare -r add_hook run_hook
 
 # Function for setting console font if required
 set_consolefont() {
-    if [ -n "$CONSOLEFONT" ]; then
-	stat_busy "Loading Console Font: $CONSOLEFONT"
-	#CONSOLEMAP in UTF-8 shouldn't be used
-	if [ -n "$CONSOLEMAP" ] && echo "$LOCALE" | /bin/grep -qi utf ; then
-		CONSOLEMAP=""
-	fi
-	for i in /dev/tty[0-9]*; do
-		if [ -n "$CONSOLEMAP" ]; then
-			/usr/bin/setfont -m $CONSOLEMAP $CONSOLEFONT -C ${i} >/dev/null 2>&1
-		else
-			/usr/bin/setfont $CONSOLEFONT -C ${i} >/dev/null 2>&1
-		fi
-	done
-	if [ $? -ne 0 ]; then
-		stat_fail
-	else
-		if [ -n "$CONSOLEMAP" ]; then
-			echo 'if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033(K"; fi' >>/etc/profile.d/locale.sh
-		fi
-		stat_done
-	fi
+    [[ $CONSOLEFONT ]] || return 0
+    stat_busy "Loading Console Font: $CONSOLEFONT"
+    #CONSOLEMAP in UTF-8 shouldn't be used
+    [[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
+    for i in /dev/tty[0-9]*; do
+	/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
+	    $CONSOLEFONT -C ${i} >/dev/null 2>&1
+    done
+    if (($? != 0)); then
+	stat_fail
+    elif [[ $CONSOLEMAP ]]; then
+	cat <<"EOF" >>/etc/profile.d/locale.sh
+if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033(K"; fi
+
+EOF
+	stat_done
     fi
 }
 
 # Source additional functions at the end to allow overrides
 for f in /etc/rc.d/functions.d/*; do
-  if [ -e $f ]; then
-    . $f
-  fi
+  [[ -e $f ]] && . "$f"
 done
 
 # End of file
