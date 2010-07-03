@@ -116,10 +116,8 @@ stat_fail() {
 }
 
 stat_die() {
-	retval=1
-	[ "$1" = "" ] || retval=$1
 	stat_fail
-	exit $retval
+	exit ${1:-1}
 }
 
 status() {
