@@ -54,7 +54,11 @@ if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
 fi
 
 stat_busy "Unmounting Filesystems"
-/bin/umount -a -r -t noramfs,notmpfs,nosysfs,noproc,nodevtmpfs -O no_netdev
+if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
+	/bin/umount -a -r -t nosysfs,noproc,nodevtmpfs,nodevpts -O no_netdev
+else
+	/bin/umount -a -r -t notmpfs,nosysfs,noproc,nodevpts -O no_netdev
+fi
 stat_done
 
 # Kill non-root encrypted partition mappings
