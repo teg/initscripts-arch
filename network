@@ -220,7 +220,7 @@ case "$1" in
         #	exit
         #fi
 
-        if [[ $NETWORK_PERSIST =~ yes|YES ]]; then
+        if [[ $NETWORK_PERSIST =~ yes|YES && $RUNLEVEL == [06] ]]; then
             status "Skipping Network Shutdown" true
             exit 0
         fi
