@@ -279,8 +279,7 @@ stat_busy "Removing Leftover Files"
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
-/bin/mkdir /tmp/.ICE-unix && /bin/chmod 1777 /tmp/.ICE-unix
-/bin/mkdir /tmp/.X11-unix && /bin/chmod 1777 /tmp/.X11-unix
+/bin/mkdir -m1777 /tmp/.{X11,ICE}-unix
 stat_done
 
 #status "Updating Shared Library Links" /sbin/ldconfig
