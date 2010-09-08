@@ -275,7 +275,7 @@ stat_busy "Removing Leftover Files"
 /bin/rm -f /var/lock/* &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 /bin/rm -f /forcefsck &>/dev/null
-[[ -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete  )
+[[ -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
 # Keep {x,k,g}dm happy with xorg

@@ -96,7 +96,7 @@ rtup()
 
 rtdown()
 {
-    if [[ ! $1 ]; then
+    if [[ ! $1 ]]; then
         echo "usage: $0 rtdown <route_name>"
         return 1
     fi
