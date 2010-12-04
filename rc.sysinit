@@ -239,6 +239,8 @@ run_hook sysinit_premount
 /bin/mount -a -t $NETFS -O no_netdev
 stat_done
 
+status "Retrying failed UDEV events" /sbin/udevadm trigger --action=add --type=failed
+
 status "Activating Swap" /sbin/swapon -a
 
 stat_busy "Configuring System Clock"
