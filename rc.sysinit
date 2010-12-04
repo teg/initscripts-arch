@@ -28,9 +28,6 @@ if ! /bin/mountpoint -q /dev; then
   fi
 fi
 
-# Copy static device nodes to /dev
-/bin/cp -a /lib/udev/devices/* /dev/
-
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 
