@@ -314,10 +314,7 @@ if [[ ${LOCALE,,} =~ utf ]]; then
 		/usr/bin/kbd_mode -u < ${i}
 		printf "\033%%G" > ${i}
 	done
-	# the $CONSOLE check helps us avoid this when running scripts from cron
-	cat <<"EOF" >>/etc/profile.d/locale.sh
-if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033%%G"; fi
-EOF
+	echo 1 > /sys/module/vt/parameters/default_utf8
 	stat_done
 	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q -u "$KEYMAP"
 else
@@ -327,10 +324,7 @@ else
 		/usr/bin/kbd_mode -a < ${i}
 		printf "\033%%@" > ${i}
 	done
-	# the $CONSOLE check helps us avoid this when running scripts from cron
-	cat <<"EOF" >>/etc/profile.d/locale.sh
-if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033%%@"; fi
-EOF
+	echo 0 > /sys/module/vt/parameters/default_utf8
 	stat_done
 	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
 fi
