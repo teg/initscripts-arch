@@ -81,7 +81,7 @@ fi
 
 if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
     stat_busy "Deactivating LVM2 groups"
-    /sbin/lvm vgchange --ignorelockingfailure -an >/dev/null 2>&1
+    /sbin/vgchange --sysinit -a n >/dev/null 2>&1
     stat_done
 fi
 
