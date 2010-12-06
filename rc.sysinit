@@ -125,49 +125,53 @@ activate_vgs
 if [[ -f /etc/crypttab && $CS ]]; then
 	/sbin/modprobe -q dm-crypt 2>/dev/null
 	stat_busy "Unlocking encrypted volumes:"
-        do_unlock() {
-            # $1 = requested name
-            # $2 = source device
-            # $3 = password
-            # $4 = options
-            local open=create a="$1" b="$2" failed=0
-            # Ordering of options is different if you are using LUKS vs. not.
-            # Use ugly swizzling to deal with it.
-            if $CS isLuks "$2"; then
-                open=luksOpen
-                a="$2"
-                b="$1"
-            fi
-            case $3 in
-                SWAP) if [[ $_isluks ]]; then
-                          # This is DANGEROUS! The only possible safety check
-			  # is to not proceed in case we find a LUKS device
-			  # This may cause dataloss if it is not used carefully
-                          false
-                      elif $CS -d /dev/urandom $4 $open "$a" "$b" >/dev/null; then
-			  stat_append "creating swapspace.."
-			  /sbin/mkswap -f -L $1 /dev/mapper/$1 >/dev/null
-		      fi;;
-                ASK) printf "\nOpening '$1' volume:\n"
-                     $CS $4 $open "$a" "$b" < /dev/console;;
-                /*)  $CS -d "$3" $4 $open "$a" "$b" >/dev/null;;
-		*) echo "$3" | $CS $4 $open "$a" "$b" >/dev/null;;
-            esac
-	    if (($? != 0)); then
-		failed=1
-		stat_append "failed "
-	    else
-		stat_append "ok "
-	    fi
-            return $failed
-        }
+		do_unlock() {
+			# $1 = requested name
+			# $2 = source device
+			# $3 = password
+			# $4 = options
+			local open=create a="$1" b="$2" failed=0
+			# Ordering of options is different if you are using LUKS vs. not.
+			# Use ugly swizzling to deal with it.
+			if $CS isLuks "$2"; then
+				open=luksOpen
+				a="$2"
+				b="$1"
+			fi
+			case $3 in
+				SWAP)
+					if [[ $_isluks ]]; then
+						# This is DANGEROUS! The only possible safety check
+						# is to not proceed in case we find a LUKS device
+						# This may cause dataloss if it is not used carefully
+						false
+					elif $CS -d /dev/urandom $4 $open "$a" "$b" >/dev/null; then
+						stat_append "creating swapspace.."
+						/sbin/mkswap -f -L $1 /dev/mapper/$1 >/dev/null
+					fi;;
+				ASK)
+					printf "\nOpening '$1' volume:\n"
+					$CS $4 $open "$a" "$b" < /dev/console;;
+				/*)
+					$CS -d "$3" $4 $open "$a" "$b" >/dev/null;;
+				*)
+					echo "$3" | $CS $4 $open "$a" "$b" >/dev/null;;
+			esac
+			if (($? != 0)); then
+				failed=1
+				stat_append "failed "
+			else
+				stat_append "ok "
+			fi
+			return $failed
+		}
 	if read_crypttab do_unlock; then
 		stat_done
 	else
 		stat_fail
 	fi
 	# Maybe someone has LVM on an encrypted block device
-        activate_vgs
+	activate_vgs
 fi
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
