@@ -152,6 +152,30 @@ if [[ -f /etc/crypttab && $CS ]]; then
 				ASK)
 					printf "\nOpening '$1' volume:\n"
 					$CS $4 $open "$a" "$b" < /dev/console;;
+				/dev*)
+					ckdev=${3%%:*}
+					cka=${3#*:}
+					ckb=${cka#*:}
+					cka=${cka%:*}
+					ckfile=/dev/ckfile
+					ckdir=/dev/ckdir
+					case ${cka} in
+						*[!0-9]*)
+							# Use a file on the device
+							# cka is not numeric: cka=filesystem, ckb=path
+							/bin/mkdir ${ckdir}
+							/bin/mount -r -t ${cka} ${ckdev} ${ckdir}
+							/bin/dd if=${ckdir}/${ckb} of=${ckfile} >/dev/null 2>&1
+							/bin/umount ${ckdir}
+							/bin/rmdir ${ckdir};;
+						*)
+							# Read raw data from the block device
+							# cka is numeric: cka=offset, ckb=length
+							/bin/dd if=${ckdev} of=${ckfile} bs=1 skip=${cka} count=${ckb} >/dev/null 2>&1;;
+					esac
+					$CS -d ${ckfile} $4 $open "$a" "$b" >/dev/null
+					/bin/dd if=/dev/urandom of=${ckfile} bs=1 count=`stat -c %s ${ckfile}` conv=notrunc >/dev/null 2>&1
+					rm ${ckfile};;
 				/*)
 					$CS -d "$3" $4 $open "$a" "$b" >/dev/null;;
 				*)
