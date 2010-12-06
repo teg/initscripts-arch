@@ -130,6 +130,7 @@ if [[ -f /etc/crypttab && $CS ]]; then
 			# $2 = source device
 			# $3 = password
 			# $4 = options
+			stat_append "${1}.."
 			local open=create a="$1" b="$2" failed=0
 			# Ordering of options is different if you are using LUKS vs. not.
 			# Use ugly swizzling to deal with it.
