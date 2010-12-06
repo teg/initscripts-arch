@@ -133,7 +133,10 @@ if [[ -f /etc/crypttab && $CS ]]; then
 			local open=create a="$1" b="$2" failed=0
 			# Ordering of options is different if you are using LUKS vs. not.
 			# Use ugly swizzling to deal with it.
-			if $CS isLuks "$2"; then
+			# isLuks only gives an exit code but no output to stdout or stderr.
+			$CS isLuks "$2"
+			_isluks=$?
+			if [[ $_isluks ]]; then
 				open=luksOpen
 				a="$2"
 				b="$1"
