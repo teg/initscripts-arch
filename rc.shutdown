@@ -60,6 +60,13 @@ stat_busy "Deactivating Swap"
 /sbin/swapoff -a
 stat_done
 
+# stop monitoring of lvm2 groups before unmounting filesystems
+if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
+	stat_busy "Deactivating monitoring of LVM2 groups"
+	/sbin/vgchange --monitor n >/dev/null 2>&1
+	stat_done
+fi
+
 stat_busy "Unmounting Filesystems"
 /bin/umount -a -r -t noramfs,notmpfs,nosysfs,noproc,nodevtmpfs -O no_netdev
 stat_done
