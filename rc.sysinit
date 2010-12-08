@@ -278,7 +278,7 @@ if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
 	fi
 fi
 
-status "Retrying failed UDEV events" /sbin/udevadm trigger --action=add --type=failed
+status "Retrying failed UDev events" /sbin/udevadm trigger --action=add --type=failed
 
 status "Activating Swap" /sbin/swapon -a
 
