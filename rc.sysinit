@@ -93,15 +93,13 @@ if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 fi
 
 # Load modules from the MODULES array defined in rc.conf
-if [[ $load_modules != off && -f /proc/modules ]]; then
-    stat_busy "Loading Modules"
-    for mod in "${MODULES[@]}"; do
-	if [[ $mod = ${mod#!} ]]; then
-	    /sbin/modprobe $mod
-	fi
-    done
-    stat_done
+mods=${MODULES[@]/!*/}
+if [[ $load_modules != off && -f /proc/modules && $mods ]]; then
+	stat_busy "Loading Modules"
+	/sbin/modprobe --all $mods
+	stat_done
 fi
+unset mods
 
 # Wait for udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
