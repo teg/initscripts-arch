@@ -9,7 +9,7 @@ groups=('base')
 conflicts=('initscripts')
 provides=('initscripts=9999')
 backup=(etc/inittab etc/rc.conf etc/rc.local etc/rc.local.shutdown)
-depends=('glibc' 'bash' 'awk' 'grep' 'coreutils' 'sed' 'udev>=139-1'
+depends=('glibc' 'bash' 'grep' 'coreutils' 'udev>=139-1'
          'net-tools' 'ncurses' 'kbd' 'findutils' 'sysvinit')
 optdepends=('bridge-utils: Network bridging support'
             'dhcpcd: DHCP network configuration'
