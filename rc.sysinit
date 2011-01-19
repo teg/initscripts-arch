@@ -274,6 +274,8 @@ if [[ -x /sbin/fsck ]]; then
 	stat_done
 fi
 
+/bin/mkdir -p /dev/{pts,shm}
+
 stat_busy "Mounting Local Filesystems"
 /bin/mount -n -o remount,rw /
 
