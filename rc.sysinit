@@ -119,7 +119,7 @@ if [[ -x /sbin/fsck ]]; then
 		echo "************************************************************"
 		echo
 		/bin/sleep 15
-		fsck_reboot
+		status "Automatic reboot in progress..." /lib/systemd/systemd-shutdown reboot
 	elif ((fsckret > 1 && fsckret != 32)); then
 		echo
 		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
@@ -133,7 +133,7 @@ if [[ -x /sbin/fsck ]]; then
 		echo "************************************************************"
 		echo
 		/sbin/sulogin -p
-		fsck_reboot
+		status "Automatic reboot in progress..." /lib/systemd/systemd-shutdown reboot
 	fi
 	stat_done
 fi
