@@ -19,19 +19,7 @@ echo " "
 
 kill_everything shutdown
 
-stat_busy "Saving Random Seed"
-RANDOM_SEED=/var/lib/misc/random-seed
-[[ -d ${RANDOM_SEED%/*} ]] || mkdir -p ${RANDOM_SEED%/*}
-: > $RANDOM_SEED
-/bin/chmod 0600 $RANDOM_SEED
-POOL_FILE=/proc/sys/kernel/random/poolsize
-if [[ -r $POOL_FILE ]]; then
-	read POOL_SIZE <$POOL_FILE
-else
-	POOL_SIZE=512
-fi
-/bin/dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
-stat_done
+status "Saving Random Seed" /lib/systemd/systemd-random-seed save
 
 status "Saving persistent settings" /lib/systemd/arch-persistent-settings
 
