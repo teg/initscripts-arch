@@ -66,14 +66,9 @@ if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	stat_done
 fi
 
-# Load modules from the MODULES array defined in rc.conf
-mods=${MODULES[@]/!*/}
-if [[ $load_modules != off && -f /proc/modules && $mods ]]; then
-	stat_busy "Loading Modules"
-	/sbin/modprobe --all $mods
-	stat_done
-fi
-unset mods
+# Reads modules from /etc/modules-load.d/?*.conf and loads them,
+# the MODULES array in /etc/rc.conf is saved here on shutdown.
+/lib/systemd/systemd-modules-load
 
 # Wait for udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
