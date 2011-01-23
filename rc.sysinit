@@ -341,12 +341,11 @@ fi
 
 status "Updating Module Dependencies" /sbin/depmod -A
 
+stat_busy "Setting Locale: ${LOCALE:=en_US}"
 # Flush old locale settings
 : >| /etc/profile.d/locale.sh
 /bin/chmod 755 /etc/profile.d/locale.sh
 # Set user defined locale
-[[ $LOCALE ]] || LOCALE="en_US"
-stat_busy "Setting Locale: $LOCALE"
 echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
 stat_done
 
