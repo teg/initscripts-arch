@@ -33,6 +33,8 @@ fi
 /bin/dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
 stat_done
 
+status "Saving persistent settings" /lib/systemd/arch-persistent-settings
+
 # Write to wtmp file before unmounting
 /sbin/halt -w
 
