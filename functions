@@ -253,44 +253,6 @@ kill_everything() {
 	run_hook "$1_postkillall"
 }
 
-activate_vgs() {
-	[[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]] || return
-	# Kernel 2.6.x, LVM2 groups
-	/sbin/modprobe -q dm-mod 2>/dev/null
-	stat_busy "Activating LVM2 groups"
-	if /sbin/vgchange --sysinit -a y >/dev/null; then
-		stat_done
-	else
-		stat_fail
-	fi
-}
-
-# Arch cryptsetup packages traditionally contained the binaries
-#  /usr/sbin/cryptsetup
-#  /sbin/cryptsetup.static
-# By default, initscripts used the /sbin/cryptsetup.static.
-# Newer packages will only have /sbin/cryptsetup and no static binary
-# This ensures maximal compatibility with the old and new layout
-for CS in /sbin/cryptsetup /usr/sbin/cryptsetup \
-	/sbin/cryptsetup.static ''; do
-	[[ -x $CS ]] && break
-done
-
-read_crypttab() {
-	# $1 = function to call with the split out line from the crypttab
-	local line nspo failed=0
-	while read line; do
-		[[ $line && ${line:0:1} != '#' ]] || continue
-		eval nspo=("${line%#*}")
-		if $1 "${nspo[0]}" "${nspo[1]}" "${nspo[2]}" "${nspo[*]:3}"; then
-			crypto_unlocked=1
-		else
-			failed=1
-		fi
-	done < /etc/crypttab
-	return $failed
-}
-
 ###############################
 # Custom hooks in initscripts #
 ###############################

@@ -94,113 +94,6 @@ run_hook sysinit_udevsettled
 [[ -d /sys/class/net/lo ]] && \
     status "Bringing up loopback interface" /sbin/ifconfig lo 127.0.0.1 up
 
-# FakeRAID devices detection
-if [[ $USEDMRAID =~ yes|YES && -x /sbin/dmraid ]]; then
-	status "Activating FakeRAID arrays" /sbin/dmraid -i -ay
-fi
-
-# BTRFS devices detection
-if [[ $USEBTRFS =~ yes|YES && -x /sbin/btrfs ]]; then
-	status "Activating BTRFS volumes" /sbin/btrfs device scan
-fi
-
-activate_vgs
-
-# Set up non-root encrypted partition mappings
-if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
-	/sbin/modprobe -q dm-crypt 2>/dev/null
-	stat_busy "Unlocking encrypted volumes:"
-		do_unlock() {
-			# $1 = requested name
-			# $2 = source device
-			# $3 = password
-			# $4 = options
-			stat_append "${1}.."
-			local open=create a="$1" b="$2" failed=0
-			# Ordering of options is different if you are using LUKS vs. not.
-			# Use ugly swizzling to deal with it.
-			# isLuks only gives an exit code but no output to stdout or stderr.
-			if $CS isLuks "$2" 2>/dev/null; then
-				open=luksOpen
-				a="$2"
-				b="$1"
-			fi
-			case $3 in
-				SWAP)
-					local _overwriteokay=0
-					if [[ -b $2 && -r $2 ]]; then
-						# This is DANGEROUS! If there is any known file system,
-						# partition table, RAID or LVM volume on the device
-						# we don't overwrite it.
-						#
-						# 'blkid' returns 2 if no valid signature has been found.
-						# Only in this case we should allow overwriting the device.
-						#
-						# This sanity check _should_ be sufficient, but it might not.
-						# This may cause dataloss if it is not used carefully.
-						/sbin/blkid -p "$2" &>/dev/null
-						if [[ $? -eq 2 ]]; then
-							_overwriteokay=1
-						fi
-					fi
-					if [[ $_overwriteokay -eq 0 ]]; then
-						false
-					elif $CS -d /dev/urandom $4 $open "$a" "$b" >/dev/null; then
-						stat_append "creating swapspace.."
-						/sbin/mkswap -f -L $1 /dev/mapper/$1 >/dev/null
-					fi;;
-				ASK)
-					printf "\nOpening '$1' volume:\n"
-					$CS $4 $open "$a" "$b" < /dev/console;;
-				/dev*)
-					ckdev=${3%%:*}
-					cka=${3#*:}
-					ckb=${cka#*:}
-					cka=${cka%:*}
-					ckfile=/dev/ckfile
-					ckdir=/dev/ckdir
-					case ${cka} in
-						*[!0-9]*)
-							# Use a file on the device
-							# cka is not numeric: cka=filesystem, ckb=path
-							/bin/mkdir ${ckdir}
-							/bin/mount -r -t ${cka} ${ckdev} ${ckdir}
-							/bin/dd if=${ckdir}/${ckb} of=${ckfile} >/dev/null 2>&1
-							/bin/umount ${ckdir}
-							/bin/rmdir ${ckdir};;
-						*)
-							# Read raw data from the block device
-							# cka is numeric: cka=offset, ckb=length
-							/bin/dd if=${ckdev} of=${ckfile} bs=1 skip=${cka} count=${ckb} >/dev/null 2>&1;;
-					esac
-					$CS -d ${ckfile} $4 $open "$a" "$b" >/dev/null
-					/bin/dd if=/dev/urandom of=${ckfile} bs=1 count=`stat -c %s ${ckfile}` conv=notrunc >/dev/null 2>&1
-					rm ${ckfile};;
-				/*)
-					$CS -d "$3" $4 $open "$a" "$b" >/dev/null;;
-				*)
-					echo "$3" | $CS $4 $open "$a" "$b" >/dev/null;;
-			esac
-			if (($? != 0)); then
-				failed=1
-				stat_append "failed "
-			else
-				stat_append "ok "
-			fi
-			return $failed
-		}
-	crypto_unlocked=0
-	if read_crypttab do_unlock; then
-		stat_done
-	else
-		stat_fail
-	fi
-	if [[ ${crypto_unlocked} -eq 1 ]]; then
-		# Maybe someone has LVM on an encrypted block device
-		activate_vgs
-	fi
-fi
-
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
@@ -273,16 +166,6 @@ run_hook sysinit_premount
 # now mount all the local filesystems
 /bin/mount -a -t $NETFS -O no_netdev
 stat_done
-
-# enable monitoring of lvm2 groups, now that the filesystems are mounted rw
-if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
-	stat_busy "Activating monitoring of LVM2 groups"
-	if /sbin/vgchange --monitor y >/dev/null; then
-		stat_done
-	else
-		stat_fail
-	fi
-fi
 
 status "Activating Swap" /sbin/swapon -a
 
