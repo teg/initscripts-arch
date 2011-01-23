@@ -72,9 +72,8 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	fi
 fi
 
-echo > /proc/sys/kernel/hotplug
-
 stat_busy "Starting UDev Daemon"
+echo "" > /sys/kernel/uevent_helper
 /sbin/udevd --daemon
 stat_done
 
