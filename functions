@@ -308,28 +308,6 @@ if [[ $RC_FUNCTIONS_HOOK_FUNCS_DEFINED -ne 1 ]]; then
 	declare -r RC_FUNCTIONS_HOOK_FUNCS_DEFINED=1
 fi
 
-# Function for setting console font if required
-set_consolefont() {
-	[[ $CONSOLEFONT ]] || return 0
-	stat_busy "Loading Console Font: $CONSOLEFONT"
-	#CONSOLEMAP in UTF-8 shouldn't be used
-	[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
-	for i in /dev/tty[0-9]*; do
-		/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
-		$CONSOLEFONT -C ${i} >/dev/null 2>&1
-	done
-	if (($? != 0)); then
-		stat_fail
-	elif [[ $CONSOLEMAP ]]; then
-		cat <<"EOF" >>/etc/profile.d/locale.sh
-if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033(K"; fi
-EOF
-		stat_done
-	else
-		stat_done
-	fi
-}
-
 # Source additional functions at the end to allow overrides
 for f in /etc/rc.d/functions.d/*; do
 	[[ -e $f ]] && . "$f"

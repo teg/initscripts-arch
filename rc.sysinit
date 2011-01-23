@@ -183,32 +183,7 @@ stat_busy "Setting Locale: ${LOCALE:=en_US}"
 echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
 stat_done
 
-if [[ ${LOCALE,,} =~ utf ]]; then
-	stat_busy "Setting Consoles to UTF-8 mode"
-	# UTF-8 consoles are default since 2.6.24 kernel
-	# this code is needed not only for older kernels,
-	# but also when user has set vt.default_utf8=0 but LOCALE is *.UTF-8.
-	for i in /dev/tty[0-9]*; do
-		/usr/bin/kbd_mode -u < ${i}
-		printf "\033%%G" > ${i}
-	done
-	echo 1 > /sys/module/vt/parameters/default_utf8
-	stat_done
-	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q -u $KEYMAP
-else
-	stat_busy "Setting Consoles to legacy mode"
-	# make non-UTF-8 consoles work on 2.6.24 and newer kernels
-	for i in /dev/tty[0-9]*; do
-		/usr/bin/kbd_mode -a < ${i}
-		printf "\033%%@" > ${i}
-	done
-	echo 0 > /sys/module/vt/parameters/default_utf8
-	stat_done
-	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" /bin/loadkeys -q $KEYMAP
-fi
-
-# Set console font if required
-set_consolefont
+status "Setting Up Virtual Consoles" /lib/systemd/systemd-vconsole-setup
 
 /bin/dmesg >| /var/log/dmesg.log
 
