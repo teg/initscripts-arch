@@ -80,7 +80,7 @@ run_hook sysinit_udevsettled
 
 # bring up the loopback interface
 [[ -d /sys/class/net/lo ]] && \
-    status "Bringing up loopback interface" /sbin/ifconfig lo 127.0.0.1 up
+	status "Bringing up loopback interface" /sbin/ifconfig lo 127.0.0.1 up
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
@@ -157,25 +157,13 @@ stat_done
 
 status "Activating Swap" /sbin/swapon -a
 
-RANDOM_SEED=/var/lib/misc/random-seed
-if [[ -f $RANDOM_SEED ]]; then
-	stat_busy "Initializing Random Seed"
-	/bin/cat $RANDOM_SEED > /dev/urandom
-	stat_done
-fi
-
-stat_busy "Removing Leftover Files"
-/bin/rm -f /etc/{nologin,shutdownpid} /var/lock/* /forcefsck &>/dev/null
-/bin/rm -rf /tmp/* /tmp/.* &>/dev/null
-[[ -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
-: >| /var/run/utmp
-/bin/chmod 0664 /var/run/utmp
-/bin/chown root:utmp /var/run/utmp
-# Keep {x,k,g}dm happy with xorg
-/bin/mkdir -m1777 /tmp/.{X11,ICE}-unix
+stat_busy "Initializing Random Seed"
+/lib/systemd/systemd-random-seed load
 stat_done
 
-#status "Updating Shared Library Links" /sbin/ldconfig
+stat_busy "Creating/Removing Missing/Leftover Files"
+/lib/systemd/systemd-tmpfiles --create --remove
+stat_done
 
 if [[ $HOSTNAME ]]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname "$HOSTNAME"
