@@ -145,10 +145,23 @@ if [[ -f /etc/crypttab && $CS ]]; then
 			fi
 			case $3 in
 				SWAP)
-					if [[ $_isluks ]]; then
-						# This is DANGEROUS! The only possible safety check
-						# is to not proceed in case we find a LUKS device
-						# This may cause dataloss if it is not used carefully
+					local _overwriteokay=0
+					if [[ -b $2 && -r $2 ]]; then
+						# This is DANGEROUS! If there is any known file system,
+						# partition table, RAID or LVM volume on the device
+						# we don't overwrite it.
+						#
+						# 'blkid' returns 2 if no valid signature has been found.
+						# Only in this case we should allow overwriting the device.
+						#
+						# This sanity check _should_ be sufficient, but it might not.
+						# This may cause dataloss if it is not used carefully.
+						/sbin/blkid -p "$2" &>/dev/null
+						if [[ $? -eq 2 ]]; then
+							_overwriteokay=1
+						fi
+					fi
+					if [[ $_overwriteokay -eq 0 ]]; then
 						false
 					elif $CS -d /dev/urandom $4 $open "$a" "$b" >/dev/null; then
 						stat_append "creating swapspace.."
