@@ -9,9 +9,10 @@
 echo " "
 printhl "Arch Linux\n"
 printhl "${C_H2}http://www.archlinux.org"
-printhl "Copyright 2002-2007 Judd Vinet"
-printhl "Copyright 2007-2010 Aaron Griffin"
-printhl "Distributed under the GNU General Public License (GPL)"
+printhl "Distributed under the GNU General Public License (GPL)\n"
+printhl "For license information about software distributed with Arch Linux,"
+printhl "see the output of pacman -Qi <package name> and the contents of"
+printhl "the directory /usr/share/licenses."
 printsep
 
 run_hook sysinit_start
