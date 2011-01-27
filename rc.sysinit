@@ -133,7 +133,7 @@ if [[ -f /etc/crypttab && $CS ]]; then
 			# Ordering of options is different if you are using LUKS vs. not.
 			# Use ugly swizzling to deal with it.
 			# isLuks only gives an exit code but no output to stdout or stderr.
-			if $CS isLuks "$2"; then
+			if $CS isLuks "$2" 2>/dev/null; then
 				open=luksOpen
 				a="$2"
 				b="$1"
