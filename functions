@@ -39,6 +39,16 @@ unset TERM_COLORS
 # clear the TZ envvar, so daemons always respect /etc/localtime
 unset TZ
 
+# sanitize the locale settins
+unset LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY \
+      LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE \
+      LC_MEASUREMENT LC_IDENTIFICATION LC_ALL
+if [[ $DAEMON_LOCALE =~ yes|YES && -n $LOCALE ]]; then
+	export LANG="${LOCALE}"
+else
+	export LANG=C
+fi
+
 # colors:
 if [[ $USECOLOR = YES || $USECOLOR = yes ]]; then
 	C_MAIN="\033[1;37;40m"      # main text
