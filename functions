@@ -312,22 +312,25 @@ read_crypttab() {
 # Declare add_hook and run_hook as read-only to prevent overwriting them.
 # Too bad we cannot do the same thing with hook_funcs
 
-declare -A hook_funcs
+if [[ $RC_FUNCTIONS_HOOK_FUNCS_DEFINED -ne 1 ]]; then
+	declare -A hook_funcs
 
-add_hook() {
-	[[ $1 && $2 ]] || return 1
-	hook_funcs["$1"]+=" $2"
-}
+	add_hook() {
+		[[ $1 && $2 ]] || return 1
+		hook_funcs["$1"]+=" $2"
+	}
 
-run_hook() {
-    [[ $1 ]] || return 1
-    local func
-    for func in ${hook_funcs["$1"]}; do
-	"${func}"
-    done
-}
+	run_hook() {
+		[[ $1 ]] || return 1
+		local func
+		for func in ${hook_funcs["$1"]}; do
+			"${func}"
+		done
+	}
 
-declare -r add_hook run_hook
+	declare -fr add_hook run_hook
+	declare -r RC_FUNCTIONS_HOOK_FUNCS_DEFINED=1
+fi
 
 # Function for setting console font if required
 set_consolefont() {
