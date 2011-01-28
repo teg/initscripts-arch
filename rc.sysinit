@@ -202,13 +202,16 @@ if [[ -f /etc/crypttab && $CS ]]; then
 			fi
 			return $failed
 		}
+	crypto_unlocked=0
 	if read_crypttab do_unlock; then
 		stat_done
 	else
 		stat_fail
 	fi
-	# Maybe someone has LVM on an encrypted block device
-	activate_vgs
+	if [[ ${crypto_unlocked} -eq 1 ]]; then
+		# Maybe someone has LVM on an encrypted block device
+		activate_vgs
+	fi
 fi
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /

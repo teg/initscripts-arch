@@ -272,7 +272,11 @@ read_crypttab() {
     while read line; do
         [[ $line && ${line:0:1} != '#' ]] || continue
         eval nspo=("${line%#*}")
-        $1 "${nspo[0]}" "${nspo[1]}" "${nspo[2]}" "${nspo[*]:3}" || failed=1
+        if $1 "${nspo[0]}" "${nspo[1]}" "${nspo[2]}" "${nspo[*]:3}"; then
+          crypto_unlocked=1
+        else
+          failed=1
+        fi
     done < /etc/crypttab
     return $failed
 }
