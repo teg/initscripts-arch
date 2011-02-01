@@ -120,7 +120,7 @@ fi
 activate_vgs
 
 # Set up non-root encrypted partition mappings
-if [[ -f /etc/crypttab && $CS ]]; then
+if [[ -f /etc/crypttab && $CS && -n $(/bin/grep -v ^# /etc/crypttab | /bin/grep -v ^$) ]]; then
 	/sbin/modprobe -q dm-crypt 2>/dev/null
 	stat_busy "Unlocking encrypted volumes:"
 		do_unlock() {
