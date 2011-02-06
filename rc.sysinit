@@ -217,7 +217,7 @@ fi
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 FORCEFSCK=
-[[ -f /forcefsck ]] && FORCEFSCK="-- -f"
+[[ -f /forcefsck || -n "$forcefsck" ]] && FORCEFSCK="-- -f"
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs"
 
 fsck_reboot() {
