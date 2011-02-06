@@ -33,7 +33,7 @@ fi
 
 # anything more serious than KERN_WARNING goes to the console
 # 'verbose' cmdline parameter enables more messages
-if /bin/grep -q " verbose" /proc/cmdline; then
+if [[ -n "$verbose" ]]; then
 	/bin/dmesg -n 8
 else
 	/bin/dmesg -n 3
