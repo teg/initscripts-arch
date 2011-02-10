@@ -354,6 +354,8 @@ if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033(K"; fi
 
 EOF
 	stat_done
+    else
+	stat_done
     fi
 }
 
