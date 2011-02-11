@@ -72,17 +72,17 @@ stat_busy "Unmounting Filesystems"
 stat_done
 
 # Kill non-root encrypted partition mappings
-if [[ -f /etc/crypttab && $CS ]]; then
+if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
 	stat_busy "Deactivating encrypted volumes:"
 	do_lock() {
-            stat_append "${1}.."
-            if $CS remove "$1" >/dev/null 2>&1; then
-                stat_append "ok "
-	    else
-                stat_append "failed "
-	    fi
-        }
-        read_crypttab do_lock
+		stat_append "${1}.."
+		if $CS remove "$1" >/dev/null 2>&1; then
+			stat_append "ok "
+		else
+			stat_append "failed "
+		fi
+	}
+	read_crypttab do_lock
 	stat_done
 fi
 
