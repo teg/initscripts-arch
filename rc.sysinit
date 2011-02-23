@@ -340,8 +340,6 @@ if [[ $NISDOMAINNAME ]]; then
 	status "Setting NIS Domain Name: $NISDOMAINNAME" /bin/nisdomainname "$NISDOMAINNAME"
 fi
 
-status "Updating Module Dependencies" /sbin/depmod -A
-
 stat_busy "Setting Locale: ${LOCALE:=en_US}"
 # Flush old locale settings
 : >| /etc/profile.d/locale.sh
