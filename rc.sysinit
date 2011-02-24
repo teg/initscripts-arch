@@ -117,6 +117,11 @@ if [[ -f /etc/mdadm.conf ]] && /bin/grep -q ^ARRAY /etc/mdadm.conf; then
 	status "Activating RAID arrays" /sbin/mdadm --assemble --scan
 fi
 
+# FakeRAID devices detection
+if [[ $USEDMRAID =~ yes|YES && -x /sbin/dmraid ]]; then
+	status "Activating FakeRAID arrays" /sbin/dmraid -i -ay
+fi
+
 activate_vgs
 
 # Set up non-root encrypted partition mappings
