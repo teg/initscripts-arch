@@ -15,8 +15,6 @@ echo " "
 printhl "Initiating Shutdown..."
 echo " "
 
-# avoid NIS hanging syslog-ng on shutdown by unsetting the domainname
-[[ -x /bin/domainname ]] && /bin/domainname ""
 [[ -x /etc/rc.local.shutdown ]] && /etc/rc.local.shutdown
 
 kill_everything shutdown
