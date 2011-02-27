@@ -44,36 +44,18 @@ for cmdarg in $(< /proc/cmdline); do
 done
 /bin/dmesg -n ${VERBOSE:-3}
 
-HWCLOCK_PARAMS="--hctosys"
-case $HARDWARECLOCK in
-	UTC) HWCLOCK_PARAMS+=" --utc";;
-	localtime) HWCLOCK_PARAMS+=" --localtime";;
-	*) HWCLOCK_PARAMS="";;
-esac
+# enable rtc access
+/sbin/modprobe -q -a rtc-cmos rtc genrtc
+# If devtmpfs is used, the required RTC device already exists now
+# Otherwise, create whatever device is available
+if ! [[ -c /dev/rtc || -c /dev/rtc0 ]]; then
+	for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
+		[[ -e $dev ]] || continue
+		IFS=: read -r major minor < "$dev"
+		/bin/mknod /dev/rtc c $major $minor
+	done
 
-if [[ $HWCLOCK_PARAMS ]]; then
-	# enable rtc access
-	/sbin/modprobe -q -a rtc-cmos rtc genrtc
-	# If devtmpfs is used, the required RTC device already exists now
-	# Otherwise, create whatever device is available
-	if ! [[ -c /dev/rtc || -c /dev/rtc0 ]]; then
-		for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
-			[[ -e $dev ]] || continue
-			IFS=: read -r major minor < "$dev"
-			/bin/mknod /dev/rtc c $major $minor
-		done
-	fi
-
-	# Do a clock set here for a few reasons:
-	# 1. Make creation time on udev nodes sane (FS#8665)
-	# 2. Filesystem checks can depend on system time
-	# 3. This will set the clock, if using non-UTC, off the last known
-	#    configured timezone.
-	# This does *NOT* take into account a time adjustment file as /var may not be
-	# mounted yet. A second set may occur in rc.d/hwclock to match rc.conf.
-	if [[ -f /etc/localtime ]]; then
-		/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
-	fi
+	/sbin/hwclock --systz
 fi
 
 stat_busy "Starting UDev Daemon"
