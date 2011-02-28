@@ -82,7 +82,6 @@ run_hook sysinit_udevlaunched
 # Trigger udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	stat_busy "Triggering UDev uevents"
-	/sbin/udevadm control --property=STARTUP=1
 	/sbin/udevadm trigger --action=add --type=devices
 	/sbin/udevadm trigger --action=add --type=subsystems
 	stat_done
@@ -99,10 +98,8 @@ unset mods
 
 # Wait for udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
-	stat_busy "Waiting for UDev uevents to be processed"
-	/sbin/udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
-	/sbin/udevadm control --property=STARTUP=
-	stat_done
+	status "Waiting for UDev uevents to be processed" \
+		/sbin/udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
 fi
 
 run_hook sysinit_udevsettled
