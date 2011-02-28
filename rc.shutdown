@@ -33,12 +33,6 @@ fi
 /bin/dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
 stat_done
 
-if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
-	/bin/rm -f /etc/localtime
-	status "Saving Time Zone" \
-		/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
-fi
-
 # Write to wtmp file before unmounting
 /sbin/halt -w
 

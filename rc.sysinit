@@ -68,8 +68,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	# 1. Make creation time on udev nodes sane (FS#8665)
 	# 2. Filesystem checks can depend on system time
 	# 3. This will set the clock, if using non-UTC, off the last known
-	#    configured timezone. Any new timezone put in rc.conf is copied over at
-	#    a later time.
+	#    configured timezone.
 	# This does *NOT* take into account a time adjustment file as /var may not be
 	# mounted yet. A second set may occur in rc.d/hwclock to match rc.conf.
 	if [[ -f /etc/localtime ]]; then
@@ -304,12 +303,6 @@ if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
 fi
 
 status "Activating Swap" /sbin/swapon -a
-
-if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
-	/bin/rm -f /etc/localtime
-	status "Configuring Time Zone" \
-		/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
-fi
 
 RANDOM_SEED=/var/lib/misc/random-seed
 if [[ -f $RANDOM_SEED ]]; then
