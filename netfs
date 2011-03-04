@@ -9,7 +9,7 @@ rc=0
 case "$1" in
 	start)
 		stat_busy "Mounting Network Filesystems"
-		/bin/mount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs
+		/bin/mount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs,davfs
 		rc=$?
 		/bin/mount -a -O _netdev
 		if ((rc + $? > 0)); then
@@ -23,7 +23,7 @@ case "$1" in
 		stat_busy "Unmounting Network Filesystems"
 		/bin/umount -a -O _netdev
 		rc=$?
-		/bin/umount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs
+		/bin/umount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs,davfs
 		if ((rc + $? > 0)); then
 			stat_fail
 		else
