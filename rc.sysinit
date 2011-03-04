@@ -101,7 +101,7 @@ unset mods
 # Wait for udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
 	stat_busy "Waiting for UDev uevents to be processed"
-	/sbin/udevadm settle
+	/sbin/udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
 	/sbin/udevadm control --property=STARTUP=
 	stat_done
 fi
