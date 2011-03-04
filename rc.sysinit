@@ -122,6 +122,11 @@ if [[ $USEDMRAID =~ yes|YES && -x /sbin/dmraid ]]; then
 	status "Activating FakeRAID arrays" /sbin/dmraid -i -ay
 fi
 
+# BTRFS devices detection
+if [[ $USEBTRFS =~ yes|YES && -x /sbin/btrfs ]]; then
+	status "Activating BTRFS volumes" /sbin/btrfs device scan
+fi
+
 activate_vgs
 
 # Set up non-root encrypted partition mappings
