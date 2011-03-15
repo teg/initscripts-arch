@@ -61,7 +61,7 @@ ifdown()
     fi
     eval ifcfg="\$${1}"
     if [[ $ifcfg = dhcp && -f /var/run/dhcpcd-${1}.pid ]]; then
-        /bin/kill $(cat /var/run/dhcpcd-${1}.pid)
+        /sbin/dhcpcd -k ${1} >/dev/null 2>&1
     fi
     # Always bring the interface itself down
     /sbin/ifconfig ${1} down >/dev/null 2>&1
