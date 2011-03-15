@@ -396,14 +396,6 @@ fi
 # Set console font if required
 set_consolefont
 
-# Adding persistent network/cdrom generated rules
-for f in cd net; do
-    [[ -f /dev/.udev/tmp-rules--70-persistent-$f.rules ]] || continue
-    stat_busy "Adding persistent $f udev rules"
-    /bin/cat "/dev/.udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
-    stat_done
-done
-
 /bin/dmesg >| /var/log/dmesg.log
 
 # final hwclock setting needs to be done at this point
