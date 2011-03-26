@@ -8,11 +8,12 @@ for s in wireless bonding bridges dhcpcd; do
 done
 
 ifup() {
+	local ifcfg=${!1}
+
 	if [[ ! $1 ]]; then
 		echo "usage: $0 ifup <interface_name>"
 		return 1
 	fi
-	eval ifcfg="\$${1}"
 
 	# Get the name of the interface from the first token in the string
 	if [[ $ifcfg = dhcp ]]; then
@@ -36,10 +37,11 @@ ifup() {
 }
 
 wi_up() {
-	eval iwcfg="\$wlan_${1}"
-	[[ ! $iwcfg ]] && return 0
+	local iwcfg=wlan_$1
 
-	/usr/sbin/iwconfig $iwcfg
+	[[ ${!iwcfg} ]] || return 0
+
+	/usr/sbin/iwconfig ${!iwcfg}
 	[[ $WIRELESS_TIMEOUT ]] || WIRELESS_TIMEOUT=2
 	sleep $WIRELESS_TIMEOUT
 
@@ -52,11 +54,13 @@ wi_up() {
 }
 
 ifdown() {
+	local ifcfg=${!1}
+
 	if [[ ! $1 ]]; then
 		echo "usage: $0 ifdown <interface_name>"
 		return 1
 	fi
-	eval ifcfg="\$${1}"
+
 	if [[ $ifcfg = dhcp && -f /var/run/dhcpcd-${1}.pid ]]; then
 		/sbin/dhcpcd -k ${1} >/dev/null 2>&1 
 	fi
@@ -71,17 +75,18 @@ iflist() {
 		else
 			printf "$ifline:\t"
 		fi
-		eval real_ifline=\$${ifline#!}
-		echo $real_ifline
+		echo ${!ifline#!}
 	done
 }
 
 rtup() {
+	local routecfg=${!1}
+
 	if [[ ! $1 ]]; then
 		echo "usage: $0 rtup <route_name>"
 		return 1
 	fi
-	eval routecfg="\$${1}"
+
 	if [[ $routecfg =~ :: ]]; then
 		/sbin/route -A inet6 add $routecfg
 	else
@@ -90,11 +95,13 @@ rtup() {
 }
 
 rtdown() {
+	local routecfg=${!1}
+
 	if [[ ! $1 ]]; then
 		echo "usage: $0 rtdown <route_name>"
 		return 1
 	fi
-	eval routecfg="\$${1}"
+
 	if [[ $routecfg =~ :: ]]; then
 		/sbin/route -A inet6 del $routecfg
 	else
@@ -109,17 +116,16 @@ rtlist() {
 		else
 			printf "$rtline:\t"
 		fi
-		eval real_rtline=\$${rtline#!}
-		echo $real_rtline
+		echo ${!rtline#!}
 	done
 }
 
 bond_up() {
 	for ifline in ${BOND_INTERFACES[@]}; do
 		if [[ $ifline = ${ifline#!} ]]; then
-			eval bondcfg="\$bond_${ifline}"
-			if [[ ${bondcfg} ]]; then
-				/sbin/ifenslave $ifline $bondcfg || error=1
+			bondcfg="bond_$ifline"
+			if [[ ${!bondcfg} ]]; then
+				/sbin/ifenslave $ifline ${!bondcfg} || error=1
 			fi
 		fi
 	done
@@ -128,8 +134,8 @@ bond_up() {
 bond_down() {
 	for ifline in ${BOND_INTERFACES[@]}; do
 		if [[ $ifline = ${ifline#!} ]]; then
-			eval bondcfg="\$bond_${ifline}"
-			/sbin/ifenslave -d $ifline $bondcfg || error=1
+			bondcfg="bond_$ifline"
+			/sbin/ifenslave -d $ifline ${!bondcfg} || error=1
 		fi
 	done
 }
@@ -143,15 +149,15 @@ bridge_up() {
 				/usr/sbin/brctl delbr $br
 			fi
 			/usr/sbin/brctl addbr $br
-			eval brifs="\$bridge_${br}"
-			for brif in $brifs; do
+			brifs="bridge_$br"
+			for brif in ${!brifs}; do
 				if [[ $brif = ${brif#!} ]]; then
 					for ifline in ${BOND_INTERFACES[@]}; do
 						if [[ $brif = $ifline && $ifline = ${ifline#!} ]]; then
 							ifup $ifline
-							eval bondcfg="\$bond_${ifline}"
-							/sbin/ifenslave $ifline $bondcfg || error=1
-							unset bond_${ifline}
+							bondcfg="bond_$ifline"
+							/sbin/ifenslave $ifline ${!bondcfg} || error=1
+							unset bond_$ifline
 						fi
 					done
 
