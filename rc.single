@@ -9,7 +9,7 @@
 run_hook single_start
 
 if [[ $PREVLEVEL != N ]]; then
-        kill_everything single
+	kill_everything single
 	stat_busy "Starting UDev Daemon"
 	/sbin/udevd --daemon
 	stat_done
@@ -18,11 +18,11 @@ if [[ $PREVLEVEL != N ]]; then
 
 	# Trigger udev uevents
 	if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
-	  stat_busy "Triggering UDev uevents"
-	  /sbin/udevadm control --property=STARTUP=1
-	  /sbin/udevadm trigger --action=add --type=devices
-	  /sbin/udevadm trigger --action=add --type=subsystems
-	  stat_done
+		stat_busy "Triggering UDev uevents"
+		/sbin/udevadm control --property=STARTUP=1
+		/sbin/udevadm trigger --action=add --type=devices
+		/sbin/udevadm trigger --action=add --type=subsystems
+		stat_done
 	fi
 
 	# Wait for udev uevents
@@ -55,4 +55,4 @@ if [[ $RUNLEVEL = 1 ]]; then
 fi
 
 # End of file
-# vim: set ts=2 noet:
+# vim: set ts=2 sw=2 noet:

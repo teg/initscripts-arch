@@ -13,11 +13,11 @@ run_hook multi_start
 
 # Start daemons
 for daemon in "${DAEMONS[@]}"; do
-    case ${daemon:0:1} in
-        '!') continue;;     # Skip this daemon.
-        '@') start_daemon_bkgd "${daemon#@}";;
-        *)   start_daemon "$daemon";;
-    esac
+	case ${daemon:0:1} in
+		'!') continue;;     # Skip this daemon.
+		'@') start_daemon_bkgd "${daemon#@}";;
+		*)   start_daemon "$daemon";;
+	esac
 done
 
 if [[ -x /etc/rc.local ]]; then
@@ -26,4 +26,4 @@ fi
 
 run_hook multi_end
 
-# vim: set ts=2 noet:
+# vim: set ts=2 sw=2 noet:

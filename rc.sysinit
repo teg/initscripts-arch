@@ -21,11 +21,11 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 /bin/mountpoint -q /sys  || /bin/mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
 
 if ! /bin/mountpoint -q /dev; then
-  if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
-    /bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
-  else
-    /bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
-  fi
+	if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
+		/bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
+	else
+		/bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
+	fi
 fi
 
 # start up our mini logger until syslog takes over
@@ -41,9 +41,9 @@ fi
 
 HWCLOCK_PARAMS="--hctosys"
 case $HARDWARECLOCK in
-    UTC) HWCLOCK_PARAMS+=" --utc";;
-    localtime) HWCLOCK_PARAMS+=" --localtime";;
-    *) HWCLOCK_PARAMS="";;
+	UTC) HWCLOCK_PARAMS+=" --utc";;
+	localtime) HWCLOCK_PARAMS+=" --localtime";;
+	*) HWCLOCK_PARAMS="";;
 esac
 
 if [[ $HWCLOCK_PARAMS ]]; then
@@ -52,11 +52,11 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	# If devtmpfs is used, the required RTC device already exists now
 	# Otherwise, create whatever device is available
 	if ! [[ -c /dev/rtc || -c /dev/rtc0 ]]; then
-            for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
-                [[ -e $dev ]] || continue
-		IFS=: read -r major minor < "$dev"
-		/bin/mknod /dev/rtc c $major $minor
-	    done
+		for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
+			[[ -e $dev ]] || continue
+			IFS=: read -r major minor < "$dev"
+			/bin/mknod /dev/rtc c $major $minor
+		done
 	fi
 
 	# Do a clock set here for a few reasons:
@@ -82,11 +82,11 @@ run_hook sysinit_udevlaunched
 
 # Trigger udev uevents
 if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
-  stat_busy "Triggering UDev uevents"
-  /sbin/udevadm control --property=STARTUP=1
-  /sbin/udevadm trigger --action=add --type=devices
-  /sbin/udevadm trigger --action=add --type=subsystems
-  stat_done
+	stat_busy "Triggering UDev uevents"
+	/sbin/udevadm control --property=STARTUP=1
+	/sbin/udevadm trigger --action=add --type=devices
+	/sbin/udevadm trigger --action=add --type=subsystems
+	stat_done
 fi
 
 # Load modules from the MODULES array defined in rc.conf
@@ -319,8 +319,8 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	# take ~1 second because of the clock granularity, and we might as well
 	# stay busy.
 	(
-	/sbin/hwclock --adjust
-	/sbin/hwclock $HWCLOCK_PARAMS
+		/sbin/hwclock --adjust
+		/sbin/hwclock $HWCLOCK_PARAMS
 	) &
 	clock_pid=$!
 fi

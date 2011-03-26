@@ -6,20 +6,20 @@
 
 STAT_COL=80
 if [[ ! -t 1 ]]; then
-    USECOLOR=""
+	USECOLOR=""
 elif [[ -t 0 ]]; then
-    # stty will fail when stdin isn't a terminal
-    STAT_COL="$(/bin/stty size)"
-    # stty gives "rows cols"; strip the rows number, we just want columns
-    STAT_COL="${STAT_COL##* }"
+	# stty will fail when stdin isn't a terminal
+	STAT_COL="$(/bin/stty size)"
+	# stty gives "rows cols"; strip the rows number, we just want columns
+	STAT_COL="${STAT_COL##* }"
 elif /bin/tput cols &>/dev/null; then
-    # is /usr/share/terminfo already mounted, and TERM recognized?
-    STAT_COL=$(/bin/tput cols)
+	# is /usr/share/terminfo already mounted, and TERM recognized?
+	STAT_COL=$(/bin/tput cols)
 fi
 if ((STAT_COL==0)); then
-    # if output was 0 (serial console), set default width to 80
-    STAT_COL=80
-    USECOLOR=""
+	# if output was 0 (serial console), set default width to 80
+	STAT_COL=80
+	USECOLOR=""
 fi
 
 # we use 13 characters for our own stuff
@@ -28,11 +28,11 @@ STAT_COL=$(($STAT_COL - 13))
 # disable colors on broken terminals
 TERM_COLORS="$(/bin/tput colors 2>/dev/null)"
 if (($? != 3)); then
-    case $TERM_COLORS in
-	*[!0-9]*) USECOLOR="";;
-	[0-7])    USECOLOR="";;
-	'')       USECOLOR="";;
-    esac
+	case $TERM_COLORS in
+		*[!0-9]*) USECOLOR="";;
+		[0-7])    USECOLOR="";;
+		'')       USECOLOR="";;
+	esac
 fi
 unset TERM_COLORS
 
@@ -146,13 +146,13 @@ status() {
 #          1 - not found
 # Copied from makepkg
 in_array() {
-    [[ $2 ]] || return 1
-    local needle=$1; shift
-    local item
-    for item in "$@"; do
-	[[ ${item#@} = $needle ]] && return 0
-    done
-    return 1 # Not Found
+	[[ $2 ]] || return 1
+	local needle=$1; shift
+	local item
+	for item in "$@"; do
+		[[ ${item#@} = $needle ]] && return 0
+	done
+	return 1 # Not Found
 }
 
 # daemons:
@@ -171,17 +171,17 @@ ck_daemon() {
 }
 
 have_daemon() {
-    [[ -x /etc/rc.d/$1 ]]
+	[[ -x /etc/rc.d/$1 ]]
 }
 
 start_daemon() {
-    have_daemon "$1" && /etc/rc.d/"$1" start
+	have_daemon "$1" && /etc/rc.d/"$1" start
 }
 
 ck_depends() {
-    for daemon in "$@"; do
-	ck_daemon "$daemon" && start_daemon "$daemon"
-    done
+	for daemon in "$@"; do
+		ck_daemon "$daemon" && start_daemon "$daemon"
+	done
 }
 
 start_daemon_bkgd() {
@@ -195,64 +195,64 @@ stop_daemon() {
 
 # Status functions
 status_started() {
-  deltext
-  echo -ne "$C_OTHER[${C_STRT}STARTED$C_OTHER]$C_CLEAR "
+	deltext
+	echo -ne "$C_OTHER[${C_STRT}STARTED$C_OTHER]$C_CLEAR "
 }
 
 status_stopped() {
-  deltext
-  echo -ne "$C_OTHER[${C_STRT}STOPPED$C_OTHER]$C_CLEAR "
+	deltext
+	echo -ne "$C_OTHER[${C_STRT}STOPPED$C_OTHER]$C_CLEAR "
 }
 
 ck_status() {
-  if ! ck_daemon "$1"; then
-    status_started
-  else
-    status_stopped
-  fi
+	if ! ck_daemon "$1"; then
+		status_started
+	else
+		status_stopped
+	fi
 }
 
 kill_everything() {
-    # $1 = where we are being called from.
-    # This is used to determine which hooks to run.
-    # Find daemons NOT in the DAEMONS array. Shut these down first
-    for daemon in /var/run/daemons/*; do
-        [[ -f $daemon ]] || continue
-        daemon=${daemon##*/}
-	in_array "$daemon" "${DAEMONS[@]}" || stop_daemon "$daemon"
-    done
+	# $1 = where we are being called from.
+	# This is used to determine which hooks to run.
+	# Find daemons NOT in the DAEMONS array. Shut these down first
+	for daemon in /var/run/daemons/*; do
+		[[ -f $daemon ]] || continue
+		daemon=${daemon##*/}
+		in_array "$daemon" "${DAEMONS[@]}" || stop_daemon "$daemon"
+	done
 
-    # Shutdown daemons in reverse order
-    for ((i=${#DAEMONS[@]}-1; i>=0; i--)); do
-	[[ ${DAEMONS[$i]:0:1} = '!' ]] && continue
-	ck_daemon ${DAEMONS[$i]#@} || stop_daemon ${DAEMONS[$i]#@}
-    done
+	# Shutdown daemons in reverse order
+	for ((i=${#DAEMONS[@]}-1; i>=0; i--)); do
+		[[ ${DAEMONS[$i]:0:1} = '!' ]] && continue
+		ck_daemon ${DAEMONS[$i]#@} || stop_daemon ${DAEMONS[$i]#@}
+	done
 
 	# Terminate all processes
-    stat_busy "Sending SIGTERM To Processes"
-    run_hook "$1_prekillall"
-    /sbin/killall5 -15 &> /dev/null
-    /bin/sleep 5
-    stat_done
+	stat_busy "Sending SIGTERM To Processes"
+	run_hook "$1_prekillall"
+	/sbin/killall5 -15 &> /dev/null
+	/bin/sleep 5
+	stat_done
 
-    stat_busy "Sending SIGKILL To Processes"
-    /sbin/killall5 -9 &> /dev/null
-    /bin/sleep 1
-    stat_done
+	stat_busy "Sending SIGKILL To Processes"
+	/sbin/killall5 -9 &> /dev/null
+	/bin/sleep 1
+	stat_done
 
-    run_hook "$1_postkillall"
+	run_hook "$1_postkillall"
 }
 
 activate_vgs() {
-    [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]] || return
-    # Kernel 2.6.x, LVM2 groups
-    /sbin/modprobe -q dm-mod 2>/dev/null
-    stat_busy "Activating LVM2 groups"
-    if /sbin/vgchange --sysinit -a y >/dev/null; then
-	stat_done
-    else
-	stat_fail
-     fi
+	[[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]] || return
+	# Kernel 2.6.x, LVM2 groups
+	/sbin/modprobe -q dm-mod 2>/dev/null
+	stat_busy "Activating LVM2 groups"
+	if /sbin/vgchange --sysinit -a y >/dev/null; then
+		stat_done
+	else
+		stat_fail
+	fi
 }
 
 # Arch cryptsetup packages traditionally contained the binaries
@@ -262,23 +262,23 @@ activate_vgs() {
 # Newer packages will only have /sbin/cryptsetup and no static binary
 # This ensures maximal compatibility with the old and new layout
 for CS in /sbin/cryptsetup /usr/sbin/cryptsetup \
-    /sbin/cryptsetup.static ''; do
-    [[ -x $CS ]] && break
+	/sbin/cryptsetup.static ''; do
+	[[ -x $CS ]] && break
 done
 
 read_crypttab() {
-    # $1 = function to call with the split out line from the crypttab
-    local line nspo failed=0
-    while read line; do
-        [[ $line && ${line:0:1} != '#' ]] || continue
-        eval nspo=("${line%#*}")
-        if $1 "${nspo[0]}" "${nspo[1]}" "${nspo[2]}" "${nspo[*]:3}"; then
-          crypto_unlocked=1
-        else
-          failed=1
-        fi
-    done < /etc/crypttab
-    return $failed
+	# $1 = function to call with the split out line from the crypttab
+	local line nspo failed=0
+	while read line; do
+		[[ $line && ${line:0:1} != '#' ]] || continue
+		eval nspo=("${line%#*}")
+		if $1 "${nspo[0]}" "${nspo[1]}" "${nspo[2]}" "${nspo[*]:3}"; then
+			crypto_unlocked=1
+		else
+			failed=1
+		fi
+	done < /etc/crypttab
+	return $failed
 }
 
 ###############################
@@ -338,31 +338,30 @@ fi
 
 # Function for setting console font if required
 set_consolefont() {
-    [[ $CONSOLEFONT ]] || return 0
-    stat_busy "Loading Console Font: $CONSOLEFONT"
-    #CONSOLEMAP in UTF-8 shouldn't be used
-    [[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
-    for i in /dev/tty[0-9]*; do
-	/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
-	    $CONSOLEFONT -C ${i} >/dev/null 2>&1
-    done
-    if (($? != 0)); then
-	stat_fail
-    elif [[ $CONSOLEMAP ]]; then
-	cat <<"EOF" >>/etc/profile.d/locale.sh
+	[[ $CONSOLEFONT ]] || return 0
+	stat_busy "Loading Console Font: $CONSOLEFONT"
+	#CONSOLEMAP in UTF-8 shouldn't be used
+	[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
+	for i in /dev/tty[0-9]*; do
+		/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
+		$CONSOLEFONT -C ${i} >/dev/null 2>&1
+	done
+	if (($? != 0)); then
+		stat_fail
+	elif [[ $CONSOLEMAP ]]; then
+		cat <<"EOF" >>/etc/profile.d/locale.sh
 if [ "$CONSOLE" = "" -a "$TERM" = "linux" -a -t 1 ]; then printf "\033(K"; fi
-
 EOF
-	stat_done
-    else
-	stat_done
-    fi
+		stat_done
+	else
+		stat_done
+	fi
 }
 
 # Source additional functions at the end to allow overrides
 for f in /etc/rc.d/functions.d/*; do
-  [[ -e $f ]] && . "$f"
+	[[ -e $f ]] && . "$f"
 done
 
 # End of file
-# vim: set ft=sh sw=2 ts=2 et:
+# vim: set ts=2 sw=2 noet:
