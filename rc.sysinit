@@ -334,11 +334,8 @@ if [[ -f $RANDOM_SEED ]]; then
 fi
 
 stat_busy "Removing Leftover Files"
-/bin/rm -f /etc/nologin &>/dev/null
-/bin/rm -f /etc/shutdownpid &>/dev/null
-/bin/rm -f /var/lock/* &>/dev/null
+/bin/rm -f /etc/{nologin,shutdownpid} /var/lock/* /forcefsck &>/dev/null
 /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
-/bin/rm -f /forcefsck &>/dev/null
 [[ -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
