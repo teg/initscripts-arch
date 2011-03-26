@@ -50,7 +50,7 @@ if [[ $RUNLEVEL = 1 ]]; then
 	printsep
 	printhl "Entering single-user mode..."
 	# make sure /dev/initctl is in place
-	/bin/kill -HUP 1
+	kill -HUP 1
 	exec /sbin/init -t1 S
 fi
 
