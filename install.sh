@@ -15,7 +15,7 @@ done
 install -D -m755 adjtime.cron ${DESTDIR}/etc/cron.hourly/adjtime
 
 install -D -m644 functions ${DESTDIR}/etc/rc.d/functions || exit 1
-for i in network netfs; do
+for i in hwclock network netfs; do
   install -D -m755 $i ${DESTDIR}/etc/rc.d/$i || exit 1
 done
 
