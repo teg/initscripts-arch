@@ -16,7 +16,7 @@ run_hook sysinit_start
 # export standard PATH (will be overridden later when /etc/profile is sourced, but is usefull for UDev)
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# mount /dev, /proc, /sys, /run (the api filesystems)
+# mount /proc, /sys, /dev, /dev/pts and /dev/shm (the api filesystems)
 if ! /bin/mountpoint -q /dev; then
 	if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
 		/bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -24,12 +24,12 @@ if ! /bin/mountpoint -q /dev; then
 		/bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
 	fi
 fi
-
-/bin/mkdir -p /dev/{pts,shm}
-
-/bin/mountpoint -q /proc    || /bin/mount -n -t proc proc /proc -o nosuid,noexec,nodev
-/bin/mountpoint -q /sys     || /bin/mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
-/bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,noexec,nodev
+/bin/mkdir -p /run/lock /dev/{pts,shm}
+/bin/chmod 1777 /run/lock
+/bin/mountpoint -q /dev/pts || /bin/mount /dev/pts &> /dev/null \
+	|| /bin/mount -n -t devpts devpts /dev/pts -o mode=620,gid=5,nosuid,noexec
+/bin/mountpoint -q /dev/shm || /bin/mount /devshm &> /dev/null \
+	|| /bin/mount -n -t tmpfs shm /dev/shm -o mode=1777,nosuid,nodev
 
 # start up our mini logger until syslog takes over
 /sbin/minilogd
