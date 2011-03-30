@@ -35,20 +35,11 @@ fi
 /bin/dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
 stat_done
 
-stat_busy "Saving System Clock"
 if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
 	/bin/rm -f /etc/localtime
-	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+	status "Saving Time Zone" \
+		/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
-
-HWCLOCK_PARAMS="--systohc"
-case $HARDWARECLOCK in
-	UTC) HWCLOCK_PARAMS="$HWCLOCK_PARAMS --utc";;
-	localtime) HWCLOCK_PARAMS="$HWCLOCK_PARAMS --localtime";;
-	*) HWCLOCK_PARAMS="";;
-esac
-[[ $HWCLOCK_PARAMS ]] && /sbin/hwclock $HWCLOCK_PARAMS
-stat_done
 
 # removing psmouse module to fix some reboot issues on newer laptops
 /sbin/modprobe -r psmouse >/dev/null 2>&1

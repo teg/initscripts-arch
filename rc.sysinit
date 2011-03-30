@@ -66,7 +66,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	#    configured timezone. Any new timezone put in rc.conf is copied over at
 	#    a later time.
 	# This does *NOT* take into account a time adjustment file as /var may not be
-	# mounted yet. A second set occurs later to match rc.conf.
+	# mounted yet. A second set may occur in rc.d/hwclock to match rc.conf.
 	if [[ -f /etc/localtime ]]; then
 		/sbin/hwclock $HWCLOCK_PARAMS --noadjfile
 	fi
@@ -304,27 +304,11 @@ status "Retrying failed UDev events" /sbin/udevadm trigger --action=add --type=f
 
 status "Activating Swap" /sbin/swapon -a
 
-stat_busy "Configuring System Clock"
 if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
 	/bin/rm -f /etc/localtime
-	/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+	status "Configuring Time Zone" \
+		/bin/cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
-
-clock_pid=""
-if [[ $HWCLOCK_PARAMS ]]; then
-	# This time, we set the clock for real. Use the adjustment file now that
-	# /var will definitely be available, and then set the system clock once
-	# the hardware clock has been adjusted accordingly. The backgrounding magic
-	# is due to the fact that the second call to hwclock will almost always
-	# take ~1 second because of the clock granularity, and we might as well
-	# stay busy.
-	(
-		/sbin/hwclock --adjust
-		/sbin/hwclock $HWCLOCK_PARAMS
-	) &
-	clock_pid=$!
-fi
-stat_done
 
 RANDOM_SEED=/var/lib/misc/random-seed
 if [[ -f $RANDOM_SEED ]]; then
@@ -394,11 +378,6 @@ fi
 set_consolefont
 
 /bin/dmesg >| /var/log/dmesg.log
-
-# final hwclock setting needs to be done at this point
-if [[ $clock_pid ]]; then
-	wait $clock_pid
-fi
 
 run_hook sysinit_end
 
