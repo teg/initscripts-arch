@@ -26,4 +26,8 @@ fi
 
 run_hook multi_end
 
+/bin/touch /var/log/boot
+kill `/bin/cat /run/bootlogd.pid`
+/bin/rm /run/bootlogd.pid
+
 # vim: set ts=2 sw=2 noet:
