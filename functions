@@ -170,8 +170,9 @@ ck_daemon() {
 	[[ ! -f /run/daemons/$1 ]]
 }
 
+# Check if $1 is a valid daemon name
 have_daemon() {
-	[[ -x /etc/rc.d/$1 ]]
+	[[ -f /etc/rc.d/$1 && -x /etc/rc.d/$1 ]]
 }
 
 start_daemon() {
