@@ -175,6 +175,15 @@ have_daemon() {
 	[[ -f /etc/rc.d/$1 && -x /etc/rc.d/$1 ]]
 }
 
+# Check if $1 is started at boot
+ck_autostart() {
+	local d
+	for d in "${DAEMONS[@]}"; do
+		[[ "$1" = ${d#@} ]] && return 1
+	done
+	return 0
+}
+
 start_daemon() {
 	have_daemon "$1" && /etc/rc.d/"$1" start
 }

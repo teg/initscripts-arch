@@ -21,3 +21,5 @@ done
 
 gcc $CFLAGS -o minilogd minilogd.c || exit 1
 install -D -m755 minilogd ${DESTDIR}/sbin/minilogd || exit 1
+
+install -D -m755 rc ${DESTDIR}/sbin/rc || exit 1
