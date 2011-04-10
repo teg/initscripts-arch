@@ -10,6 +10,6 @@ case $HARDWARECLOCK in
     *) HWCLOCK_PARAMS="";;
 esac
 
-if [[ $HWCLOCK_PARAMS && -f /var/run/daemons/hwclock ]]; then
+if [[ $HWCLOCK_PARAMS && -f /run/daemons/hwclock ]]; then
     /sbin/hwclock $HWCLOCK_PARAMS
 fi

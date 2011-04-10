@@ -158,16 +158,16 @@ in_array() {
 # daemons:
 
 add_daemon() {
-	[[ -d /var/run/daemons ]] || /bin/mkdir -p /var/run/daemons
-	> /var/run/daemons/"$1"
+	[[ -d /run/daemons ]] || /bin/mkdir -p /run/daemons
+	> /run/daemons/"$1"
 }
 
 rm_daemon() {
-	/bin/rm -f /var/run/daemons/"$1"
+	/bin/rm -f /run/daemons/"$1"
 }
 
 ck_daemon() {
-	[[ ! -f /var/run/daemons/$1 ]]
+	[[ ! -f /run/daemons/$1 ]]
 }
 
 have_daemon() {
@@ -216,7 +216,7 @@ kill_everything() {
 	# $1 = where we are being called from.
 	# This is used to determine which hooks to run.
 	# Find daemons NOT in the DAEMONS array. Shut these down first
-	for daemon in /var/run/daemons/*; do
+	for daemon in /run/daemons/*; do
 		[[ -f $daemon ]] || continue
 		daemon=${daemon##*/}
 		in_array "$daemon" "${DAEMONS[@]}" || stop_daemon "$daemon"
