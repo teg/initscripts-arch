@@ -281,8 +281,8 @@ stat_busy "Mounting Local Filesystems"
 
 # don't touch /etc/mtab if it is a symlink to /proc/self/mounts
 if [[ -L /etc/mtab ]]; then
-	;
-elif [[ -x /bin/findmnt -a -e /proc/self/mountinfo ]]; then
+	:
+elif [[ -x /bin/findmnt && -e /proc/self/mountinfo ]]; then
 	/bin/findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS >| /etc/mtab
 else
 	cat /proc/mounts >| /etc/mtab
