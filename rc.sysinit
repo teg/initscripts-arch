@@ -327,6 +327,7 @@ stat_busy "Removing Leftover Files"
 [[ -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
+/bin/chown root:utmp /var/run/utmp
 # Keep {x,k,g}dm happy with xorg
 /bin/mkdir -m1777 /tmp/.{X11,ICE}-unix
 stat_done
