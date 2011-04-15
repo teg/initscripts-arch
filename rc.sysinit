@@ -74,10 +74,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	fi
 fi
 
-stat_busy "Starting UDev Daemon"
-echo "" > /sys/kernel/uevent_helper
-/sbin/udevd --daemon
-stat_done
+status "Starting UDev Daemon" /sbin/udevd --daemon
 
 run_hook sysinit_udevlaunched
 
