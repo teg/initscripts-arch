@@ -219,23 +219,25 @@ fi
 
 status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
-FORCEFSCK=
-[[ -f /forcefsck || -n "$forcefsck" ]] && FORCEFSCK="-- -f"
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
-
-fsck_reboot() {
-	echo "Automatic reboot in progress..."
-	/bin/umount -a
-	/bin/mount -n -o remount,ro /
-	/sbin/reboot -f
-	exit 0
-}
 
 if [[ -x /sbin/fsck ]]; then
 	stat_busy "Checking Filesystems"
+	fsck_reboot() {
+		echo "Automatic reboot in progress..."
+		/bin/umount -a
+		/bin/mount -n -o remount,ro /
+		/sbin/reboot -f
+		exit 0
+	}
 	FSCK_OUT=/dev/stdout
 	FSCK_ERR=/dev/stdout
 	FSCK_FD=
+	FORCEFSCK=
+	[[ -f /forcefsck ]] && FORCEFSCK="-- -f"
+	for cmdarg in $(< /proc/cmdline); do
+		[[ "$cmdarg" == forcefsck ]] && FORCEFSCK="-- -f" && break
+	done
 	run_hook sysinit_prefsck
 	/sbin/fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	fsckret=$?
