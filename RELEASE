@@ -1,0 +1,18 @@
+Releasing
+
+1) create an anotated tag on the format YYYY.MM.X, where YYYY is the year,
+   MM is the month and X is a number starting from 1. E.g.:
+
+	$ git tag -a 2011.04.1
+
+2) create a tarball
+
+	$ make release
+
+3) copy the tarball to gerolde
+
+	$ scp initscripts-YYYY.MM.X.tar.xz gerolde.archlinux.org:/srv/ftp/other/initscripts/
+
+4) check that the PKGBUILD in git is in sync with the PKGBUILD to be released
+
+5) create packages for both arches and push to testing
