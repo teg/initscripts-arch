@@ -89,9 +89,7 @@ fi
 # Load modules from the MODULES array defined in rc.conf
 mods=${MODULES[@]/!*/}
 if [[ $load_modules != off && -f /proc/modules && $mods ]]; then
-	stat_busy "Loading Modules"
-	/sbin/modprobe --all $mods
-	stat_done
+	status "Loading Modules" /sbin/modprobe --all $mods
 fi
 unset mods
 
@@ -291,12 +289,8 @@ stat_done
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw
 if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
-	stat_busy "Activating monitoring of LVM2 groups"
-	if /sbin/vgchange --monitor y >/dev/null; then
-		stat_done
-	else
-		stat_fail
-	fi
+	status "Activating monitoring of LVM2 groups" \
+		/sbin/vgchange --monitor y >/dev/null
 fi
 
 status "Activating Swap" /sbin/swapon -a
@@ -309,9 +303,8 @@ fi
 
 RANDOM_SEED=/var/lib/misc/random-seed
 if [[ -f $RANDOM_SEED ]]; then
-	stat_busy "Initializing Random Seed"
-	/bin/cat $RANDOM_SEED > /dev/urandom
-	stat_done
+	status "Initializing Random Seed" \
+		/bin/cat $RANDOM_SEED > /dev/urandom
 fi
 
 stat_busy "Removing Leftover Files"
@@ -334,7 +327,8 @@ fi
 # Set the NIS domain name, if necessary
 [[ -f /etc/conf.d/nisdomainname ]] && . /etc/conf.d/nisdomainname
 if [[ $NISDOMAINNAME ]]; then
-	status "Setting NIS Domain Name: $NISDOMAINNAME" /bin/nisdomainname "$NISDOMAINNAME"
+	status "Setting NIS Domain Name: $NISDOMAINNAME" \
+		/bin/nisdomainname "$NISDOMAINNAME"
 fi
 
 stat_busy "Setting Locale: ${LOCALE:=en_US}"
