@@ -1,2 +1,4 @@
 minilogd
+minilogd.o
+tags
 *.pkg.tar.*
