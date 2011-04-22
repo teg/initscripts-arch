@@ -16,7 +16,10 @@ run_hook sysinit_start
 # export standard PATH (will be overridden later when /etc/profile is sourced, but is usefull for UDev)
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# mount /proc, /sys, /dev, /dev/pts and /dev/shm (the api filesystems)
+# mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
+/bin/mountpoint -q /proc    || /bin/mount -n -t proc proc /proc -o nosuid,noexec,nodev
+/bin/mountpoint -q /sys     || /bin/mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
+/bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,noexec,nodev
 if ! /bin/mountpoint -q /dev; then
 	if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
 		/bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -307,9 +310,10 @@ if [[ -f $RANDOM_SEED ]]; then
 fi
 
 stat_busy "Removing Leftover Files"
-/bin/rm -f /etc/{nologin,shutdownpid} /var/lock/* /forcefsck &>/dev/null
-/bin/rm -rf /tmp/* /tmp/.* &>/dev/null
-[[ -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
+/bin/rm -rf /etc/{nologin,shutdownpid} /forcefsck &>/dev/null
+/bin/mountpoint -q /tmp || /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
+[[ ! -L /var/lock ]] && /bin/rm -rf /var/lock/*
+[[ ! -L /var/run && -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
 /bin/chown root:utmp /var/run/utmp
