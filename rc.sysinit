@@ -34,6 +34,11 @@ fi
 /bin/mountpoint -q /dev/shm || /bin/mount /devshm &> /dev/null \
 	|| /bin/mount -n -t tmpfs shm /dev/shm -o mode=1777,nosuid,nodev
 
+# remount root ro to allow for fsck later on, we remount now to
+# make sure nothing can open files rw on root which would block a remount
+/bin/findmnt / --options ro &>/dev/null || \
+status "Mounting Root Read-Only" /bin/mount -n -o remount,ro /
+
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 /sbin/bootlogd -p /run/bootlogd.pid
@@ -215,8 +220,6 @@ if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
 		activate_vgs
 	fi
 fi
-
-status "Mounting Root Read-only" /bin/mount -n -o remount,ro /
 
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
 
