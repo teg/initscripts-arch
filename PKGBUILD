@@ -19,5 +19,10 @@ sha256sums=()
 
 build() {
   cd ..
-  DESTDIR=${pkgdir} ./install.sh
+  make
+}
+
+package() {
+  cd ..
+  make DESTDIR="$pkgdir" install
 }
