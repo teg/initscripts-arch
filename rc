@@ -27,15 +27,15 @@ case $1 in
 			have_daemon "$d" || continue
 			# print running / stopped satus
 			if ! ck_daemon "$d"; then
-			    printf "${C_OTHER}[${C_DONE}STARTED${C_OTHER}]"
+				printf "${C_OTHER}[${C_DONE}STARTED${C_OTHER}]"
 			else
-			    printf "${C_OTHER}[${C_FAIL}STOPPED${C_OTHER}]"
+				printf "${C_OTHER}[${C_FAIL}STOPPED${C_OTHER}]"
 			fi
 			# print auto / manual status
 			if ! ck_autostart "$d"; then
-			    printf "${C_OTHER}[${C_DONE}AUTO${C_OTHER}]"
+				printf "${C_OTHER}[${C_DONE}AUTO${C_OTHER}]"
 			else
-			    printf "${C_OTHER}[${C_FAIL}    ${C_OTHER}]"
+				printf "${C_OTHER}[${C_FAIL}    ${C_OTHER}]"
 			fi
 			printf " ${C_MAIN}$d${C_CLEAR}\n"
 		done
