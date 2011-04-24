@@ -45,7 +45,7 @@ case $1 in
 		shift
 		for i; do
 			[[ -x "/etc/rc.d/$i" ]] && "/etc/rc.d/$i" $action
-			(( ret += $? ))
+			(( ret += !! $? ))  # clamp exit value to 0/1
 		done
 esac
 
