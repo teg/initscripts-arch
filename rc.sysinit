@@ -88,7 +88,7 @@ status "Starting UDev Daemon" /sbin/udevd --daemon
 run_hook sysinit_udevlaunched
 
 # Trigger udev uevents
-if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
+if /bin/pidof /sbin/udevd >/dev/null; then
 	stat_busy "Triggering UDev uevents"
 	/sbin/udevadm trigger --action=add --type=devices
 	/sbin/udevadm trigger --action=add --type=subsystems
@@ -103,7 +103,7 @@ fi
 unset mods
 
 # Wait for udev uevents
-if /bin/pidof -o %PPID /sbin/udevd >/dev/null; then
+if /bin/pidof /sbin/udevd >/dev/null; then
 	status "Waiting for UDev uevents to be processed" \
 		/sbin/udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
 fi
