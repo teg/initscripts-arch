@@ -11,10 +11,12 @@ e.g: rc list
      rc help
      rc start sshd gpm
 EOF
+	exit 1
 }
 
-(( $# < 1 )) && usage && exit 1
+(( $# < 1 )) && usage
 
+declare -i ret=0
 case $1 in
 	help)
 		usage
@@ -43,9 +45,10 @@ case $1 in
 		shift
 		for i; do
 			[[ -x "/etc/rc.d/$i" ]] && "/etc/rc.d/$i" $action
+			(( ret += $? ))
 		done
 esac
 
-true
+exit $ret
 
 # vim: set ts=2 sw=2 noet:
