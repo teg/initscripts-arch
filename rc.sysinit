@@ -21,7 +21,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 /bin/mountpoint -q /sys     || /bin/mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
 /bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,noexec,nodev
 if ! /bin/mountpoint -q /dev; then
-	if grep -q devtmpfs /proc/filesystems 2>/dev/null; then
+	if /bin/grep -q devtmpfs /proc/filesystems &>/dev/null; then
 		/bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
 	else
 		/bin/mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -88,7 +88,7 @@ status "Starting UDev Daemon" /sbin/udevd --daemon
 run_hook sysinit_udevlaunched
 
 # Trigger udev uevents
-if /bin/pidof /sbin/udevd >/dev/null; then
+if /bin/pidof /sbin/udevd &>/dev/null; then
 	stat_busy "Triggering UDev uevents"
 	/sbin/udevadm trigger --action=add --type=devices
 	/sbin/udevadm trigger --action=add --type=subsystems
@@ -103,7 +103,7 @@ fi
 unset mods
 
 # Wait for udev uevents
-if /bin/pidof /sbin/udevd >/dev/null; then
+if /bin/pidof /sbin/udevd &>/dev/null; then
 	status "Waiting for UDev uevents to be processed" \
 		/sbin/udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
 fi
