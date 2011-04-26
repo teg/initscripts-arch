@@ -31,7 +31,7 @@ fi
 /bin/chmod 1777 /run/lock
 /bin/mountpoint -q /dev/pts || /bin/mount /dev/pts &> /dev/null \
 	|| /bin/mount -n -t devpts devpts /dev/pts -o mode=620,gid=5,nosuid,noexec
-/bin/mountpoint -q /dev/shm || /bin/mount /devshm &> /dev/null \
+/bin/mountpoint -q /dev/shm || /bin/mount /dev/shm &> /dev/null \
 	|| /bin/mount -n -t tmpfs shm /dev/shm -o mode=1777,nosuid,nodev
 
 # remount root ro to allow for fsck later on, we remount now to
