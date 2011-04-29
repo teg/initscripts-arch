@@ -328,8 +328,6 @@ stat_busy "Removing Leftover Files"
 /bin/mkdir -m1777 /tmp/.{X11,ICE}-unix
 stat_done
 
-#status "Updating Shared Library Links" /sbin/ldconfig
-
 if [[ $HOSTNAME ]]; then
 	status "Setting Hostname: $HOSTNAME" /bin/hostname "$HOSTNAME"
 fi

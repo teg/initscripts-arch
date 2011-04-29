@@ -210,11 +210,6 @@ case "$1" in
 		fi
 		;;
 	stop)
-		#if ck_daemon network; then
-		#	echo "Network is not running.  Try 'network start'"
-		#	exit
-		#fi
-
 		if [[ $NETWORK_PERSIST =~ yes|YES && $RUNLEVEL == [06] ]]; then
 			status "Skipping Network Shutdown" true
 			exit 0
