@@ -42,15 +42,12 @@ fi
 # Write to wtmp file before unmounting
 /sbin/halt -w
 
-stat_busy "Deactivating Swap"
-/sbin/swapoff -a
-stat_done
+status "Deactivating Swap" /sbin/swapoff -a
 
 # stop monitoring of lvm2 groups before unmounting filesystems
 if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
-	stat_busy "Deactivating monitoring of LVM2 groups"
-	/sbin/vgchange --monitor n >/dev/null 2>&1
-	stat_done
+	status "Deactivating monitoring of LVM2 groups" \
+		/sbin/vgchange --monitor n >/dev/null 2>&1
 fi
 
 stat_busy "Unmounting Filesystems"
@@ -83,14 +80,10 @@ if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
 fi
 
 if [[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]]; then
-	stat_busy "Deactivating LVM2 groups"
-	/sbin/vgchange --sysinit -a n >/dev/null 2>&1
-	stat_done
+	status "Deactivating LVM2 groups" /sbin/vgchange --sysinit -a n >/dev/null 2>&1
 fi
 
-stat_busy "Remounting Root Filesystem Read-only"
-/bin/mount -n -o remount,ro /
-stat_done
+status "Remounting Root Filesystem Read-only" /bin/mount -n -o remount,ro /
 
 run_hook shutdown_poweroff
 

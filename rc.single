@@ -10,10 +10,7 @@ run_hook single_start
 
 if [[ $PREVLEVEL != N ]]; then
 	kill_everything single
-	stat_busy "Starting UDev Daemon"
-	/sbin/udevd --daemon
-	stat_done
-
+	status "Starting UDev Daemon" /sbin/udevd --daemon
 	run_hook single_udevlaunched
 
 	# Trigger udev uevents

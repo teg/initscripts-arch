@@ -275,8 +275,7 @@ if [[ -x /sbin/fsck ]]; then
 	stat_done
 fi
 
-stat_busy "Mounting Local Filesystems"
-/bin/mount -n -o remount,rw /
+status "Mounting Local Filesystems" /bin/mount -n -o remount,rw /
 
 # don't touch /etc/mtab if it is a symlink to /proc/self/mounts
 if [[ -L /etc/mtab ]]; then
