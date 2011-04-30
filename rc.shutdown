@@ -65,6 +65,11 @@ stat_done
 # Kill non-root encrypted partition mappings
 if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
 	stat_busy "Deactivating encrypted volumes:"
+	# Maybe someone has LVM on an encrypted block device
+	# executing an extra vgchange is errorless
+	if [[ $USELVM =~ yes|YES ]]; then
+		/sbin/vgchange --sysinit -a n >/dev/null 2>&1
+	fi
 	do_lock() {
 		stat_append "${1}.."
 		if $CS remove "$1" >/dev/null 2>&1; then
