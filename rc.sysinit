@@ -316,6 +316,7 @@ stat_busy "Removing Leftover Files"
 /bin/mountpoint -q /tmp || /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 [[ ! -L /var/lock ]] && /bin/rm -rf /var/lock/*
 [[ ! -L /var/run && -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
+[[ ! -L /var/run && ! -L /var/run/daemons ]] && /bin/ln -sf /run/daemons /var/run/daemons
 : >| /var/run/utmp
 /bin/chmod 0664 /var/run/utmp
 /bin/chown root:utmp /var/run/utmp
