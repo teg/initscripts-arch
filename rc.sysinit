@@ -368,6 +368,13 @@ for f in cd net; do
 		/bin/cat "/run/udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
 done
 
+if [[ -e /proc/sys/kernel/dmesg_restrict && $(< /proc/sys/kernel/dmesg_restrict) -eq 1 ]]; then
+    : >| /var/log/dmesg.log
+    chmod 600 /var/log/dmesg.log
+else
+    : >| /var/log/dmesg.log
+    chmod 644 /var/log/dmesg.log
+fi
 /bin/dmesg >| /var/log/dmesg.log
 
 run_hook sysinit_end
