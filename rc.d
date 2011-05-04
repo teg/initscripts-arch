@@ -4,12 +4,13 @@
 . /etc/rc.d/functions
 
 usage() {
-    cat >&2 << EOF
-usage: rc action daemon ...
+	local name=${0##*/}
+	cat >&2 << EOF
+usage: $name action daemon ...
 
-e.g: rc list
-     rc help
-     rc start sshd gpm
+e.g: $name list
+     $name help
+     $name start sshd gpm
 EOF
 	exit 1
 }
@@ -37,7 +38,7 @@ case $1 in
 			else
 				printf "${C_OTHER}[${C_FAIL}    ${C_OTHER}]"
 			fi
-			printf " ${C_MAIN}$d${C_CLEAR}\n"
+			printf " ${C_CLEAR}$d\n"
 		done
 		;;
 	*)
