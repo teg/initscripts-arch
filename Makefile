@@ -12,7 +12,7 @@ install: minilogd installdirs
 	install -m755 -t $(DESTDIR)/etc rc.local rc.local.shutdown rc.multi rc.shutdown rc.single rc.sysinit
 	install -m755 -t $(DESTDIR)/etc/cron.hourly adjtime
 	install -m755 -t $(DESTDIR)/etc/rc.d functions hwclock network netfs
-	install -m755 -t $(DESTDIR)/sbin minilogd rc
+	install -m755 -t $(DESTDIR)/sbin minilogd rc.d
 
 clean:
 	rm -f minilogd minilogd.o
