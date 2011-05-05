@@ -1,0 +1,18 @@
+# rc.d bash completion by Seblu <seblu@seblu.net>
+
+_rc.d ()
+{
+	local action="help list start stop reload restart"
+	local cur="${COMP_WORDS[COMP_CWORD]}"
+	local caction="${COMP_WORDS[1]}"
+	if ((${COMP_CWORD} == 1)); then
+		COMPREPLY=($(compgen -W "${action}" -- "$cur"))
+	elif [[ "$caction" == "help" || "$caction" == "list" ]]; then
+		COMPREPLY=()
+	elif ((${COMP_CWORD} > 1)); then
+		COMPREPLY=($( compgen -W "$(find /etc/rc.d -maxdepth 1 -type f -executable -printf '%f\n')" -- "$cur" ))
+	fi
+}
+complete -F _rc.d rc.d
+
+# vim: set ts=2 sw=2 ft=sh noet:
