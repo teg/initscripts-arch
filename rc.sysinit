@@ -376,7 +376,7 @@ set_consolefont
 # When the rules are generated before /etc is mounted rw they are saved to /run,
 # we therefore need to copy this from /run to /etc. This functionality is going away one day.
 for f in cd net; do
-    [[ -f /dev/.udev/tmp-rules--70-persistent-$f.rules ]] || continue
+    [[ -f /run/udev/tmp-rules--70-persistent-$f.rules ]] || continue
     stat_busy "Adding persistent $f udev rules"
     /bin/cat "/run/udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
     stat_done
