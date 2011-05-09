@@ -1,5 +1,5 @@
 VER  := $(shell git describe)
-DIRS := /etc/rc.d /etc/conf.d /etc/rc.d/functions.d /etc/cron.hourly /sbin
+DIRS := /etc/rc.d /etc/conf.d /etc/rc.d/functions.d /etc/cron.hourly /sbin /etc/modprobe.d
 
 minilogd: minilogd.o
 
@@ -12,7 +12,8 @@ install: minilogd installdirs
 	install -m755 -t $(DESTDIR)/etc/cron.hourly adjtime
 	install -m644 -t $(DESTDIR)/etc/rc.d functions
 	install -m755 -t $(DESTDIR)/etc/rc.d hwclock network netfs
-	install -m755 -t $(DESTDIR)/sbin minilogd rc.d
+	install -m755 -t $(DESTDIR)/sbin minilogd rc.d modprobe-blacklist
+	ln -s /run/initscripts/modprobe-blacklist.conf $(DESTDIR)/etc/modprobe.d/arch-blacklist.conf
 
 clean:
 	rm -f minilogd minilogd.o
