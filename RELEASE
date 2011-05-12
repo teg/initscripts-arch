@@ -15,4 +15,29 @@ Releasing
 
 4) check that the PKGBUILD in git is in sync with the PKGBUILD to be released
 
-5) create packages for both arches and push to testing
+5) create package and push to testing:
+
+  5.1) [first time only] set up ssh forwarding so you can connect to gerolde from alderaan
+
+    5.1.1) Add "ForwardAgent=yes" to ~/.ssh/config
+
+    5.1.2) Add your private key to the authentication agent "ssh-add"
+
+  5.2) ssh pkgbuild.com
+
+  5.3) [first time only] check out initscripts from svn
+
+    5.3.1) svn checkout -N svn+ssh://gerolde.archlinux.org/srv/svn-packages
+
+    5.3.2) "cd svn-packages && svn update initscripts"
+
+  5.4) get the latest version of initscripts: "cd svn-packages && svn update"
+
+  5.5) update the version field in the PKGBUILD
+
+  5.6) build the package for both arches: "sudo testing-{i686,x86_64}-build"
+
+  5.7) run checkpkg, namcap, and install test at least one of the two packages
+
+  5.8) commit to svn and move package to your staging folder (which needs to exist on gerolde):
+       'testingpkg "commit message"'
