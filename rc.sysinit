@@ -13,7 +13,7 @@ printsep
 
 run_hook sysinit_start
 
-# export standard PATH (will be overridden later when /etc/profile is sourced, but is usefull for UDev)
+# export standard PATH (will be overridden later when /etc/profile is sourced, but is useful for UDev)
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
