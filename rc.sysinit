@@ -316,7 +316,7 @@ fi
 
 stat_busy "Removing Leftover Files"
 /bin/rm -rf /etc/{nologin,shutdownpid} /forcefsck &>/dev/null
-/bin/mountpoint -q /tmp || /bin/rm -rf /tmp/* /tmp/.* &>/dev/null
+/bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 [[ ! -L /var/lock ]] && /bin/rm -rf /var/lock/*
 [[ ! -L /var/run && -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
 [[ ! -L /var/run && ! -L /var/run/daemons ]] && /bin/rm -rf /var/run/daemons \
