@@ -222,6 +222,14 @@ ck_status() {
 	fi
 }
 
+# PIDs to be omitted by killall5
+declare -a omit_pids
+
+add_omit_pids() {
+	omit_pids+=( $@ )
+}
+
+
 kill_everything() {
 	# $1 = where we are being called from.
 	# This is used to determine which hooks to run.
@@ -241,12 +249,16 @@ kill_everything() {
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
 	run_hook "$1_prekillall"
-	/sbin/killall5 -15 &> /dev/null
+	local pid k5args=""
+	for pid in ${omit_pids[@]}; do
+		k5args+=" -o $pid"
+	done
+	/sbin/killall5 -15 $k5args &> /dev/null
 	/bin/sleep 5
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-	/sbin/killall5 -9 &> /dev/null
+	/sbin/killall5 -9 $k5args &> /dev/null
 	/bin/sleep 1
 	stat_done
 
