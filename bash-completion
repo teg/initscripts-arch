@@ -7,10 +7,14 @@ _rc.d ()
 	local caction="${COMP_WORDS[1]}"
 	if ((${COMP_CWORD} == 1)); then
 		COMPREPLY=($(compgen -W "${action}" -- "$cur"))
-	elif [[ "$caction" == "help" || "$caction" == "list" ]]; then
+	elif [[ "$caction" =~ help|list ]]; then
 		COMPREPLY=()
+	elif [[ "$caction" == start ]]; then
+		COMPREPLY=($(comm -23 <(cd /etc/rc.d && compgen -f -X 'functions*' "$cur"|sort) <(cd /run/daemons/ && compgen -f "$cur"|sort)))
+	elif [[ "$caction" =~ stop|restart|reload ]]; then
+		COMPREPLY=($(cd /run/daemons/ && compgen -f "$cur"|sort))
 	elif ((${COMP_CWORD} > 1)); then
-		COMPREPLY=($( compgen -W "$(find /etc/rc.d -maxdepth 1 -type f -executable -printf '%f\n')" -- "$cur" ))
+		COMPREPLY=($(cd /etc/rc.d && compgen -f -X 'functions*' "$cur"|sort))
 	fi
 }
 complete -F _rc.d rc.d
