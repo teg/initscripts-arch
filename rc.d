@@ -50,6 +50,7 @@ case $1 in
 		ENV+=" PREVLEVEL='${runlevel:0:1}'"
 		ENV+=" RUNLEVEL='${runlevel:2:1}'"
 		ENV+=" CONSOLE='${CONSOLE:-/dev/console}'"
+		ENV+=" TERM='${TERM}'"
 		for i; do
 			[[ -x "/etc/rc.d/$i" ]] && cd / && eval /usr/bin/env -i $ENV "/etc/rc.d/$i" "$action"
 			(( ret += !! $? ))  # clamp exit value to 0/1
@@ -58,4 +59,4 @@ esac
 
 exit $ret
 
-# vim: set ts=2 sw=2 noet:
+# vim: set ts=2 sw=2 ft=sh noet:
