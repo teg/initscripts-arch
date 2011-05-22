@@ -15,14 +15,17 @@ _rc.d () {
 			curcontext="${curcontext%:*:*}:rc.d-${action}:"
 
 			case $action in
-				list)
+				list|help)
 					_arguments "*: :"
 					;;
-				help)
-					_arguments "*: :"
+				start)
+					_arguments "*: :($(comm -23 <(echo /etc/rc.d/*(N-*:t)|tr ' ' '\n') <(echo /run/daemons/*(N:t)|tr ' ' '\n')))"
+					;;
+				stop|restart|reload)
+					_arguments "*: :(/run/daemons/*(N:t))"
 					;;
 				*)
-					_arguments "*: :_services"
+					_arguments "*: :(/etc/rc.d/*(N-*:t))"
 					;;
 			esac
 		;;
