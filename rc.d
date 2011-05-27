@@ -46,13 +46,13 @@ case $1 in
 		shift
 		# set same environment variables as init
 		runlevel=$(/sbin/runlevel)
-		ENV="PATH='/bin:/usr/bin:/sbin:/usr/sbin'"
-		ENV+=" PREVLEVEL='${runlevel:0:1}'"
-		ENV+=" RUNLEVEL='${runlevel:2:1}'"
-		ENV+=" CONSOLE='${CONSOLE:-/dev/console}'"
-		ENV+=" TERM='${TERM}'"
+		ENV=("PATH=/bin:/usr/bin:/sbin:/usr/sbin"
+			"PREVLEVEL=${runlevel%% *}"
+			"RUNLEVEL=${runlevel##* }"
+			"CONSOLE=${CONSOLE:-/dev/console}"
+			"TERM=$TERM")
 		for i; do
-			[[ -x "/etc/rc.d/$i" ]] && cd / && eval /usr/bin/env -i $ENV "/etc/rc.d/$i" "$action"
+			[[ -x "/etc/rc.d/$i" ]] && cd / && /usr/bin/env -i "${ENV[@]}" "/etc/rc.d/$i" "$action"
 			(( ret += !! $? ))  # clamp exit value to 0/1
 		done
 esac
