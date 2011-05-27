@@ -52,7 +52,12 @@ case $1 in
 		ENV+=" CONSOLE='${CONSOLE:-/dev/console}'"
 		ENV+=" TERM='${TERM}'"
 		for i; do
-			[[ -x "/etc/rc.d/$i" ]] && cd / && eval /usr/bin/env -i $ENV "/etc/rc.d/$i" "$action"
+			if [[ -x "/etc/rc.d/$i" ]]; then
+			    cd /
+			    eval /usr/bin/env -i $ENV "/etc/rc.d/$i" "$action"
+			else
+			    printf "${C_OTHER}:: ${C_FAIL}Error: ${C_DONE}Daemon script $i does not exist.\n"
+			fi
 			(( ret += !! $? ))  # clamp exit value to 0/1
 		done
 esac
