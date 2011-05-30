@@ -83,9 +83,6 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	fi
 fi
 
-# parse rc.conf and create the blacklist file for use by modprobe
-status "Creating UDev blacklist" /sbin/modprobe-blacklist
-
 status "Starting UDev Daemon" /sbin/udevd --daemon
 
 run_hook sysinit_udevlaunched
