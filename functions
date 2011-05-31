@@ -394,5 +394,15 @@ for f in /etc/rc.d/functions.d/*; do
 	[[ -e $f ]] && . "$f"
 done
 
+# Exit current shell if user is not root
+need_root() {
+	(( $EUID != 0 )) && printf 'You need to be root.\n' && exit 1
+}
+
+# Quit script if it's not running by root
+# This can be disabled in scripts sourcing functions by setting NEED_ROOT=0
+# A local call to need_root can be done to ensure part of script need root privilege
+(( ${NEED_ROOT:-1} == 1 )) && need_root
+
 # End of file
 # vim: set ts=2 sw=2 noet:
