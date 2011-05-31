@@ -51,8 +51,9 @@ case $1 in
 			"RUNLEVEL=${runlevel##* }"
 			"CONSOLE=${CONSOLE:-/dev/console}"
 			"TERM=$TERM")
+		cd /
 		for i; do
-			[[ -x "/etc/rc.d/$i" ]] && cd / && /usr/bin/env -i "${ENV[@]}" "/etc/rc.d/$i" "$action"
+			[[ -x "/etc/rc.d/$i" ]] && /usr/bin/env -i "${ENV[@]}" "/etc/rc.d/$i" "$action"
 			(( ret += !! $? ))  # clamp exit value to 0/1
 		done
 esac
