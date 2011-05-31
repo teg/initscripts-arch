@@ -42,6 +42,8 @@ case $1 in
 		done
 		;;
 	*)
+		# check min args count
+		(( $# < 2 )) && usage
 		action=$1
 		shift
 		# set same environment variables as init
