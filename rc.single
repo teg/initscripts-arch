@@ -49,7 +49,7 @@ if [[ $RUNLEVEL = 1 ]]; then
 fi
 
 /bin/touch /var/log/boot
-kill `/bin/cat /run/bootlogd.pid`
+kill $(/bin/cat /run/bootlogd.pid)
 /bin/rm /run/bootlogd.pid
 
 # End of file

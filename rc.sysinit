@@ -187,7 +187,7 @@ if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
 							/bin/dd if=${ckdev} of=${ckfile} bs=1 skip=${cka} count=${ckb} >/dev/null 2>&1;;
 					esac
 					$CS -d ${ckfile} $4 $open "$a" "$b" >/dev/null
-					/bin/dd if=/dev/urandom of=${ckfile} bs=1 count=`stat -c %s ${ckfile}` conv=notrunc >/dev/null 2>&1
+					/bin/dd if=/dev/urandom of=${ckfile} bs=1 count=$(stat -c %s ${ckfile}) conv=notrunc >/dev/null 2>&1
 					rm ${ckfile};;
 				/*)
 					$CS -d "$3" $4 $open "$a" "$b" >/dev/null;;
