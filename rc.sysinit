@@ -19,7 +19,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
 /bin/mountpoint -q /proc    || /bin/mount -n -t proc proc /proc -o nosuid,noexec,nodev
 /bin/mountpoint -q /sys     || /bin/mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
-/bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,noexec,nodev
+/bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,nodev
 if ! /bin/mountpoint -q /dev; then
 	if /bin/grep -q devtmpfs /proc/filesystems &>/dev/null; then
 		/bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
