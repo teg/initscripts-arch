@@ -36,8 +36,8 @@ fi
 
 # remount root ro to allow for fsck later on, we remount now to
 # make sure nothing can open files rw on root which would block a remount
-/bin/findmnt / --options ro &>/dev/null || \
-status "Mounting Root Read-Only" /bin/mount -n -o remount,ro /
+/bin/findmnt / --options ro &>/dev/null ||
+	status "Mounting Root Read-Only" /bin/mount -n -o remount,ro /
 
 # start up our mini logger until syslog takes over
 /sbin/minilogd
@@ -104,8 +104,8 @@ fi
 run_hook sysinit_udevsettled
 
 # bring up the loopback interface
-[[ -d /sys/class/net/lo ]] && \
-    status "Bringing up loopback interface" /usr/sbin/ip link set up dev lo
+[[ -d /sys/class/net/lo ]] &&
+	status "Bringing up loopback interface" /usr/sbin/ip link set up dev lo
 
 # FakeRAID devices detection
 if [[ $USEDMRAID =~ yes|YES && -x /sbin/dmraid ]]; then
@@ -310,8 +310,9 @@ stat_busy "Removing Leftover Files"
 	/bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 	[[ ! -L /var/lock ]] && /bin/rm -rf /var/lock/*
 	[[ ! -L /var/run && -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
-	[[ ! -L /var/run && ! -L /var/run/daemons ]] && /bin/rm -rf /var/run/daemons \
-                                             && /bin/ln -s /run/daemons /var/run/daemons
+	[[ ! -L /var/run && ! -L /var/run/daemons ]] &&
+		/bin/rm -rf /var/run/daemons &&
+		/bin/ln -s /run/daemons /var/run/daemons
 	: >| /var/run/utmp
 	/bin/chmod 0664 /var/run/utmp
 	/bin/chown root:utmp /var/run/utmp
@@ -362,9 +363,9 @@ set_consolefont
 # When the rules are generated before /etc is mounted rw they are saved to /run,
 # we therefore need to copy this from /run to /etc. This functionality is going away one day.
 for f in cd net; do
-    [[ -f /run/udev/tmp-rules--70-persistent-$f.rules ]] || continue
-    status "Adding persistent $f udev rules" \
-	    /bin/cat "/run/udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
+	[[ -f /run/udev/tmp-rules--70-persistent-$f.rules ]] || continue
+	status "Adding persistent $f udev rules" \
+		/bin/cat "/run/udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
 done
 
 /bin/dmesg >| /var/log/dmesg.log
