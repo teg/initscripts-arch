@@ -43,13 +43,6 @@ status "Mounting Root Read-Only" /bin/mount -n -o remount,ro /
 /sbin/minilogd
 /sbin/bootlogd -p /run/bootlogd.pid
 
-# Set console verbosity
-for cmdarg in $(< /proc/cmdline); do
-        [[ "$cmdarg" == verbose ]] && VERBOSE=8 && break
-        [[ "$cmdarg" =~ verbose=[1-8] ]] && VERBOSE=${BASH_REMATCH[0]-8} && break
-done
-/bin/dmesg -n ${VERBOSE:-3}
-
 HWCLOCK_PARAMS="--hctosys"
 case $HARDWARECLOCK in
 	UTC) HWCLOCK_PARAMS+=" --utc";;
