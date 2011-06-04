@@ -11,5 +11,5 @@ case $HARDWARECLOCK in
 esac
 
 if [[ $HWCLOCK_PARAMS && -f /run/daemons/hwclock ]]; then
-    /sbin/hwclock $HWCLOCK_PARAMS
+    hwclock $HWCLOCK_PARAMS
 fi

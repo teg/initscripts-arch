@@ -56,7 +56,7 @@ case $1 in
 		cd /
 		for i; do
 			if [[ -x "/etc/rc.d/$i" ]]; then
-				/usr/bin/env -i "${ENV[@]}" "/etc/rc.d/$i" "$action"
+				env -i "${ENV[@]}" "/etc/rc.d/$i" "$action"
 			else
 				printf "${C_OTHER}:: ${C_FAIL}Error: ${C_DONE}Daemon script $i does not exist.\n"
 			fi

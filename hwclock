@@ -13,9 +13,9 @@ case "$1" in
 	start)
 		if [[ $HWCLOCK_PARAMS ]]; then
 			status "Adjusting Hardware Clock" \
-				/sbin/hwclock --adjust
+				hwclock --adjust
 			stat_busy "Setting System Clock"
-			/sbin/hwclock --hctosys $HWCLOCK_PARAMS || stat_die
+			hwclock --hctosys $HWCLOCK_PARAMS || stat_die
 			stat_done
 			# Note: This also enables /etc/cron.hourly/adjtime
 			add_daemon hwclock
@@ -24,7 +24,7 @@ case "$1" in
 	stop)
 		if [[ $HWCLOCK_PARAMS ]]; then
 			stat_busy "Saving System Clock"
-			/sbin/hwclock --systohc $HWCLOCK_PARAMS || stat_die
+			hwclock --systohc $HWCLOCK_PARAMS || stat_die
 			stat_done
 		fi
 		rm_daemon hwclock
