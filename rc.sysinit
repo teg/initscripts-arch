@@ -19,7 +19,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
 /bin/mountpoint -q /proc    || /bin/mount -n -t proc proc /proc -o nosuid,noexec,nodev
 /bin/mountpoint -q /sys     || /bin/mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
-/bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,noexec,nodev
+/bin/mountpoint -q /run     || /bin/mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,nodev
 if ! /bin/mountpoint -q /dev; then
 	if /bin/grep -q devtmpfs /proc/filesystems &>/dev/null; then
 		/bin/mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -36,19 +36,12 @@ fi
 
 # remount root ro to allow for fsck later on, we remount now to
 # make sure nothing can open files rw on root which would block a remount
-/bin/findmnt / --options ro &>/dev/null || \
-status "Mounting Root Read-Only" /bin/mount -n -o remount,ro /
+/bin/findmnt / --options ro &>/dev/null ||
+	status "Mounting Root Read-Only" /bin/mount -n -o remount,ro /
 
 # start up our mini logger until syslog takes over
 /sbin/minilogd
 /sbin/bootlogd -p /run/bootlogd.pid
-
-# Set console verbosity
-for cmdarg in $(< /proc/cmdline); do
-        [[ "$cmdarg" == verbose ]] && VERBOSE=8 && break
-        [[ "$cmdarg" =~ verbose=[1-8] ]] && VERBOSE=${BASH_REMATCH[0]-8} && break
-done
-/bin/dmesg -n ${VERBOSE:-3}
 
 HWCLOCK_PARAMS="--hctosys"
 case $HARDWARECLOCK in
@@ -111,8 +104,8 @@ fi
 run_hook sysinit_udevsettled
 
 # bring up the loopback interface
-[[ -d /sys/class/net/lo ]] && \
-    status "Bringing up loopback interface" /sbin/ip link set up dev lo
+[[ -d /sys/class/net/lo ]] &&
+	status "Bringing up loopback interface" /sbin/ip link set up dev lo
 
 # FakeRAID devices detection
 if [[ $USEDMRAID =~ yes|YES && -x /sbin/dmraid ]]; then
@@ -194,7 +187,7 @@ if [[ -f /etc/crypttab && -n $CS ]] && /bin/grep -q ^[^#] /etc/crypttab; then
 							/bin/dd if=${ckdev} of=${ckfile} bs=1 skip=${cka} count=${ckb} >/dev/null 2>&1;;
 					esac
 					$CS -d ${ckfile} $4 $open "$a" "$b" >/dev/null
-					/bin/dd if=/dev/urandom of=${ckfile} bs=1 count=`stat -c %s ${ckfile}` conv=notrunc >/dev/null 2>&1
+					/bin/dd if=/dev/urandom of=${ckfile} bs=1 count=$(stat -c %s ${ckfile}) conv=notrunc >/dev/null 2>&1
 					rm ${ckfile};;
 				/*)
 					$CS -d "$3" $4 $open "$a" "$b" >/dev/null;;
@@ -317,8 +310,9 @@ stat_busy "Removing Leftover Files"
 	/bin/rm -rf /tmp/* /tmp/.* &>/dev/null
 	[[ ! -L /var/lock ]] && /bin/rm -rf /var/lock/*
 	[[ ! -L /var/run && -d /var/run ]] && /usr/bin/find /var/run/ \! -type d -delete
-	[[ ! -L /var/run && ! -L /var/run/daemons ]] && /bin/rm -rf /var/run/daemons \
-                                             && /bin/ln -s /run/daemons /var/run/daemons
+	[[ ! -L /var/run && ! -L /var/run/daemons ]] &&
+		/bin/rm -rf /var/run/daemons &&
+		/bin/ln -s /run/daemons /var/run/daemons
 	: >| /var/run/utmp
 	/bin/chmod 0664 /var/run/utmp
 	/bin/chown root:utmp /var/run/utmp
@@ -369,9 +363,9 @@ set_consolefont
 # When the rules are generated before /etc is mounted rw they are saved to /run,
 # we therefore need to copy this from /run to /etc. This functionality is going away one day.
 for f in cd net; do
-    [[ -f /run/udev/tmp-rules--70-persistent-$f.rules ]] || continue
-    status "Adding persistent $f udev rules" \
-	    /bin/cat "/run/udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
+	[[ -f /run/udev/tmp-rules--70-persistent-$f.rules ]] || continue
+	status "Adding persistent $f udev rules" \
+		/bin/cat "/run/udev/tmp-rules--70-persistent-$f.rules" >> "/etc/udev/rules.d/70-persistent-$f.rules"
 done
 
 /bin/dmesg >| /var/log/dmesg.log
