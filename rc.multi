@@ -26,8 +26,10 @@ fi
 
 run_hook multi_end
 
-/bin/touch /var/log/boot
-kill $(/bin/cat /run/bootlogd.pid)
-/bin/rm /run/bootlogd.pid
+if [[ -f /run/bootlogd.pid ]]; then
+	/bin/touch /var/log/boot
+	kill $(< /run/bootlogd.pid)
+	/bin/rm -f /run/bootlogd.pid
+fi
 
 # vim: set ts=2 sw=2 noet:
