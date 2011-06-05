@@ -43,10 +43,11 @@ findmnt / --options ro &>/dev/null ||
 minilogd
 bootlogd -p /run/bootlogd.pid
 
-HWCLOCK_PARAMS="--hctosys"
+HWCLOCK_PARAMS="--systz"
 case $HARDWARECLOCK in
-	UTC) HWCLOCK_PARAMS+=" --utc";;
-	localtime) HWCLOCK_PARAMS+=" --localtime";;
+	"") ;;
+	UTC) HWCLOCK_PARAMS+=" --utc --noadjfile";;
+	localtime) HWCLOCK_PARAMS+=" --localtime --noadjfile";;
 	*) HWCLOCK_PARAMS="";;
 esac
 
@@ -63,7 +64,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 		done
 	fi
 
-	# Do a clock set here for a few reasons:
+	# Adjust the system time for timezone offset if rtc is not in UTC
 	# 1. Make creation time on udev nodes sane (FS#8665)
 	# 2. Filesystem checks can depend on system time
 	# 3. This will set the clock, if using non-UTC, off the last known
@@ -72,7 +73,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	# This does *NOT* take into account a time adjustment file as /var may not be
 	# mounted yet. A second set may occur in rc.d/hwclock to match rc.conf.
 	if [[ -f /etc/localtime ]]; then
-		hwclock $HWCLOCK_PARAMS --noadjfile
+		hwclock $HWCLOCK_PARAMS
 	fi
 fi
 
