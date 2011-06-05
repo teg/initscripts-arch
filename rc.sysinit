@@ -80,13 +80,10 @@ status "Starting UDev Daemon" udevd --daemon
 
 run_hook sysinit_udevlaunched
 
-# Trigger udev uevents
-if pidof udevd &>/dev/null; then
-	stat_busy "Triggering UDev uevents"
-		udevadm trigger --action=add --type=subsystems
-		udevadm trigger --action=add --type=devices
-	stat_done
-fi
+stat_busy "Triggering UDev uevents"
+	udevadm trigger --action=add --type=subsystems
+	udevadm trigger --action=add --type=devices
+stat_done
 
 # Load modules from the MODULES array defined in rc.conf
 mods=${MODULES[@]/!*/}
@@ -95,11 +92,8 @@ if [[ $load_modules != off && -f /proc/modules && $mods ]]; then
 fi
 unset mods
 
-# Wait for udev uevents
-if pidof udevd &>/dev/null; then
-	status "Waiting for UDev uevents to be processed" \
-		udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
-fi
+status "Waiting for UDev uevents to be processed" \
+	udevadm settle --timeout=${UDEV_TIMEOUT:-30}
 
 run_hook sysinit_udevsettled
 
