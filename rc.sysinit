@@ -18,8 +18,8 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
 mountpoint -q /proc    || mount -n -t proc proc /proc -o nosuid,noexec,nodev
-mountpoint -q /sys     || mount -n -t sysfs sysfs /sys -o nosuid,noexec,nodev
-mountpoint -q /run     || mount -n -t tmpfs tmpfs /run -o mode=755,size=10M,nosuid,nodev
+mountpoint -q /sys     || mount -n -t sysfs sys /sys -o nosuid,noexec,nodev
+mountpoint -q /run     || mount -n -t tmpfs run /run -o mode=755,size=10M,nosuid,nodev
 if ! mountpoint -q /dev; then
 	if grep -q devtmpfs /proc/filesystems &>/dev/null; then
 		mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid
@@ -354,6 +354,13 @@ fi
 # Set console font if required
 set_consolefont
 
+if [[ -e /proc/sys/kernel/dmesg_restrict && $(< /proc/sys/kernel/dmesg_restrict) -eq 1 ]]; then
+    : >| /var/log/dmesg.log
+    chmod 600 /var/log/dmesg.log
+else
+    : >| /var/log/dmesg.log
+    chmod 644 /var/log/dmesg.log
+fi
 dmesg >| /var/log/dmesg.log
 
 run_hook sysinit_end

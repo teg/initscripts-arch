@@ -50,9 +50,11 @@ if [[ $RUNLEVEL = 1 ]]; then
 	exec init -t1 S
 fi
 
-touch /var/log/boot
-kill $(< /run/bootlogd.pid)
-rm /run/bootlogd.pid
+if [[ -f /run/bootlogd.pid ]]; then
+	touch /var/log/boot
+	kill $(< /run/bootlogd.pid)
+	rm -f /run/bootlogd.pid
+fi
 
 # End of file
 # vim: set ts=2 sw=2 noet:
