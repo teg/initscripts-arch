@@ -71,7 +71,7 @@ if [[ $USECOLOR =~ yes|YES ]]; then
 		C_FAIL="\e[1;31m"       # failed
 		C_DONE="${C_MAIN}"      # completed
 		C_BKGD="\e[1;35m"       # backgrounded
-		C_H1="${$C_MAIN}"       # highlight text 1
+		C_H1="${C_MAIN}"        # highlight text 1
 		C_H2="\e[1;36m"         # highlight text 2
 	fi
 fi

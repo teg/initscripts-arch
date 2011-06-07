@@ -1,5 +1,5 @@
 VER  := $(shell git describe)
-DIRS := /etc/rc.d /etc/conf.d /etc/rc.d/functions.d /sbin /etc/bash_completion.d /usr/share/zsh/site-functions
+DIRS := /etc/rc.d /etc/conf.d /etc/rc.d/functions.d /etc/logrotate.d /sbin /etc/bash_completion.d /usr/share/zsh/site-functions
 
 minilogd: minilogd.o
 
@@ -9,6 +9,7 @@ installdirs:
 install: minilogd installdirs
 	install -m644 -t $(DESTDIR)/etc inittab rc.conf
 	install -m755 -t $(DESTDIR)/etc rc.local rc.local.shutdown rc.multi rc.shutdown rc.single rc.sysinit
+	install -m644 -t $(DESTDIR)/etc/logrotate.d bootlog
 	install -m644 -t $(DESTDIR)/etc/rc.d functions
 	install -m755 -t $(DESTDIR)/etc/rc.d hwclock network netfs
 	install -m755 -t $(DESTDIR)/sbin minilogd rc.d
