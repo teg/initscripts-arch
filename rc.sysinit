@@ -316,7 +316,9 @@ stat_busy "Removing Leftover Files"
 stat_done
 
 if [[ $HOSTNAME ]]; then
-	status "Setting Hostname: $HOSTNAME" hostname "$HOSTNAME"
+	stat_busy "Setting Hostname: $HOSTNAME"
+		echo $HOSTNAME > /proc/sys/kernel/hostname
+	stat_done
 fi
 
 stat_busy "Setting Locale: ${LOCALE:=en_US}"
