@@ -32,7 +32,7 @@ network_up() {
 				return 1
 			fi
 		done
-		ip addr add $address/$netmask dev $interface || return 1
+		ip addr add $address/$netmask broadcast ${broadcast:-+} dev $interface || return 1
 		ip route add default via $gateway || return 1
 	else
 		dhcpcd $DHCPCD_ARGS $interface || return 1
