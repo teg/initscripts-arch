@@ -235,6 +235,21 @@ ck_status() {
 	fi
 }
 
+# Return PID of $1
+get_pid() {
+        pidof -o %PPID $1 || return 1
+}
+
+# Check if PID-file $1 is still the active PID-file for command $2
+ck_pidfile() {
+        if [[ -f "$1" ]]; then
+                read -r fpid <"$1"
+                ppid=$(get_pid $2)
+                [[ "$fpid" = "$ppid" ]] && return 0
+        fi
+        return 1
+}
+
 # PIDs to be omitted by killall5
 declare -a omit_pids
 
