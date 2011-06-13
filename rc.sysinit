@@ -87,9 +87,8 @@ stat_busy "Triggering UDev uevents"
 stat_done
 
 # Load modules from the MODULES array defined in rc.conf
-mods=${MODULES[@]/!*/}
-if [[ $load_modules != off && -f /proc/modules && $mods ]]; then
-	status "Loading Modules" modprobe --all $mods
+if [[ -f /proc/modules ]] && (( ${#MODULES[*]} )); then
+	status "Loading Modules" modprobe -ab "${MODULES[@]}"
 fi
 unset mods
 
