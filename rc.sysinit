@@ -277,6 +277,7 @@ stat_busy "Mounting Local Filesystems"
 	run_hook sysinit_premount
 	# now mount all the local filesystems
 	mount -a -t $NETFS -O no_netdev
+	run_hook sysinit_postmount
 stat_done
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw

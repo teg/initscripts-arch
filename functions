@@ -338,6 +338,7 @@ read_crypttab() {
 # sysinit_udevsettled: after uevents have settled in rc.sysinit
 # single_udevsettled: after uevents have settled in rc.single
 # sysinit_premount: before local filesystems are mounted, but after root is mounted read-write in rc.sysinit
+# sysinit_postmount: after local filesystems are mounted
 # shutdown_prekillall: before all processes are being killed in rc.shutdown
 # single_prekillall: before all processes are being killed in rc.single
 # shutdown_postkillall: after all processes have been killed in rc.shutdown
