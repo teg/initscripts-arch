@@ -33,7 +33,7 @@ network_up() {
 			fi
 		done
 		ip addr add $address/$netmask broadcast ${broadcast:-+} dev $interface || return 1
-		ip route add default via $gateway || return 1
+		[[ $gateway ]] && { ip route add default via $gateway || return 1; }
 	else
 		dhcpcd $DHCPCD_ARGS $interface || return 1
 	fi
@@ -43,7 +43,6 @@ network_down() {
 	if [[ -f /var/run/dhcpcd-$interface.pid ]]; then
 		dhcpcd -k $interface || return 1
 	else
-		ip route del default || return 1
 		ip addr flush dev $interface || return 1
 	fi
 
