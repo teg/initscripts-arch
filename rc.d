@@ -1,14 +1,22 @@
 #!/bin/bash
 
+NEED_ROOT=0 # this script can be run without be root
 . /etc/rc.conf
 . /etc/rc.d/functions
 
 usage() {
 	local name=${0##*/}
 	cat >&2 << EOF
-usage: $name action daemon ...
+usage: $name <action> <daemon> [daemon] ...
+       $name list [started|stopped]
+       $name help
+
+<daemon> is the name of a script in /etc/rc.d
+<action> can be a start, stop, restart, reload, status, ...
+WARNING: initscripts are free to implement or not the above actions.
 
 e.g: $name list
+     $name list started
      $name help
      $name start sshd gpm
 EOF
@@ -23,13 +31,16 @@ case $1 in
 		usage
 		;;
 	list)
+		shift
 		cd /etc/rc.d/
 		for d in *; do
 			have_daemon "$d" || continue
 			# print running / stopped satus
 			if ! ck_daemon "$d"; then
+				[[ "$1" == stopped ]] && continue
 				printf "${C_OTHER}[${C_DONE}STARTED${C_OTHER}]"
 			else
+				[[ "$1" == started ]] && continue
 				printf "${C_OTHER}[${C_FAIL}STOPPED${C_OTHER}]"
 			fi
 			# print auto / manual status
@@ -40,7 +51,7 @@ case $1 in
 			fi
 			printf " ${C_CLEAR}$d\n"
 		done
-		;;
+	;;
 	*)
 		# check min args count
 		(( $# < 2 )) && usage
@@ -62,6 +73,7 @@ case $1 in
 			fi
 			(( ret += !! $? ))  # clamp exit value to 0/1
 		done
+	;;
 esac
 
 exit $ret
