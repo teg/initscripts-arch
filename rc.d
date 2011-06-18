@@ -6,9 +6,16 @@
 usage() {
 	local name=${0##*/}
 	cat >&2 << EOF
-usage: $name action daemon ...
+usage: $name <action> <daemon> [daemon] ...
+       $name list [started|stopped]
+       $name help
+
+<daemon> is the name of a script in /etc/rc.d
+<action> can be a start, stop, restart, reload, status, ...
+WARNING: initscripts are free to implement or not the above actions.
 
 e.g: $name list
+     $name list started
      $name help
      $name start sshd gpm
 EOF
