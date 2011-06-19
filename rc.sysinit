@@ -102,12 +102,12 @@ run_hook sysinit_udevsettled
 	status "Bringing up loopback interface" ip link set up dev lo
 
 # FakeRAID devices detection
-if [[ $USEDMRAID =~ yes|YES && -x $(type -P dmraid) ]]; then
+if [[ $USEDMRAID = [Yy][Ee][Ss] && -x $(type -P dmraid) ]]; then
 	status "Activating FakeRAID arrays" dmraid -i -ay
 fi
 
 # BTRFS devices detection
-if [[ $USEBTRFS =~ yes|YES && -x $(type -P btrfs) ]]; then
+if [[ $USEBTRFS = [Yy][Ee][Ss] && -x $(type -P btrfs) ]]; then
 	status "Activating BTRFS volumes" btrfs device scan
 fi
 
@@ -280,7 +280,7 @@ stat_busy "Mounting Local Filesystems"
 stat_done
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw
-if [[ $USELVM =~ yes|YES && -x $(type -P lvm) && -d /sys/block ]]; then
+if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
 	status "Activating monitoring of LVM2 groups" \
 		vgchange --monitor y >/dev/null
 fi
