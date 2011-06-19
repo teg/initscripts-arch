@@ -26,13 +26,7 @@ network_up() {
 	ip link set dev $interface up || return 1
 
 	if [[ $address ]]; then
-		for var in netmask gateway; do
-			if [[ -z ${!var} ]]; then
-				printf "${C_FAIL}Error: static address defined without $var!\n"
-				return 1
-			fi
-		done
-		ip addr add $address/$netmask broadcast ${broadcast:-+} dev $interface || return 1
+		ip addr add $address/${netmask:-24} broadcast ${broadcast:-+} dev $interface || return 1
 		[[ $gateway ]] && { ip route add default via $gateway || return 1; }
 	else
 		dhcpcd $DHCPCD_ARGS $interface || return 1
