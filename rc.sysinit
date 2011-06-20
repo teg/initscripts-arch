@@ -95,6 +95,9 @@ unset mods
 status "Waiting for UDev uevents to be processed" \
 	udevadm settle --timeout=${UDEV_TIMEOUT:-30}
 
+# in case loading a module changed the display mode
+calc_columns
+
 run_hook sysinit_udevsettled
 
 # bring up the loopback interface

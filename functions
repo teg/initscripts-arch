@@ -4,26 +4,40 @@
 
 # width:
 
-STAT_COL=80
-if [[ ! -t 1 ]]; then
-	USECOLOR=""
-elif [[ -t 0 ]]; then
-	# stty will fail when stdin isn't a terminal
-	STAT_COL="$(/bin/stty size)"
-	# stty gives "rows cols"; strip the rows number, we just want columns
-	STAT_COL="${STAT_COL##* }"
-elif /bin/tput cols &>/dev/null; then
-	# is /usr/share/terminfo already mounted, and TERM recognized?
-	STAT_COL=$(/bin/tput cols)
-fi
-if ((STAT_COL==0)); then
-	# if output was 0 (serial console), set default width to 80
+calc_columns () {
 	STAT_COL=80
-	USECOLOR=""
-fi
+	if [[ ! -t 1 ]]; then
+		USECOLOR=""
+	elif [[ -t 0 ]]; then
+		# stty will fail when stdin isn't a terminal
+		STAT_COL="$(/bin/stty size)"
+		# stty gives "rows cols"; strip the rows number, we just want columns
+		STAT_COL="${STAT_COL##* }"
+	elif /bin/tput cols &>/dev/null; then
+		# is /usr/share/terminfo already mounted, and TERM recognized?
+		STAT_COL=$(/bin/tput cols)
+	fi
+	if ((STAT_COL==0)); then
+		# if output was 0 (serial console), set default width to 80
+		STAT_COL=80
+		USECOLOR=""
+	fi
 
-# we use 13 characters for our own stuff
-STAT_COL=$(($STAT_COL - 13))
+	# we use 13 characters for our own stuff
+	STAT_COL=$(($STAT_COL - 13))
+
+	if [[ -t 1 ]]; then
+		SAVE_POSITION="\e[s"
+		RESTORE_POSITION="\e[u"
+		DEL_TEXT="\e[$(($STAT_COL+4))G"
+	else
+		SAVE_POSITION=""
+		RESTORE_POSITION=""
+		DEL_TEXT=""
+	fi
+}
+
+calc_columns
 
 # disable colors on broken terminals
 TERM_COLORS="$(/bin/tput colors 2>/dev/null)"
@@ -74,16 +88,6 @@ if [[ $USECOLOR =~ yes|YES ]]; then
 		C_H1="${C_MAIN}"        # highlight text 1
 		C_H2="\e[1;36m"         # highlight text 2
 	fi
-fi
-
-if [[ -t 1 ]]; then
-	SAVE_POSITION="\e[s"
-	RESTORE_POSITION="\e[u"
-	DEL_TEXT="\e[$(($STAT_COL+4))G"
-else
-	SAVE_POSITION=""
-	RESTORE_POSITION=""
-	DEL_TEXT=""
 fi
 
 # prefixes:
