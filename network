@@ -292,7 +292,7 @@ case "$1" in
 		;;
 	ifup|ifdown|iflist|rtup|rtdown|rtlist)
 		# deprecation check
-		need_legacy && deprecated
+		deprecated
 		$1 $2
 		;;
 	*)
