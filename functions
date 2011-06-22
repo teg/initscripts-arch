@@ -372,6 +372,14 @@ fsck_reboot() {
 	exit 0
 }
 
+mount_all() {
+	stat_busy "Mounting Local Filesystems"
+	run_hook sysinit_premount
+	mount -a -t $NETFS -O no_netdev
+	run_hook sysinit_postmount
+	stat_done
+}
+
 ###############################
 # Custom hooks in initscripts #
 ###############################

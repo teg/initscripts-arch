@@ -216,7 +216,7 @@ if [[ -x $(type -P fsck) ]]; then
 	fsck_reboot $?
 fi
 
-stat_busy "Mounting Local Filesystems"
+status "Remounting Root Read/Write" \
 	mount -n -o remount,rw /
 
 	# don't touch /etc/mtab if it is a symlink to /proc/self/mounts
@@ -228,11 +228,8 @@ stat_busy "Mounting Local Filesystems"
 		cat /proc/mounts >| /etc/mtab
 	fi
 
-	run_hook sysinit_premount
 	# now mount all the local filesystems
-	mount -a -t $NETFS -O no_netdev
-	run_hook sysinit_postmount
-stat_done
+mount_all
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw
 if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
