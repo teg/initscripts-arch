@@ -322,11 +322,7 @@ fsck_all() {
 	FSCK_ERR=/dev/stdout
 	FSCK_FD=
 	FORCEFSCK=
-	[[ -f /forcefsck ]] && FORCEFSCK="-- -f"
-	local cmdarg
-	for cmdarg in $(< /proc/cmdline); do
-		[[ "$cmdarg" == forcefsck ]] && FORCEFSCK="-- -f" && break
-	done
+	[[ -f /forcefsck ]] || in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
 	run_hook sysinit_prefsck
 	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	local fsckret=$?
@@ -341,8 +337,10 @@ fsck_all() {
 
 fsck_reboot() {
 	# $1 = exit code returned by fsck
-	local fsckret=$1
-	if (( ( fsckret & 2) == 2)); then
+	# Ignore conditions 'FS errors corrected' and 'Cancelled by the user'
+	if (( ($1 | 33) == 33 )); then
+		return 0
+	elif (($1 & 2)); then
 		echo
 		echo "********************** REBOOT REQUIRED *********************"
 		echo "*                                                          *"
@@ -351,7 +349,7 @@ fsck_reboot() {
 		echo "************************************************************"
 		echo
 		sleep 15
-	elif ((fsckret > 1 && fsckret != 32)); then
+	else
 		echo
 		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
 		echo "*                                                          *"
@@ -364,8 +362,6 @@ fsck_reboot() {
 		echo "************************************************************"
 		echo
 		sulogin -p
-	else
-		return
 	fi
 	echo "Automatic reboot in progress..."
 	umount -a
