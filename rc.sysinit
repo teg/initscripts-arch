@@ -214,55 +214,8 @@ fi
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
 
 if [[ -x $(type -P fsck) ]]; then
-	stat_busy "Checking Filesystems"
-	fsck_reboot() {
-		echo "Automatic reboot in progress..."
-		umount -a
-		mount -n -o remount,ro /
-		reboot -f
-		exit 0
-	}
-	FSCK_OUT=/dev/stdout
-	FSCK_ERR=/dev/stdout
-	FSCK_FD=
-	FORCEFSCK=
-	[[ -f /forcefsck ]] && FORCEFSCK="-- -f"
-	for cmdarg in $(< /proc/cmdline); do
-		[[ "$cmdarg" == forcefsck ]] && FORCEFSCK="-- -f" && break
-	done
-	run_hook sysinit_prefsck
-	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
-	fsckret=$?
-	if ((fsckret > 1)); then
-		stat_fail
-	fi
-	run_hook sysinit_postfsck
-	if (( ( fsckret & 2) == 2)); then
-		echo
-		echo "********************** REBOOT REQUIRED *********************"
-		echo "*                                                          *"
-		echo "* The system will be rebooted automatically in 15 seconds. *"
-		echo "*                                                          *"
-		echo "************************************************************"
-		echo
-		sleep 15
-		fsck_reboot
-	elif ((fsckret > 1 && fsckret != 32)); then
-		echo
-		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
-		echo "*                                                          *"
-		echo "*  Please repair manually and reboot. Note that the root   *"
-		echo "*  file system is currently mounted read-only. To remount  *"
-		echo "*  it read-write type: mount -n -o remount,rw /            *"
-		echo "*  When you exit the maintenance shell the system will     *"
-		echo "*  reboot automatically.                                   *"
-		echo "*                                                          *"
-		echo "************************************************************"
-		echo
-		sulogin -p
-		fsck_reboot
-	fi
-	stat_done
+	fsck_all
+	fsck_reboot $?
 fi
 
 stat_busy "Mounting Local Filesystems"

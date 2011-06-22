@@ -316,6 +316,64 @@ read_crypttab() {
 	return $failed
 }
 
+fsck_all() {
+	stat_busy "Checking Filesystems"
+	FSCK_OUT=/dev/stdout
+	FSCK_ERR=/dev/stdout
+	FSCK_FD=
+	FORCEFSCK=
+	[[ -f /forcefsck ]] && FORCEFSCK="-- -f"
+	local cmdarg
+	for cmdarg in $(< /proc/cmdline); do
+		[[ "$cmdarg" == forcefsck ]] && FORCEFSCK="-- -f" && break
+	done
+	run_hook sysinit_prefsck
+	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
+	local fsckret=$?
+	if ((fsckret > 1)); then
+		stat_fail
+	else
+		stat_done
+	fi
+	run_hook sysinit_postfsck
+	return $fsckret
+}
+
+fsck_reboot() {
+	# $1 = exit code returned by fsck
+	local fsckret=$1
+	if (( ( fsckret & 2) == 2)); then
+		echo
+		echo "********************** REBOOT REQUIRED *********************"
+		echo "*                                                          *"
+		echo "* The system will be rebooted automatically in 15 seconds. *"
+		echo "*                                                          *"
+		echo "************************************************************"
+		echo
+		sleep 15
+	elif ((fsckret > 1 && fsckret != 32)); then
+		echo
+		echo "*****************  FILESYSTEM CHECK FAILED  ****************"
+		echo "*                                                          *"
+		echo "*  Please repair manually and reboot. Note that the root   *"
+		echo "*  file system is currently mounted read-only. To remount  *"
+		echo "*  it read-write type: mount -n -o remount,rw /            *"
+		echo "*  When you exit the maintenance shell the system will     *"
+		echo "*  reboot automatically.                                   *"
+		echo "*                                                          *"
+		echo "************************************************************"
+		echo
+		sulogin -p
+	else
+		return
+	fi
+	echo "Automatic reboot in progress..."
+	umount -a
+	mount -n -o remount,ro /
+	reboot -f
+	exit 0
+}
+
 ###############################
 # Custom hooks in initscripts #
 ###############################
