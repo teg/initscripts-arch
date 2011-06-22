@@ -61,6 +61,8 @@ else
 fi
 stat_done
 
+run_hook shutdown_postumount
+
 # Kill non-root encrypted partition mappings
 if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	stat_busy "Deactivating encrypted volumes:"

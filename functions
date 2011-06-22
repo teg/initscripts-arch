@@ -316,6 +316,8 @@ read_crypttab() {
 	return $failed
 }
 
+NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
+
 fsck_all() {
 	stat_busy "Checking Filesystems"
 	FSCK_OUT=/dev/stdout
@@ -401,6 +403,7 @@ fsck_reboot() {
 # single_prekillall: before all processes are being killed in rc.single
 # shutdown_postkillall: after all processes have been killed in rc.shutdown
 # single_postkillall: after all processes have been killed in rc.single
+# shutdown_postumount: after filesystems are unmounted
 # shutdown_poweroff: directly before powering off in rc.shutdown
 #
 # Declare add_hook and run_hook as read-only to prevent overwriting them.

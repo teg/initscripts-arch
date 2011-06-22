@@ -211,8 +211,6 @@ if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	fi
 fi
 
-NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
-
 if [[ -x $(type -P fsck) ]]; then
 	fsck_all
 	fsck_reboot $?
