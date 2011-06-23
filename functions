@@ -4,6 +4,14 @@
 
 # width:
 
+if [[ $1 == "start" ]]; then
+	if [[ $STARTING ]]; then
+		echo "A daemon is starting another daemon, this is unlikely to work as intended.\n"
+	else
+		export STARTING=1
+	fi
+fi
+
 calc_columns () {
 	STAT_COL=80
 	if [[ ! -t 1 ]]; then
@@ -201,6 +209,8 @@ start_daemon() {
 	have_daemon "$1" && /etc/rc.d/"$1" start
 }
 
+# Never use this function, it causes daemons to be stoped in the wrong order.
+# The only way to start a daemon at boot is to add it to the DAEMONS array.
 ck_depends() {
 	for daemon in "$@"; do
 		ck_daemon "$daemon" && start_daemon "$daemon"
