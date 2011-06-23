@@ -286,7 +286,6 @@ if [[ ${LOCALE,,} =~ utf ]]; then
 		done
 		echo 1 > /sys/module/vt/parameters/default_utf8
 	stat_done
-	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" loadkeys -q -u $KEYMAP
 else
 	stat_busy "Setting Consoles to legacy mode"
 		# make non-UTF-8 consoles work on 2.6.24 and newer kernels
@@ -296,8 +295,9 @@ else
 		done
 		echo 0 > /sys/module/vt/parameters/default_utf8
 	stat_done
-	[[ $KEYMAP ]] && status "Loading Keyboard Map: $KEYMAP" loadkeys -q $KEYMAP
 fi
+[[ $KEYMAP ]] && \
+	status "Loading Keyboard Map: $KEYMAP" loadkeys -q $KEYMAP
 
 # Set console font if required
 set_consolefont
