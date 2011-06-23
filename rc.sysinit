@@ -257,9 +257,7 @@ stat_busy "Removing Leftover Files"
 	[[ ! -L /var/run && ! -L /var/run/daemons ]] &&
 		rm -rf /var/run/daemons &&
 		ln -s /run/daemons /var/run/daemons
-	: >| /var/run/utmp
-	chmod 0664 /var/run/utmp
-	chown root:utmp /var/run/utmp
+	install -Tm 0664 -o root -g utmp <(:) /var/run/utmp
 	# Keep {x,k,g}dm happy with xorg
 	mkdir -m1777 /tmp/.{X11,ICE}-unix
 stat_done
@@ -272,8 +270,7 @@ fi
 
 stat_busy "Setting Locale: ${LOCALE:=en_US}"
 	# Flush old locale settings
-	: >| /etc/profile.d/locale.sh
-	chmod 755 /etc/profile.d/locale.sh
+	install -Tm 0755 <(:) /etc/profile.d/locale.sh
 	# Set user defined locale
 	echo "export LANG=$LOCALE" >>/etc/profile.d/locale.sh
 stat_done
@@ -306,13 +303,10 @@ fi
 set_consolefont
 
 if [[ -e /proc/sys/kernel/dmesg_restrict && $(< /proc/sys/kernel/dmesg_restrict) -eq 1 ]]; then
-    : >| /var/log/dmesg.log
-    chmod 600 /var/log/dmesg.log
+    install -Tm 0600 <( dmesg ) /var/log/dmesg.log
 else
-    : >| /var/log/dmesg.log
-    chmod 644 /var/log/dmesg.log
+    install -Tm 0644 <( dmesg ) /var/log/dmesg.log
 fi
-dmesg >| /var/log/dmesg.log
 
 run_hook sysinit_end
 
