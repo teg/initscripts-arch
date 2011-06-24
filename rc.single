@@ -12,22 +12,20 @@ run_hook single_start
 
 if [[ $PREVLEVEL != N ]]; then
 	kill_everything single
+	
 	status "Starting UDev Daemon" udevd --daemon
+	
 	run_hook single_udevlaunched
 
 	# Trigger udev uevents
-	if pidof -o %PPID /udevd >/dev/null; then
-		stat_busy "Triggering UDev uevents"
+	stat_busy "Triggering UDev uevents"
 		udevadm trigger --action=add --type=subsystems
 		udevadm trigger --action=add --type=devices
-		stat_done
-	fi
+	stat_done
 
 	# Wait for udev uevents
-	if pidof -o %PPID udevd >/dev/null; then
-		status "Waiting for UDev uevents to be processed" \
-			udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
-	fi
+	status "Waiting for UDev uevents to be processed" \
+		udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
 
 	run_hook single_udevsettled
 
