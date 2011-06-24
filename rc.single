@@ -29,13 +29,8 @@ if [[ $PREVLEVEL != N ]]; then
 
 	run_hook single_udevsettled
 
-	# try syslog-NG first, then fall back to good ol' syslogd
-	if [[ -x /etc/rc.d/syslog-ng ]]; then
-		/etc/rc.d/syslog-ng start
-	elif [[ -x /etc/rc.d/syslogd ]]; then
-		/etc/rc.d/syslogd start
-		[[ -x /etc/rc.d/klogd ]] && /etc/rc.d/klogd start
-	fi
+	# start up our mini logger until syslog takes over
+	minilogd
 fi
 
 run_hook single_end
