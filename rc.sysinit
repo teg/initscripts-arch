@@ -47,27 +47,32 @@ case $HARDWARECLOCK in
 esac
 
 if [[ $HWCLOCK_PARAMS ]]; then
-	# enable rtc access
-	modprobe -q -a rtc-cmos rtc genrtc
-	# If devtmpfs is used, the required RTC device already exists now
-	# Otherwise, create whatever device is available
-	if ! [[ -c /dev/rtc || -c /dev/rtc0 ]]; then
-		for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
-			[[ -e $dev ]] || continue
-			IFS=: read -r major minor < "$dev"
-			mknod /dev/rtc c $major $minor
-		done
-	fi
+	stat_busy "Adjusting system time and setting kernel timezone"
+		# enable rtc access
+		modprobe -q -a rtc-cmos rtc genrtc
+		# If devtmpfs is used, the required RTC device already exists now
+		# Otherwise, create whatever device is available
+		if ! [[ -c /dev/rtc || -c /dev/rtc0 ]]; then
+			for dev in /sys/class/rtc/rtc0/dev /sys/class/misc/rtc/dev; do
+				[[ -e $dev ]] || continue
+				IFS=: read -r major minor < "$dev"
+				mknod /dev/rtc c $major $minor
+			done
+		fi
 
-	# Adjust the system time for timezone offset if rtc is not in UTC
-	# 1. Make creation time on udev nodes sane (FS#8665)
-	# 2. Filesystem checks can depend on system time
-	# 3. This also sets the kernel time zone, used by e.g. vfat
-	# If TIMEZONE is not set in rc.conf, the timezone stored in /etc/localtime
-	#	is used. If HARDWARECLOCK is not set in rc.conf, the value in
-	#	/var/lib/hwclock/adjfile is used (in this case /var can not be a separate
-	# partition).
-	TZ=$TIMEZONE && hwclock $HWCLOCK_PARAMS
+		# Adjust the system time for timezone offset if rtc is not in UTC
+		# 1. Make creation time on udev nodes sane (FS#8665)
+		# 2. Filesystem checks can depend on system time
+		# 3. This also sets the kernel time zone, used by e.g. vfat
+		# If TIMEZONE is not set in rc.conf, the timezone stored in /etc/localtime
+		#	is used. If HARDWARECLOCK is not set in rc.conf, the value in
+		#	/var/lib/hwclock/adjfile is used (in this case /var can not be a separate
+		# partition).
+		if TZ=$TIMEZONE hwclock $HWCLOCK_PARAMS; then
+			stat_done
+		else
+			stat_fail
+		fi
 fi
 
 # Start/trigger UDev, load MODULES and settle UDev
