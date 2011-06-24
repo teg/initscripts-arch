@@ -23,9 +23,7 @@ kill_everything shutdown
 
 stat_busy "Saving Random Seed"
 RANDOM_SEED=/var/lib/misc/random-seed
-[[ -d ${RANDOM_SEED%/*} ]] || mkdir -p ${RANDOM_SEED%/*}
-: > $RANDOM_SEED
-chmod 0600 $RANDOM_SEED
+install -TDm 0600 <(:) $RANDOM_SEED
 POOL_FILE=/proc/sys/kernel/random/poolsize
 if [[ -r $POOL_FILE ]]; then
 	read POOL_SIZE <$POOL_FILE
