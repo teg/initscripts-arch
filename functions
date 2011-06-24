@@ -25,14 +25,14 @@ calc_columns () {
 		# is /usr/share/terminfo already mounted, and TERM recognized?
 		STAT_COL=$(/bin/tput cols)
 	fi
-	if ((STAT_COL==0)); then
+	if (( STAT_COL == 0 )); then
 		# if output was 0 (serial console), set default width to 80
 		STAT_COL=80
 		USECOLOR=""
 	fi
 
 	# we use 13 characters for our own stuff
-	STAT_COL=$(($STAT_COL - 13))
+	STAT_COL=$(( $STAT_COL - 13 ))
 
 	if [[ -t 1 ]]; then
 		SAVE_POSITION="\e[s"
@@ -49,7 +49,7 @@ calc_columns
 
 # disable colors on broken terminals
 TERM_COLORS="$(/bin/tput colors 2>/dev/null)"
-if (($? != 3)); then
+if (( $? != 3 )); then
 	case $TERM_COLORS in
 		*[!0-9]*) USECOLOR="";;
 		[0-7])    USECOLOR="";;
@@ -65,14 +65,14 @@ unset TZ
 unset LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY \
       LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE \
       LC_MEASUREMENT LC_IDENTIFICATION LC_ALL
-if [[ $DAEMON_LOCALE =~ yes|YES && -n $LOCALE ]]; then
+if [[ $DAEMON_LOCALE = [yY][eE][sS] && $LOCALE ]]; then
 	export LANG="${LOCALE}"
 else
 	export LANG=C
 fi
 
 # set colors
-if [[ $USECOLOR =~ yes|YES ]]; then
+if [[ $USECOLOR = [yY][eE][sS] ]]; then
 	if /bin/tput setaf 0 &>/dev/null; then
 		C_CLEAR="$(tput sgr0)"                      # clear text
 		C_MAIN="${C_CLEAR}$(/bin/tput bold)"        # main text
@@ -247,17 +247,17 @@ ck_status() {
 
 # Return PID of $1
 get_pid() {
-        pidof -o %PPID $1 || return 1
+	pidof -o %PPID $1 || return 1
 }
 
 # Check if PID-file $1 is still the active PID-file for command $2
 ck_pidfile() {
-        if [[ -f "$1" ]]; then
-                read -r fpid <"$1"
-                ppid=$(get_pid $2)
-                [[ "$fpid" = "$ppid" ]] && return 0
-        fi
-        return 1
+	if [[ -f "$1" ]]; then
+		read -r fpid <"$1"
+		ppid=$(get_pid $2)
+		[[ "$fpid" = "$ppid" ]] && return 0
+	fi
+	return 1
 }
 
 # PIDs to be omitted by killall5
@@ -279,9 +279,9 @@ kill_everything() {
 	done
 
 	# Shutdown daemons in reverse order
-	for ((i=${#DAEMONS[@]}-1; i>=0; i--)); do
-		[[ ${DAEMONS[$i]:0:1} = '!' ]] && continue
-		ck_daemon ${DAEMONS[$i]#@} || stop_daemon ${DAEMONS[$i]#@}
+	for (( i=${#DAEMONS[@]}-1; i>=0; i-- )); do
+		[[ ${DAEMONS[i]} = '!'* ]] && continue
+		ck_daemon ${DAEMONS[i]#@} || stop_daemon ${DAEMONS[i]#@}
 	done
 
 	# Terminate all processes
@@ -291,12 +291,12 @@ kill_everything() {
 	for pid in ${omit_pids[@]}; do
 		k5args+=" -o $pid"
 	done
-	/sbin/killall5 -15 $k5args &> /dev/null
+	/sbin/killall5 -15 $k5args &>/dev/null
 	/bin/sleep 5
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-	/sbin/killall5 -9 $k5args &> /dev/null
+	/sbin/killall5 -9 $k5args &>/dev/null
 	/bin/sleep 1
 	stat_done
 
@@ -304,7 +304,7 @@ kill_everything() {
 }
 
 activate_vgs() {
-	[[ $USELVM =~ yes|YES && -x /sbin/lvm && -d /sys/block ]] || return
+	[[ $USELVM = [yY][eE][sS] && -x $(type -P lvm) && -d /sys/block ]] || return
 	# Kernel 2.6.x, LVM2 groups
 	/sbin/modprobe -q dm-mod 2>/dev/null
 	stat_busy "Activating LVM2 groups"
@@ -330,7 +330,7 @@ read_crypttab() {
 	# $1 = function to call with the split out line from the crypttab
 	local line nspo failed=0
 	while read line; do
-		[[ $line && ${line:0:1} != '#' ]] || continue
+		[[ $line && $line != '#'* ]] || continue
 		eval nspo=("${line%#*}")
 		if $1 "${nspo[0]}" "${nspo[1]}" "${nspo[2]}" "${nspo[*]:3}"; then
 			crypto_unlocked=1
@@ -353,7 +353,7 @@ fsck_all() {
 	run_hook sysinit_prefsck
 	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
 	local fsckret=$?
-	if ((fsckret > 1)); then
+	if (( fsckret > 1 )); then
 		stat_fail
 	else
 		stat_done
@@ -367,7 +367,7 @@ fsck_reboot() {
 	# Ignore conditions 'FS errors corrected' and 'Cancelled by the user'
 	if (( ($1 | 33) == 33 )); then
 		return 0
-	elif (($1 & 2)); then
+	elif (( $1 & 2 )); then
 		echo
 		echo "********************** REBOOT REQUIRED *********************"
 		echo "*                                                          *"
@@ -442,7 +442,7 @@ mount_all() {
 # Declare add_hook and run_hook as read-only to prevent overwriting them.
 # Too bad we cannot do the same thing with hook_funcs
 
-if [[ $RC_FUNCTIONS_HOOK_FUNCS_DEFINED -ne 1 ]]; then
+if (( RC_FUNCTIONS_HOOK_FUNCS_DEFINED != 1 )); then
 	declare -A hook_funcs
 
 	add_hook() {
@@ -468,11 +468,12 @@ set_consolefont() {
 	stat_busy "Loading Console Font: $CONSOLEFONT"
 	#CONSOLEMAP in UTF-8 shouldn't be used
 	[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
+	local i
 	for i in /dev/tty[0-9]*; do
 		/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
-		$CONSOLEFONT -C ${i} >/dev/null 2>&1
+		$CONSOLEFONT -C ${i} &>/dev/null
 	done
-	if (($? != 0)); then
+	if (( $? )); then
 		stat_fail
 	elif [[ $CONSOLEMAP ]]; then
 		cat <<"EOF" >>/etc/profile.d/locale.sh
@@ -491,7 +492,7 @@ done
 
 # Exit current shell if user is not root
 need_root() {
-	(( $EUID != 0 )) && printf 'You need to be root.\n' && exit 1
+	(( EUID )) && printf 'You need to be root.\n' && exit 1
 }
 
 # Quit script if it's not running by root

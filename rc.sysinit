@@ -19,14 +19,14 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
 mountpoint -q /proc    || mount -n -t proc proc /proc -o nosuid,noexec,nodev
 mountpoint -q /sys     || mount -n -t sysfs sys /sys -o nosuid,noexec,nodev
-mountpoint -q /run     || mount -n -t tmpfs run /run -o mode=755,size=10M,nosuid,nodev
+mountpoint -q /run     || mount -n -t tmpfs run /run -o mode=0755,size=10M,nosuid,nodev
 mountpoint -q /dev     || mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid &>/dev/null \
 	|| mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
 mkdir -p -m 1777 /run/lock
 mkdir -p /dev/{pts,shm}
-mountpoint -q /dev/pts || mount -n /dev/pts &> /dev/null \
-	|| mount -n -t devpts devpts /dev/pts -o mode=620,gid=5,nosuid,noexec
-mountpoint -q /dev/shm || mount -n /dev/shm &> /dev/null \
+mountpoint -q /dev/pts || mount -n /dev/pts &>/dev/null \
+	|| mount -n -t devpts devpts /dev/pts -o mode=0620,gid=5,nosuid,noexec
+mountpoint -q /dev/shm || mount -n /dev/shm &>/dev/null \
 	|| mount -n -t tmpfs shm /dev/shm -o mode=1777,nosuid,nodev
 
 # remount root ro to allow for fsck later on, we remount now to
@@ -84,7 +84,6 @@ stat_done
 if [[ -f /proc/modules ]] && (( ${#MODULES[*]} )); then
 	status "Loading Modules" modprobe -ab "${MODULES[@]}"
 fi
-unset mods
 
 status "Waiting for UDev uevents to be processed" \
 	udevadm settle --timeout=${UDEV_TIMEOUT:-30}
@@ -111,7 +110,7 @@ fi
 activate_vgs
 
 # Set up non-root encrypted partition mappings
-if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
+if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	modprobe -q dm-crypt 2>/dev/null
 	stat_busy "Unlocking encrypted volumes:"
 		do_unlock() {
@@ -143,11 +142,11 @@ if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
 						# This sanity check _should_ be sufficient, but it might not.
 						# This may cause dataloss if it is not used carefully.
 						blkid -p "$2" &>/dev/null
-						if [[ $? -eq 2 ]]; then
+						if (( $? == 2 )); then
 							_overwriteokay=1
 						fi
 					fi
-					if [[ $_overwriteokay -eq 0 ]]; then
+					if (( _overwriteokay == 0 )); then
 						false
 					elif $CS -d /dev/urandom $4 $open "$a" "$b" >/dev/null; then
 						stat_append "creating swapspace.."
@@ -185,7 +184,7 @@ if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
 				*)
 					echo "$3" | $CS $4 $open "$a" "$b" >/dev/null;;
 			esac
-			if (($? != 0)); then
+			if (( $? )); then
 				failed=1
 				stat_append "failed "
 			else
@@ -199,7 +198,7 @@ if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	else
 		stat_fail
 	fi
-	if [[ ${crypto_unlocked} -eq 1 ]]; then
+	if (( crypto_unlocked == 1 )); then
 		# Maybe someone has LVM on an encrypted block device
 		activate_vgs
 	fi
@@ -213,16 +212,16 @@ fi
 status "Remounting Root Read/Write" \
 	mount -n -o remount,rw /
 
-	# don't touch /etc/mtab if it is a symlink to /proc/self/mounts
-	if [[ -L /etc/mtab ]]; then
-		:
-	elif [[ -x $(type -P findmnt) && -e /proc/self/mountinfo ]]; then
-		findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS >| /etc/mtab
-	else
-		cat /proc/mounts >| /etc/mtab
-	fi
+# don't touch /etc/mtab if it is a symlink to /proc/self/mounts
+if [[ -L /etc/mtab ]]; then
+	:
+elif [[ -x $(type -P findmnt) && -e /proc/self/mountinfo ]]; then
+	findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS >| /etc/mtab
+else
+	cat /proc/mounts >| /etc/mtab
+fi
 
-	# now mount all the local filesystems
+# now mount all the local filesystems
 mount_all
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw
@@ -254,7 +253,7 @@ stat_busy "Removing Leftover Files"
 		ln -s /run/daemons /var/run/daemons
 	install -Tm 0664 -o root -g utmp <(:) /var/run/utmp
 	# Keep {x,k,g}dm happy with xorg
-	mkdir -m1777 /tmp/.{X11,ICE}-unix
+	mkdir -m 1777 /tmp/.{X11,ICE}-unix
 stat_done
 
 if [[ $HOSTNAME ]]; then

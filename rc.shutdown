@@ -32,7 +32,7 @@ if [[ -r $POOL_FILE ]]; then
 else
 	POOL_SIZE=512
 fi
-dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
+dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &>/dev/null
 stat_done
 
 if [[ $TIMEZONE ]]; then
@@ -48,7 +48,7 @@ status "Deactivating Swap" swapoff -a
 # stop monitoring of lvm2 groups before unmounting filesystems
 if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
 	status "Deactivating monitoring of LVM2 groups" \
-		vgchange --monitor n >/dev/null 2>&1
+		vgchange --monitor n &>/dev/null
 fi
 
 stat_busy "Unmounting Filesystems"
@@ -63,16 +63,16 @@ stat_done
 run_hook shutdown_postumount
 
 # Kill non-root encrypted partition mappings
-if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
+if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	stat_busy "Deactivating encrypted volumes:"
 	# Maybe someone has LVM on an encrypted block device
 	# executing an extra vgchange is errorless
 	if [[ $USELVM = [Yy][Ee][Ss] ]]; then
-		vgchange --sysinit -a n >/dev/null 2>&1
+		vgchange --sysinit -a n &>/dev/null
 	fi
 	do_lock() {
 		stat_append "${1}.."
-		if $CS remove "$1" >/dev/null 2>&1; then
+		if $CS remove "$1" &>/dev/null; then
 			stat_append "ok "
 		else
 			stat_append "failed "
@@ -83,10 +83,11 @@ if [[ -f /etc/crypttab && -n $CS ]] && grep -q ^[^#] /etc/crypttab; then
 fi
 
 if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
-	status "Deactivating LVM2 groups" vgchange --sysinit -a n >/dev/null 2>&1
+	status "Deactivating LVM2 groups" vgchange --sysinit -a n &>/dev/null
 fi
 
-status "Remounting Root Filesystem Read-only" mount -n -o remount,ro /
+status "Remounting Root Filesystem Read-only" \
+	mount -n -o remount,ro /
 
 run_hook shutdown_poweroff
 
@@ -98,7 +99,7 @@ if [[ $RUNLEVEL = 0 ]]; then
 else
 	printhl "${C_H2}REBOOTING"
 	# if kexec is installed and a kernel is loaded, use it
-	[[ -x $(type -P kexec) ]] && kexec -e > /dev/null 2>&1
+	[[ -x $(type -P kexec) ]] && kexec -e &>/dev/null
 	reboot -d -f -i
 fi
 
