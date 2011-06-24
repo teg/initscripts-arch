@@ -71,27 +71,8 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	fi
 fi
 
-status "Starting UDev Daemon" udevd --daemon
-
-run_hook sysinit_udevlaunched
-
-stat_busy "Triggering UDev uevents"
-	udevadm trigger --action=add --type=subsystems
-	udevadm trigger --action=add --type=devices
-stat_done
-
-# Load modules from the MODULES array defined in rc.conf
-if [[ -f /proc/modules ]] && (( ${#MODULES[*]} )); then
-	status "Loading Modules" modprobe -ab "${MODULES[@]}"
-fi
-
-status "Waiting for UDev uevents to be processed" \
-	udevadm settle --timeout=${UDEV_TIMEOUT:-30}
-
-# in case loading a module changed the display mode
-calc_columns
-
-run_hook sysinit_udevsettled
+# Start/trigger UDev, load MODULES and settle UDev
+udevd_modprobe sysinit
 
 # bring up the loopback interface
 [[ -d /sys/class/net/lo ]] &&

@@ -13,24 +13,11 @@ run_hook single_start
 if [[ $PREVLEVEL != N ]]; then
 	kill_everything single
 	
-	status "Starting UDev Daemon" udevd --daemon
-	
-	run_hook single_udevlaunched
-
-	# Trigger udev uevents
-	stat_busy "Triggering UDev uevents"
-		udevadm trigger --action=add --type=subsystems
-		udevadm trigger --action=add --type=devices
-	stat_done
-
-	# Wait for udev uevents
-	status "Waiting for UDev uevents to be processed" \
-		udevadm settle --quiet --timeout=${UDEV_TIMEOUT:-30}
-
-	run_hook single_udevsettled
-
 	# start up our mini logger until syslog takes over
 	minilogd
+	
+	# Start/trigger UDev, load MODULES and settle UDev
+	udevd_modprobe single
 fi
 
 run_hook single_end

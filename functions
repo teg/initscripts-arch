@@ -301,6 +301,33 @@ kill_everything() {
 	run_hook "$1_postkillall"
 }
 
+# Start/trigger UDev, load MODULES and settle UDev
+udevd_modprobe() {
+	# $1 = where we are being called from.
+	# This is used to determine which hooks to run.
+	status "Starting UDev Daemon" udevd --daemon
+
+	run_hook "${1}_udevlaunched"
+
+	stat_busy "Triggering UDev uevents"
+		udevadm trigger --action=add --type=subsystems
+		udevadm trigger --action=add --type=devices
+	stat_done
+
+	# Load modules from the MODULES array defined in rc.conf
+	if [[ -f /proc/modules ]] && (( ${#MODULES[*]} )); then
+		status "Loading Modules" modprobe -ab "${MODULES[@]}"
+	fi
+
+	status "Waiting for UDev uevents to be processed" \
+		udevadm settle --timeout=${UDEV_TIMEOUT:-30}
+
+	run_hook "${1}_udevsettled"
+	
+	# in case loading a module changed the display mode
+	calc_columns
+}
+
 activate_vgs() {
 	[[ $USELVM = [yY][eE][sS] && -x $(type -P lvm) && -d /sys/block ]] || return
 	# Kernel 2.6.x, LVM2 groups
