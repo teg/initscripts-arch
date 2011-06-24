@@ -35,10 +35,9 @@ fi
 dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &> /dev/null
 stat_done
 
-if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
-	rm -f /etc/localtime
+if [[ $TIMEZONE ]]; then
 	status "Saving Time Zone" \
-		cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+		cp --remove-destination "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
 
 # Write to wtmp file before unmounting

@@ -238,10 +238,9 @@ fi
 
 status "Activating Swap" swapon -a
 
-if [[ $TIMEZONE && -e /usr/share/zoneinfo/$TIMEZONE ]]; then
-	rm -f /etc/localtime
+if [[ $TIMEZONE ]]; then
 	status "Configuring Time Zone" \
-		cp "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+		cp --remove-destination "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 fi
 
 RANDOM_SEED=/var/lib/misc/random-seed
