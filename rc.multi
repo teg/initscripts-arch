@@ -26,12 +26,6 @@ fi
 
 run_hook multi_end
 
-if [[ -f /run/bootlogd.pid ]]; then
-	touch /var/log/boot
-	kill $(< /run/bootlogd.pid)
-	rm -f /run/bootlogd.pid
-	sed -i -r -e 's/\^\[\[[0-9]?;?[0-9]?[0-9]?;?[0-9]?[0-9]?[ms]//g' \
-                  -e 's/\^\[(\[151|%)G//g' /var/log/boot
-fi
+bootlogd_stop
 
 # vim: set ts=2 sw=2 noet:
