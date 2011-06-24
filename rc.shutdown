@@ -22,21 +22,20 @@ echo " "
 kill_everything shutdown
 
 stat_busy "Saving Random Seed"
-RANDOM_SEED=/var/lib/misc/random-seed
-install -TDm 0600 <(:) $RANDOM_SEED
-POOL_FILE=/proc/sys/kernel/random/poolsize
-if [[ -r $POOL_FILE ]]; then
-	read POOL_SIZE < $POOL_FILE
-else
-	POOL_SIZE=512
-fi
-dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &>/dev/null
+	RANDOM_SEED=/var/lib/misc/random-seed
+	install -TDm 0600 <(:) $RANDOM_SEED
+	POOL_FILE=/proc/sys/kernel/random/poolsize
+	if [[ -r $POOL_FILE ]]; then
+		read POOL_SIZE < $POOL_FILE
+	else
+		POOL_SIZE=512
+	fi
+	dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &>/dev/null
 stat_done
 
-if [[ $TIMEZONE ]]; then
+[[ $TIMEZONE ]] &&
 	status "Saving Time Zone" \
 		cp --remove-destination "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
-fi
 
 # Write to wtmp file before unmounting
 halt -w
@@ -44,41 +43,36 @@ halt -w
 status "Deactivating Swap" swapoff -a
 
 # stop monitoring of lvm2 groups before unmounting filesystems
-if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
+[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&
 	status "Deactivating monitoring of LVM2 groups" \
 		vgchange --monitor n &>/dev/null
-fi
 
-stat_busy "Unmounting Filesystems"
-	# if we don't have devtmpfs support, /dev is mounted as tmpfs, so don't unmount it
+# if we don't have devtmpfs support, /dev is mounted as tmpfs, so don't unmount it
+status "Unmounting Filesystems" \
 	umount -a -r -t nodevtmpfs,notmpfs,nosysfs,noproc,nodevpts -O no_netdev
-stat_done
 
 run_hook shutdown_postumount
 
 # Kill non-root encrypted partition mappings
 if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	stat_busy "Deactivating encrypted volumes:"
-	# Maybe someone has LVM on an encrypted block device
-	# executing an extra vgchange is errorless
-	if [[ $USELVM = [Yy][Ee][Ss] ]]; then
-		vgchange --sysinit -a n &>/dev/null
-	fi
-	do_lock() {
-		stat_append "${1}.."
-		if $CS remove "$1" &>/dev/null; then
-			stat_append "ok "
-		else
-			stat_append "failed "
-		fi
-	}
-	read_crypttab do_lock
+		# Maybe someone has LVM on an encrypted block device
+		# executing an extra vgchange is errorless
+		[[ $USELVM = [Yy][Ee][Ss] ]] &&	vgchange --sysinit -a n &>/dev/null
+		do_lock() {
+			stat_append "${1}.."
+			if $CS remove "$1" &>/dev/null; then
+				stat_append "ok "
+			else
+				stat_append "failed "
+			fi
+		}
+		read_crypttab do_lock
 	stat_done
 fi
 
-if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
+[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&
 	status "Deactivating LVM2 groups" vgchange --sysinit -a n &>/dev/null
-fi
 
 status "Remounting Root Filesystem Read-only" \
 	mount -n -o remount,ro /

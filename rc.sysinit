@@ -66,9 +66,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 	#    configured timezone. Any new timezone put in rc.conf is copied over at
 	#    a later time.
 	# This also sets the kernel time zone.
-	if [[ -f /etc/localtime ]]; then
-		hwclock $HWCLOCK_PARAMS
-	fi
+	[[ -f /etc/localtime ]] && hwclock $HWCLOCK_PARAMS
 fi
 
 # Start/trigger UDev, load MODULES and settle UDev
@@ -79,14 +77,12 @@ udevd_modprobe sysinit
 	status "Bringing up loopback interface" ip link set up dev lo
 
 # FakeRAID devices detection
-if [[ $USEDMRAID = [Yy][Ee][Ss] && -x $(type -P dmraid) ]]; then
+[[ $USEDMRAID = [Yy][Ee][Ss] && -x $(type -P dmraid) ]] &&
 	status "Activating FakeRAID arrays" dmraid -i -ay
-fi
 
 # BTRFS devices detection
-if [[ $USEBTRFS = [Yy][Ee][Ss] && -x $(type -P btrfs) ]]; then
+[[ $USEBTRFS = [Yy][Ee][Ss] && -x $(type -P btrfs) ]] &&
 	status "Activating BTRFS volumes" btrfs device scan
-fi
 
 activate_vgs
 
@@ -123,9 +119,7 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 						# This sanity check _should_ be sufficient, but it might not.
 						# This may cause dataloss if it is not used carefully.
 						blkid -p "$2" &>/dev/null
-						if (( $? == 2 )); then
-							_overwriteokay=1
-						fi
+						(( $? == 2 )) && _overwriteokay=1
 					fi
 					if (( _overwriteokay == 0 )); then
 						false
@@ -206,23 +200,20 @@ fi
 mount_all
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw
-if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
+[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&
 	status "Activating monitoring of LVM2 groups" \
 		vgchange --monitor y >/dev/null
-fi
 
 status "Activating Swap" swapon -a
 
-if [[ $TIMEZONE ]]; then
+[[ $TIMEZONE ]] &&
 	status "Configuring Time Zone" \
 		cp --remove-destination "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
-fi
 
 RANDOM_SEED=/var/lib/misc/random-seed
-if [[ -f $RANDOM_SEED ]]; then
+[[ -f $RANDOM_SEED ]] &&
 	status "Initializing Random Seed" \
 		cat $RANDOM_SEED > /dev/urandom
-fi
 
 stat_busy "Removing Leftover Files"
 	rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.*
@@ -236,11 +227,9 @@ stat_busy "Removing Leftover Files"
 	mkdir -m 1777 /tmp/.{X11,ICE}-unix
 stat_done
 
-if [[ $HOSTNAME ]]; then
-	stat_busy "Setting Hostname: $HOSTNAME"
-		echo "$HOSTNAME" > /proc/sys/kernel/hostname
-	stat_done
-fi
+[[ $HOSTNAME ]] &&
+	status "Setting Hostname: $HOSTNAME" \
+		eval 'echo "$HOSTNAME" > /proc/sys/kernel/hostname'
 
 stat_busy "Setting Locale: ${LOCALE:=en_US}"
 	# Flush old locale settings
@@ -270,7 +259,7 @@ else
 		echo 0 > /sys/module/vt/parameters/default_utf8
 	stat_done
 fi
-[[ $KEYMAP ]] && \
+[[ $KEYMAP ]] &&
 	status "Loading Keyboard Map: $KEYMAP" loadkeys -q $KEYMAP
 
 # Set console font if required
