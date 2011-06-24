@@ -216,7 +216,7 @@ RANDOM_SEED=/var/lib/misc/random-seed
 		cat $RANDOM_SEED > /dev/urandom
 
 stat_busy "Removing Leftover Files"
-	rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.*
+	rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.* &>/dev/null
 	[[ ! -L /var/lock ]] && rm -rf /var/lock/*
 	[[ ! -L /var/run && -d /var/run ]] && find /var/run/ \! -type d -delete
 	[[ ! -L /var/run && ! -L /var/run/daemons ]] &&
