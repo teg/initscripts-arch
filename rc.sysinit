@@ -244,8 +244,7 @@ if [[ -f $RANDOM_SEED ]]; then
 fi
 
 stat_busy "Removing Leftover Files"
-	rm -rf /etc/{nologin,shutdownpid} /forcefsck &>/dev/null
-	rm -rf /tmp/* /tmp/.* &>/dev/null
+	rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.*
 	[[ ! -L /var/lock ]] && rm -rf /var/lock/*
 	[[ ! -L /var/run && -d /var/run ]] && find /var/run/ \! -type d -delete
 	[[ ! -L /var/run && ! -L /var/run/daemons ]] &&
@@ -258,7 +257,7 @@ stat_done
 
 if [[ $HOSTNAME ]]; then
 	stat_busy "Setting Hostname: $HOSTNAME"
-		echo $HOSTNAME > /proc/sys/kernel/hostname
+		echo "$HOSTNAME" > /proc/sys/kernel/hostname
 	stat_done
 fi
 
@@ -296,7 +295,8 @@ fi
 # Set console font if required
 set_consolefont
 
-if [[ -e /proc/sys/kernel/dmesg_restrict && $(< /proc/sys/kernel/dmesg_restrict) -eq 1 ]]; then
+if [[ -e /proc/sys/kernel/dmesg_restrict ]] &&
+	(( $(< /proc/sys/kernel/dmesg_restrict) == 1 )); then
     install -Tm 0600 <( dmesg ) /var/log/dmesg.log
 else
     install -Tm 0644 <( dmesg ) /var/log/dmesg.log

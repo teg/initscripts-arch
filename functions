@@ -32,7 +32,7 @@ calc_columns () {
 	fi
 
 	# we use 13 characters for our own stuff
-	STAT_COL=$(( $STAT_COL - 13 ))
+	STAT_COL=$(( STAT_COL - 13 ))
 
 	if [[ -t 1 ]]; then
 		SAVE_POSITION="\e[s"
@@ -154,7 +154,7 @@ stat_die() {
 status() {
 	stat_busy "$1"
 	shift
-	if "$@" >/dev/null 2>&1; then
+	if "$@" &>/dev/null; then
 		stat_done
 		return 0
 	fi
