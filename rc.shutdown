@@ -52,12 +52,8 @@ if [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]]; then
 fi
 
 stat_busy "Unmounting Filesystems"
-if grep -q devtmpfs /proc/filesystems &>/dev/null; then
-	umount -a -r -t nosysfs,noproc,nodevtmpfs,nodevpts -O no_netdev
-else
 	# if we don't have devtmpfs support, /dev is mounted as tmpfs, so don't unmount it
-	umount -a -r -t notmpfs,nosysfs,noproc,nodevpts -O no_netdev
-fi
+	umount -a -r -t nodevtmpfs,notmpfs,nosysfs,noproc,nodevpts -O no_netdev
 stat_done
 
 run_hook shutdown_postumount
