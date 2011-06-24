@@ -165,12 +165,10 @@ status() {
 #  usage : in_array( $needle, $haystack )
 # return : 0 - found
 #          1 - not found
-# Copied from makepkg
 in_array() {
-	[[ $2 ]] || return 1
 	local needle=$1; shift
 	local item
-	for item in "$@"; do
+	for item; do
 		[[ ${item#@} = $needle ]] && return 0
 	done
 	return 1 # Not Found
