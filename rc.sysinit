@@ -90,6 +90,7 @@ udevd_modprobe sysinit
 [[ $USEBTRFS = [Yy][Ee][Ss] && -x $(type -P btrfs) ]] &&
 	status "Activating BTRFS volumes" btrfs device scan
 
+# Activate LVM2 groups if any
 activate_vgs
 
 # Set up non-root encrypted partition mappings
@@ -186,7 +187,9 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 fi
 
 if [[ -x $(type -P fsck) ]]; then
+	# Check filesystems
 	fsck_all
+	# Single-user login and/or automatic reboot if needed
 	fsck_reboot $?
 fi
 

@@ -372,6 +372,7 @@ read_crypttab() {
 
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
 
+# Check local filesystems
 fsck_all() {
 	stat_busy "Checking Filesystems"
 		FSCK_OUT=/dev/stdout
@@ -391,6 +392,7 @@ fsck_all() {
 	return $fsckret
 }
 
+# Single-user login and/or automatic reboot after fsck (if needed)
 fsck_reboot() {
 	# $1 = exit code returned by fsck
 	# Ignore conditions 'FS errors corrected' and 'Cancelled by the user'
