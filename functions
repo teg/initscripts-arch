@@ -362,6 +362,7 @@ NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuse
 
 # Check local filesystems
 fsck_all() {
+	[[ -x $(type -P fsck) ]] || return 0
 	stat_busy "Checking Filesystems"
 		FSCK_OUT=/dev/stdout
 		FSCK_ERR=/dev/stdout

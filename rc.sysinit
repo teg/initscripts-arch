@@ -176,12 +176,10 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	(( crypto_unlocked == 1 )) && activate_vgs
 fi
 
-if [[ -x $(type -P fsck) ]]; then
-	# Check filesystems
-	fsck_all
-	# Single-user login and/or automatic reboot if needed
-	fsck_reboot $?
-fi
+# Check filesystems
+fsck_all
+# Single-user login and/or automatic reboot if needed
+fsck_reboot $?
 
 status "Remounting Root Read/Write" \
 	mount -n -o remount,rw /
