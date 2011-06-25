@@ -91,8 +91,8 @@ activate_vgs
 
 # Set up non-root encrypted partition mappings
 if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
-	modprobe -q dm-crypt 2>/dev/null
 	stat_busy "Unlocking encrypted volumes:"
+		modprobe -q dm-crypt 2>/dev/null
 		do_unlock() {
 			# $1 = requested name
 			# $2 = source device

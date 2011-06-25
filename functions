@@ -326,8 +326,8 @@ udevd_modprobe() {
 activate_vgs() {
 	[[ $USELVM = [yY][eE][sS] && -x $(type -P lvm) && -d /sys/block ]] || return
 	# Kernel 2.6.x, LVM2 groups
-	/sbin/modprobe -q dm-mod 2>/dev/null
 	stat_busy "Activating LVM2 groups"
+		/sbin/modprobe -q dm-mod 2>/dev/null
 		/sbin/vgchange --sysinit -a y >/dev/null
 	(( $? == 0 )) && stat_done || stat_fail
 }
