@@ -137,12 +137,12 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 					printf "\nOpening '$1' volume:\n"
 					$CS $4 $open "$a" "$b" < /dev/console;;
 				/dev*)
-					ckdev=${3%%:*}
-					cka=${3#*:}
-					ckb=${cka#*:}
-					cka=${cka%:*}
-					ckfile=/dev/ckfile
-					ckdir=/dev/ckdir
+					local ckdev=${3%%:*}
+					local cka=${3#*:}
+					local ckb=${cka#*:}
+					local cka=${cka%:*}
+					local ckfile=/dev/ckfile
+					local ckdir=/dev/ckdir
 					case ${cka} in
 						*[!0-9]*)
 							# Use a file on the device

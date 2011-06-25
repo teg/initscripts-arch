@@ -210,6 +210,7 @@ start_daemon() {
 # Never use this function, it causes daemons to be stoped in the wrong order.
 # The only way to start a daemon at boot is to add it to the DAEMONS array.
 ck_depends() {
+	local daemon
 	for daemon in "$@"; do
 		ck_daemon "$daemon" && start_daemon "$daemon"
 	done
@@ -251,6 +252,7 @@ get_pid() {
 # Check if PID-file $1 is still the active PID-file for command $2
 ck_pidfile() {
 	if [[ -f "$1" ]]; then
+		local fpid ppid
 		read -r fpid <"$1"
 		ppid=$(get_pid $2)
 		[[ "$fpid" = "$ppid" ]] && return 0
@@ -270,6 +272,7 @@ kill_everything() {
 	# $1 = where we are being called from.
 	# This is used to determine which hooks to run.
 	# Find daemons NOT in the DAEMONS array. Shut these down first
+	local daemon
 	for daemon in /run/daemons/*; do
 		[[ -f $daemon ]] || continue
 		daemon=${daemon##*/}
@@ -277,6 +280,7 @@ kill_everything() {
 	done
 
 	# Shutdown daemons in reverse order
+	local i
 	for (( i=${#DAEMONS[@]}-1; i>=0; i-- )); do
 		[[ ${DAEMONS[i]} = '!'* ]] && continue
 		ck_daemon ${DAEMONS[i]#@} || stop_daemon ${DAEMONS[i]#@}
