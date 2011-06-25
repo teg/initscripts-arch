@@ -9,7 +9,8 @@ done
 
 # helper function to determine if legacy network support is needed
 need_legacy() {
-	if [[ -z $interface ]]; then
+	# complain when `interface' is unset and `INTERFACES' has profiles enabled
+	if [[ -z $interface && ${INTERFACES[@]##!*} ]]; then
 		return 0 # need legacy
 	fi
 
