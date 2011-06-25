@@ -284,18 +284,18 @@ kill_everything() {
 
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
-	run_hook "$1_prekillall"
-	local pid k5args=""
-	for pid in ${omit_pids[@]}; do
-		k5args+=" -o $pid"
-	done
-	/sbin/killall5 -15 $k5args &>/dev/null
-	/bin/sleep 5
+		run_hook "$1_prekillall"
+		local pid k5args=""
+		for pid in ${omit_pids[@]}; do
+			k5args+=" -o $pid"
+		done
+		/sbin/killall5 -15 $k5args &>/dev/null
+		/bin/sleep 5
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-	/sbin/killall5 -9 $k5args &>/dev/null
-	/bin/sleep 1
+		/sbin/killall5 -9 $k5args &>/dev/null
+		/bin/sleep 1
 	stat_done
 
 	run_hook "$1_postkillall"
@@ -370,14 +370,14 @@ NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuse
 
 fsck_all() {
 	stat_busy "Checking Filesystems"
-	FSCK_OUT=/dev/stdout
-	FSCK_ERR=/dev/stdout
-	FSCK_FD=
-	FORCEFSCK=
-	[[ -f /forcefsck ]] || in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
-	run_hook sysinit_prefsck
-	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
-	local fsckret=$?
+		FSCK_OUT=/dev/stdout
+		FSCK_ERR=/dev/stdout
+		FSCK_FD=
+		FORCEFSCK=
+		[[ -f /forcefsck ]] || in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
+		run_hook sysinit_prefsck
+		fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
+		local fsckret=$?
 	if (( fsckret > 1 )); then
 		stat_fail
 	else
@@ -424,9 +424,9 @@ fsck_reboot() {
 
 mount_all() {
 	stat_busy "Mounting Local Filesystems"
-	run_hook sysinit_premount
-	mount -a -t $NETFS -O no_netdev
-	run_hook sysinit_postmount
+		run_hook sysinit_premount
+		mount -a -t $NETFS -O no_netdev
+		run_hook sysinit_postmount
 	stat_done
 }
 
@@ -500,13 +500,13 @@ fi
 set_consolefont() {
 	[[ $CONSOLEFONT ]] || return 0
 	stat_busy "Loading Console Font: $CONSOLEFONT"
-	#CONSOLEMAP in UTF-8 shouldn't be used
-	[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
-	local i
-	for i in /dev/tty[0-9]*; do
-		/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
-		$CONSOLEFONT -C ${i} &>/dev/null
-	done
+		#CONSOLEMAP in UTF-8 shouldn't be used
+		[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
+		local i
+		for i in /dev/tty[0-9]*; do
+			/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
+				$CONSOLEFONT -C ${i} &>/dev/null
+		done
 	if (( $? )); then
 		stat_fail
 	elif [[ $CONSOLEMAP ]]; then
