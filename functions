@@ -2,7 +2,8 @@
 # initscripts functions
 #
 
-# width:
+# sanitize PATH (will be overridden later when /etc/profile is sourced, but is useful for UDev)
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 if [[ $1 == "start" ]]; then
 	if [[ $STARTING ]]; then
@@ -12,6 +13,7 @@ if [[ $1 == "start" ]]; then
 	fi
 fi
 
+# width:
 calc_columns () {
 	STAT_COL=80
 	if [[ ! -t 1 ]]; then

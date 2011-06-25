@@ -13,9 +13,6 @@ printsep
 
 run_hook sysinit_start
 
-# export standard PATH (will be overridden later when /etc/profile is sourced, but is useful for UDev)
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
 mountpoint -q /proc    || mount -n -t proc proc /proc -o nosuid,noexec,nodev
 mountpoint -q /sys     || mount -n -t sysfs sys /sys -o nosuid,noexec,nodev

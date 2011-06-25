@@ -6,8 +6,6 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-
 run_hook shutdown_start
 
 # avoid staircase effect
