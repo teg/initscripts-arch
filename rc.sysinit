@@ -183,11 +183,13 @@ status "Remounting Root Read/Write" \
 
 # don't touch /etc/mtab if it is a symlink to /proc/self/mounts
 if [[ ! -L /etc/mtab ]]; then
-	if [[ -x $(type -P findmnt) && -e /proc/self/mountinfo ]]; then
-		findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS >| /etc/mtab
-	else
-		cat /proc/mounts >| /etc/mtab
-	fi
+	stat_busy "Creating mtab"
+		if [[ -x $(type -P findmnt) && -e /proc/self/mountinfo ]]; then
+			findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS >| /etc/mtab
+		else
+			cat /proc/mounts >| /etc/mtab
+		fi
+	(( $? == 0 )) && stat_done || stat_fail
 fi
 
 # now mount all the local filesystems
@@ -258,12 +260,14 @@ fi
 # Set console font if required
 set_consolefont
 
-if [[ -e /proc/sys/kernel/dmesg_restrict ]] &&
-	(( $(< /proc/sys/kernel/dmesg_restrict) == 1 )); then
-	install -Tm 0600 <( dmesg ) /var/log/dmesg.log
-else
-	install -Tm 0644 <( dmesg ) /var/log/dmesg.log
-fi
+stat_busy "Saving dmesg Log"
+	if [[ -e /proc/sys/kernel/dmesg_restrict ]] &&
+		(( $(< /proc/sys/kernel/dmesg_restrict) == 1 )); then
+		install -Tm 0600 <( dmesg ) /var/log/dmesg.log
+	else
+		install -Tm 0644 <( dmesg ) /var/log/dmesg.log
+	fi
+(( $? == 0 )) && stat_done || stat_fail
 
 run_hook sysinit_end
 
