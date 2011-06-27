@@ -237,11 +237,7 @@ status_stopped() {
 }
 
 ck_status() {
-	if ! ck_daemon "$1"; then
-		status_started
-	else
-		status_stopped
-	fi
+	! ck_daemon "$1" && status_started || status_stopped
 }
 
 # Return PID of $1
@@ -315,9 +311,8 @@ udevd_modprobe() {
 	stat_done
 
 	# Load modules from the MODULES array defined in rc.conf
-	if [[ -f /proc/modules ]] && (( ${#MODULES[*]} )); then
+	[[ -f /proc/modules ]] && (( ${#MODULES[*]} )) &&
 		status "Loading Modules" modprobe -ab "${MODULES[@]}"
-	fi
 
 	status "Waiting for UDev uevents to be processed" \
 		udevadm settle --timeout=${UDEV_TIMEOUT:-30}
@@ -333,11 +328,8 @@ activate_vgs() {
 	# Kernel 2.6.x, LVM2 groups
 	/sbin/modprobe -q dm-mod 2>/dev/null
 	stat_busy "Activating LVM2 groups"
-	if /sbin/vgchange --sysinit -a y >/dev/null; then
-		stat_done
-	else
-		stat_fail
-	fi
+		/sbin/vgchange --sysinit -a y >/dev/null
+	(( $? == 0 )) && stat_done || stat_fail
 }
 
 # Arch cryptsetup packages traditionally contained the binaries
@@ -379,11 +371,7 @@ fsck_all() {
 		run_hook sysinit_prefsck
 		fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >|$FSCK_OUT 2>|$FSCK_ERR
 		local -r fsckret=$?
-	if (( fsckret > 1 )); then
-		stat_fail
-	else
-		stat_done
-	fi
+	(( fsckret <= 1 )) && stat_done || stat_fail
 	run_hook sysinit_postfsck
 	return $fsckret
 }
@@ -392,9 +380,8 @@ fsck_all() {
 fsck_reboot() {
 	# $1 = exit code returned by fsck
 	# Ignore conditions 'FS errors corrected' and 'Cancelled by the user'
-	if (( ($1 | 33) == 33 )); then
-		return 0
-	elif (( $1 & 2 )); then
+	(( ($1 | 33) == 33 )) && return 0
+	if (( $1 & 2 )); then
 		echo
 		echo "********************** REBOOT REQUIRED *********************"
 		echo "*                                                          *"

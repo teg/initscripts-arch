@@ -68,11 +68,7 @@ if [[ $HWCLOCK_PARAMS ]]; then
 		# is used. If HARDWARECLOCK is not set in rc.conf, the value in
 		# /var/lib/hwclock/adjfile is used (in this case /var can not be a separate
 		# partition).
-		if TZ=$TIMEZONE hwclock $HWCLOCK_PARAMS; then
-			stat_done
-		else
-			stat_fail
-		fi
+	TZ=$TIMEZONE hwclock $HWCLOCK_PARAMS && stat_done || stat_fail
 fi
 
 # Start/trigger UDev, load MODULES and settle UDev
@@ -175,15 +171,9 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 			return $failed
 		}
 	crypto_unlocked=0
-	if read_crypttab do_unlock; then
-		stat_done
-	else
-		stat_fail
-	fi
-	if (( crypto_unlocked == 1 )); then
-		# Maybe someone has LVM on an encrypted block device
-		activate_vgs
-	fi
+	read_crypttab do_unlock && stat_done || stat_fail
+	# Maybe someone has LVM on an encrypted block device
+	(( crypto_unlocked == 1 )) && activate_vgs
 fi
 
 if [[ -x $(type -P fsck) ]]; then
