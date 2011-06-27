@@ -289,16 +289,12 @@ kill_everything() {
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
 		run_hook "$1_prekillall"
-		local pid k5args=""
-		for pid in ${omit_pids[@]}; do
-			k5args+=" -o $pid"
-		done
-		/sbin/killall5 -15 $k5args &>/dev/null
+		/sbin/killall5 -15 ${omit_pids[@]/#/-o } &>/dev/null
 		/bin/sleep 5
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-		/sbin/killall5 -9 $k5args &>/dev/null
+		/sbin/killall5 -9 ${omit_pids[@]/#/-o } &>/dev/null
 		/bin/sleep 1
 	stat_done
 
