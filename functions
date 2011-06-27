@@ -178,7 +178,7 @@ in_array() {
 
 add_daemon() {
 	[[ -d /run/daemons ]] || /bin/mkdir -p /run/daemons
-	> /run/daemons/"$1"
+	>| /run/daemons/"$1"
 }
 
 rm_daemon() {
@@ -376,7 +376,7 @@ fsck_all() {
 		FORCEFSCK=
 		[[ -f /forcefsck ]] || in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
 		run_hook sysinit_prefsck
-		fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >$FSCK_OUT 2>$FSCK_ERR
+		fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >|$FSCK_OUT 2>|$FSCK_ERR
 		local fsckret=$?
 	if (( fsckret > 1 )); then
 		stat_fail

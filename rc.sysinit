@@ -251,7 +251,7 @@ if [[ ${LOCALE,,} =~ utf ]]; then
 			kbd_mode -u < ${i}
 			printf "\e%%G" > ${i}
 		done
-		echo 1 > /sys/module/vt/parameters/default_utf8
+		echo 1 >| /sys/module/vt/parameters/default_utf8
 	stat_done
 else
 	stat_busy "Setting Consoles to legacy mode"
@@ -260,7 +260,7 @@ else
 			kbd_mode -a < ${i}
 			printf "\e%%@" > ${i}
 		done
-		echo 0 > /sys/module/vt/parameters/default_utf8
+		echo 0 >| /sys/module/vt/parameters/default_utf8
 	stat_done
 fi
 [[ $KEYMAP ]] &&
