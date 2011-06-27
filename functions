@@ -381,7 +381,7 @@ fsck_all() {
 		[[ -f /forcefsck ]] || in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
 		run_hook sysinit_prefsck
 		fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >|$FSCK_OUT 2>|$FSCK_ERR
-		local fsckret=$?
+		local -r fsckret=$?
 	if (( fsckret > 1 )); then
 		stat_fail
 	else
