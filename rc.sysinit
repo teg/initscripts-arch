@@ -226,9 +226,10 @@ stat_busy "Removing Leftover Files"
 	mkdir -m 1777 /tmp/.{X11,ICE}-unix
 stat_done
 
-[[ $HOSTNAME ]] &&
-	status "Setting Hostname: $HOSTNAME" \
-		eval 'echo "$HOSTNAME" > /proc/sys/kernel/hostname'
+if [[ $HOSTNAME ]]; then
+	stat_busy "Setting Hostname: $HOSTNAME"
+	echo "$HOSTNAME" >| /proc/sys/kernel/hostname && stat_done || stat_fail
+fi
 
 # Flush old locale settings and set user defined locale
 stat_busy "Setting Locale: ${LOCALE:=en_US}"
