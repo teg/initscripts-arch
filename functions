@@ -211,7 +211,7 @@ start_daemon() {
 # The only way to start a daemon at boot is to add it to the DAEMONS array.
 ck_depends() {
 	local daemon
-	for daemon in "$@"; do
+	for daemon; do
 		ck_daemon "$daemon" && start_daemon "$daemon"
 	done
 }
