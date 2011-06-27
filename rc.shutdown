@@ -58,7 +58,7 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 	stat_busy "Deactivating encrypted volumes:"
 		# Maybe someone has LVM on an encrypted block device
 		# executing an extra vgchange is errorless
-		[[ $USELVM = [Yy][Ee][Ss] ]] &&	vgchange --sysinit -a n &>/dev/null
+		[[ $USELVM = [Yy][Ee][Ss] ]] && vgchange --sysinit -a n &>/dev/null
 		do_lock() {
 			stat_append "${1}.."
 			if $CS remove "$1" &>/dev/null; then
