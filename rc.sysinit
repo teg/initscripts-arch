@@ -219,7 +219,7 @@ status "Activating Swap" swapon -a
 RANDOM_SEED=/var/lib/misc/random-seed
 [[ -f $RANDOM_SEED ]] &&
 	status "Initializing Random Seed" \
-		cat $RANDOM_SEED > /dev/urandom
+		cp $RANDOM_SEED /dev/urandom
 
 stat_busy "Removing Leftover Files"
 	rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.* &>/dev/null
