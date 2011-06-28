@@ -238,8 +238,9 @@ stat_done
 		eval 'echo "$HOSTNAME" > /proc/sys/kernel/hostname'
 
 # Flush old locale settings and set user defined locale
-status "Setting Locale: ${LOCALE:=en_US}" \
-	install -Tm 0755 <(echo "export LANG=$LOCALE") /etc/profile.d/locale.sh
+stat_busy "Setting Locale: ${LOCALE:=en_US}"
+	echo "export LANG=$LOCALE" > /etc/profile.d/locale.sh &&
+	chmod 0755 /etc/profile.d/locale.sh && stat_done || stat_fail
 
 if [[ ${LOCALE,,} =~ utf ]]; then
 	stat_busy "Setting Consoles to UTF-8 mode"
