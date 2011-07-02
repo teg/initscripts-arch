@@ -320,7 +320,7 @@ udevd_modprobe() {
 		udevadm settle --timeout=${UDEV_TIMEOUT:-30}
 
 	run_hook "${1}_udevsettled"
-	
+
 	# in case loading a module changed the display mode
 	calc_columns
 }

@@ -12,10 +12,10 @@ run_hook single_start
 
 if [[ $PREVLEVEL != N ]]; then
 	kill_everything single
-	
+
 	# start up our mini logger until syslog takes over
 	minilogd
-	
+
 	# Start/trigger UDev, load MODULES and settle UDev
 	udevd_modprobe single
 fi
