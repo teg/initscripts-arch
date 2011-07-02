@@ -11,7 +11,14 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 run_hook single_start
 
 if [[ $PREVLEVEL != N ]]; then
-	kill_everything single
+
+	stop_all_daemons
+
+	run_hook single_prekillall
+
+	kill_all
+
+	run_hook single_postkillall
 
 	# start up our mini logger until syslog takes over
 	minilogd

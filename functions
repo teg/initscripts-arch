@@ -265,10 +265,10 @@ add_omit_pids() {
 	omit_pids+=( $@ )
 }
 
-
-kill_everything() {
-	# $1 = where we are being called from.
-	# This is used to determine which hooks to run.
+# Stop all daemons
+# This function should *never* ever perform any other actions beside calling stop_daemon()!
+# It might be used by a splash system etc. to get a list of daemons to be stopped.
+stop_all_daemons() {
 	# Find daemons NOT in the DAEMONS array. Shut these down first
 	local daemon
 	for daemon in /run/daemons/*; do
@@ -283,10 +283,11 @@ kill_everything() {
 		[[ ${DAEMONS[i]} = '!'* ]] && continue
 		ck_daemon ${DAEMONS[i]#@} || stop_daemon ${DAEMONS[i]#@}
 	done
+}
 
+kill_all() {
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
-		run_hook "$1_prekillall"
 		killall5 -15 ${omit_pids[@]/#/-o } &>/dev/null
 		sleep 5
 	stat_done
@@ -295,8 +296,6 @@ kill_everything() {
 		killall5 -9 ${omit_pids[@]/#/-o } &>/dev/null
 		sleep 1
 	stat_done
-
-	run_hook "$1_postkillall"
 }
 
 # Start/trigger UDev, load MODULES and settle UDev
@@ -360,23 +359,14 @@ read_crypttab() {
 	return $failed
 }
 
+# Filesystem functions
+# These can be overridden/reused for customizations like shutdown/loop-fsck.
 NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
 
 # Check local filesystems
 fsck_all() {
-	[[ -x $(type -P fsck) ]] || return 0
-	stat_busy "Checking Filesystems"
-		FSCK_OUT=/dev/stdout
-		FSCK_ERR=/dev/stdout
-		FSCK_FD=
-		FORCEFSCK=
-		[[ -f /forcefsck ]] || in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
-		run_hook sysinit_prefsck
-		fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >|$FSCK_OUT 2>|$FSCK_ERR
-		local -r fsckret=$?
-	(( fsckret <= 1 )) && stat_done || stat_fail
-	run_hook sysinit_postfsck
-	return $fsckret
+	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >|$FSCK_OUT 2>|$FSCK_ERR
+	return $?
 }
 
 # Single-user login and/or automatic reboot after fsck (if needed)
@@ -415,11 +405,7 @@ fsck_reboot() {
 }
 
 mount_all() {
-	stat_busy "Mounting Local Filesystems"
-		run_hook sysinit_premount
-		mount -a -t "$NETFS" -O no_netdev
-		run_hook sysinit_postmount
-	stat_done
+	mount -a -t "$NETFS" -O no_netdev
 }
 
 bootlogd_stop() {

@@ -174,9 +174,24 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 fi
 
 # Check filesystems
-fsck_all
+FSCK_OUT=/dev/stdout
+FSCK_ERR=/dev/stdout
+FSCK_FD=
+FORCEFSCK=
+[[ -f /forcefsck ]] || is_in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
+run_hook sysinit_prefsck
+if [[ -x $(type -P fsck) ]]; then
+	stat_busy "Checking Filesystems"
+		fsck_all
+	declare -r fsckret=$?
+	(( fsckret <= 1 )) && stat_done || stat_fail
+else
+	declare -r fsckret=0
+fi
+run_hook sysinit_postfsck
+
 # Single-user login and/or automatic reboot if needed
-fsck_reboot $?
+fsck_reboot $fsckret
 
 status "Remounting Root Read/Write" \
 	mount -n -o remount,rw /
@@ -193,7 +208,10 @@ if [[ ! -L /etc/mtab ]]; then
 fi
 
 # now mount all the local filesystems
-mount_all
+run_hook sysinit_premount
+status "Mounting Local Filesystems" \
+	mount_all
+run_hook sysinit_postmount
 
 # enable monitoring of lvm2 groups, now that the filesystems are mounted rw
 [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&

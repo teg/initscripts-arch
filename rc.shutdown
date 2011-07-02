@@ -17,7 +17,13 @@ echo " "
 
 [[ -x /etc/rc.local.shutdown ]] && /etc/rc.local.shutdown
 
-kill_everything shutdown
+stop_all_daemons
+
+run_hook shutdown_prekillall
+
+kill_all
+
+run_hook shutdown_postkillall
 
 stat_busy "Saving Random Seed"
 	RANDOM_SEED=/var/lib/misc/random-seed
