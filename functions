@@ -20,12 +20,12 @@ calc_columns () {
 		USECOLOR=""
 	elif [[ -t 0 ]]; then
 		# stty will fail when stdin isn't a terminal
-		STAT_COL="$(/bin/stty size)"
+		STAT_COL="$(stty size)"
 		# stty gives "rows cols"; strip the rows number, we just want columns
 		STAT_COL="${STAT_COL##* }"
-	elif /bin/tput cols &>/dev/null; then
+	elif tput cols &>/dev/null; then
 		# is /usr/share/terminfo already mounted, and TERM recognized?
-		STAT_COL=$(/bin/tput cols)
+		STAT_COL=$(tput cols)
 	fi
 	if (( STAT_COL == 0 )); then
 		# if output was 0 (serial console), set default width to 80
@@ -50,7 +50,7 @@ calc_columns () {
 calc_columns
 
 # disable colors on broken terminals
-TERM_COLORS="$(/bin/tput colors 2>/dev/null)"
+TERM_COLORS="$(tput colors 2>/dev/null)"
 if (( $? != 3 )); then
 	case $TERM_COLORS in
 		*[!0-9]*) USECOLOR="";;
@@ -75,17 +75,17 @@ fi
 
 # set colors
 if [[ $USECOLOR = [yY][eE][sS] ]]; then
-	if /bin/tput setaf 0 &>/dev/null; then
+	if tput setaf 0 &>/dev/null; then
 		C_CLEAR="$(tput sgr0)"                      # clear text
-		C_MAIN="${C_CLEAR}$(/bin/tput bold)"        # main text
-		C_OTHER="${C_MAIN}$(/bin/tput setaf 4)"     # prefix & brackets
-		C_SEPARATOR="${C_MAIN}$(/bin/tput setaf 0)" # separator
-		C_BUSY="${C_CLEAR}$(/bin/tput setaf 6)"     # busy
-		C_FAIL="${C_MAIN}$(/bin/tput setaf 1)"      # failed
+		C_MAIN="${C_CLEAR}$(tput bold)"        # main text
+		C_OTHER="${C_MAIN}$(tput setaf 4)"     # prefix & brackets
+		C_SEPARATOR="${C_MAIN}$(tput setaf 0)" # separator
+		C_BUSY="${C_CLEAR}$(tput setaf 6)"     # busy
+		C_FAIL="${C_MAIN}$(tput setaf 1)"      # failed
 		C_DONE="${C_MAIN}"                          # completed
-		C_BKGD="${C_MAIN}$(/bin/tput setaf 5)"      # backgrounded
+		C_BKGD="${C_MAIN}$(tput setaf 5)"      # backgrounded
 		C_H1="${C_MAIN}"                            # highlight text 1
-		C_H2="${C_MAIN}$(/bin/tput setaf 6)"        # highlight text 2
+		C_H2="${C_MAIN}$(tput setaf 6)"        # highlight text 2
 	else
 		C_CLEAR="\e[m"          # clear text
 		C_MAIN="\e[;1m"         # main text
@@ -179,12 +179,12 @@ in_array() {
 # daemons:
 
 add_daemon() {
-	[[ -d /run/daemons ]] || /bin/mkdir -p /run/daemons
+	[[ -d /run/daemons ]] || mkdir -p /run/daemons
 	>| /run/daemons/"$1"
 }
 
 rm_daemon() {
-	/bin/rm -f /run/daemons/"$1"
+	rm -f /run/daemons/"$1"
 }
 
 ck_daemon() {
@@ -287,13 +287,13 @@ kill_everything() {
 	# Terminate all processes
 	stat_busy "Sending SIGTERM To Processes"
 		run_hook "$1_prekillall"
-		/sbin/killall5 -15 ${omit_pids[@]/#/-o } &>/dev/null
-		/bin/sleep 5
+		killall5 -15 ${omit_pids[@]/#/-o } &>/dev/null
+		sleep 5
 	stat_done
 
 	stat_busy "Sending SIGKILL To Processes"
-		/sbin/killall5 -9 ${omit_pids[@]/#/-o } &>/dev/null
-		/bin/sleep 1
+		killall5 -9 ${omit_pids[@]/#/-o } &>/dev/null
+		sleep 1
 	stat_done
 
 	run_hook "$1_postkillall"
@@ -329,8 +329,8 @@ activate_vgs() {
 	[[ $USELVM = [yY][eE][sS] && -x $(type -P lvm) && -d /sys/block ]] || return 0
 	# Kernel 2.6.x, LVM2 groups
 	stat_busy "Activating LVM2 groups"
-		/sbin/modprobe -q dm-mod 2>/dev/null
-		/sbin/vgchange --sysinit -a y >/dev/null
+		modprobe -q dm-mod 2>/dev/null
+		vgchange --sysinit -a y >/dev/null
 	(( $? == 0 )) && stat_done || stat_fail
 }
 
@@ -496,7 +496,7 @@ set_consolefont() {
 		[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
 		local i
 		for i in /dev/tty[0-9]*; do
-			/usr/bin/setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
+			setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
 				$CONSOLEFONT -C ${i} &>/dev/null
 		done
 	if (( $? )); then
