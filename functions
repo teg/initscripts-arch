@@ -156,12 +156,10 @@ stat_die() {
 status() {
 	stat_busy "$1"
 	shift
-	if "$@" &>/dev/null; then
-		stat_done
-		return 0
-	fi
-	stat_fail
-	return 1
+	"$@" &>/dev/null
+	local ret=$?
+	(( $ret == 0 )) && stat_done || stat_fail
+	return $ret
 }
 
 #  usage : in_array( $needle, $haystack )
