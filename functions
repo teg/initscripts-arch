@@ -365,7 +365,7 @@ NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuse
 
 # Check local filesystems
 fsck_all() {
-	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK >|$FSCK_OUT 2>|$FSCK_ERR
+	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK
 	return $?
 }
 

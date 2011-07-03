@@ -174,8 +174,8 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 fi
 
 # Check filesystems
-FSCK_OUT=/dev/stdout
-FSCK_ERR=/dev/stdout
+FSCK_OUT=
+FSCK_ERR=
 FSCK_FD=
 FORCEFSCK=
 [[ -f /forcefsck ]] || is_in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
@@ -183,7 +183,7 @@ declare -r FORCEFSCK
 run_hook sysinit_prefsck
 if [[ -x $(type -P fsck) ]]; then
 	stat_busy "Checking Filesystems"
-		fsck_all
+		fsck_all >|${FSCK_OUT:-/dev/stdout} 2>|${FSCK_ERR:-/dev/stdout}
 	declare -r fsckret=$?
 	(( fsckret <= 1 )) && stat_done || stat_fail
 else
