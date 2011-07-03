@@ -179,6 +179,7 @@ FSCK_ERR=/dev/stdout
 FSCK_FD=
 FORCEFSCK=
 [[ -f /forcefsck ]] || is_in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
+declare -r FORCEFSCK
 run_hook sysinit_prefsck
 if [[ -x $(type -P fsck) ]]; then
 	stat_busy "Checking Filesystems"
