@@ -4,32 +4,24 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-rc=0
-
 case "$1" in
 	start)
 		stat_busy "Mounting Network Filesystems"
 		mount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs,davfs
 		rc=$?
 		mount -a -O _netdev
-		if ((rc + $? > 0)); then
-			stat_fail
-		else
-			add_daemon netfs
-			stat_done
-		fi
+		(( rc || $? )) && stat_die
+		add_daemon netfs
+		stat_done
 		;;
 	stop)
 		stat_busy "Unmounting Network Filesystems"
 		umount -a -O _netdev
 		rc=$?
 		umount -a -t nfs,nfs4,smbfs,codafs,ncpfs,cifs,shfs,glusterfs,fuse,fuseblk,fuse.glusterfs,davfs
-		if ((rc + $? > 0)); then
-			stat_fail
-		else
-			rm_daemon netfs
-			stat_done
-		fi
+		(( rc || $? )) && stat_die
+		rm_daemon netfs
+		stat_done
 		;;
 	restart)
 		$0 stop
@@ -38,6 +30,7 @@ case "$1" in
 		;;
 	*)
 		echo "usage: $0 {start|stop|restart}"
+		exit 1
 esac
 
 # vim: set ts=2 noet:
