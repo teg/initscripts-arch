@@ -370,11 +370,11 @@ read_crypttab() {
 
 # Filesystem functions
 # These can be overridden/reused for customizations like shutdown/loop-fsck.
-NETFS="nonfs,nonfs4,nosmbfs,nocifs,nocodafs,noncpfs,nosysfs,noshfs,nofuse,nofuseblk,noglusterfs,nodavfs"
+NETFS="nfs,nfs4,smbfs,cifs,codafs,ncpfs,shfs,fuse,fuseblk,glusterfs,davfs,fuse.glusterfs"
 
 # Check local filesystems
 fsck_all() {
-	fsck -A -T -C$FSCK_FD -a -t "$NETFS,noopts=_netdev" $FORCEFSCK
+	fsck -A -T -C$FSCK_FD -a -t "no${NETFS//,/,no},noopts=_netdev" $FORCEFSCK
 	return $?
 }
 
@@ -414,7 +414,7 @@ fsck_reboot() {
 }
 
 mount_all() {
-	mount -a -t "$NETFS" -O no_netdev
+	mount -a -t "nosysfs,no${NETFS//,/,no}" -O no_netdev
 }
 
 bootlogd_stop() {
