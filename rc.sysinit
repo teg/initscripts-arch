@@ -174,10 +174,6 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 fi
 
 # Check filesystems
-FSCK_OUT=
-FSCK_ERR=
-FSCK_FD=
-FORCEFSCK=
 [[ -f /forcefsck ]] || is_in_array forcefsck $(< /proc/cmdline) && FORCEFSCK="-- -f"
 declare -r FORCEFSCK
 run_hook sysinit_prefsck
