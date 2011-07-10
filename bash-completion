@@ -1,6 +1,6 @@
 # rc.d bash completion by Seblu <seblu@seblu.net>
 
-_rc.d ()
+_rc_d()
 {
 	local action cur prev
 	action="help list start stop reload restart"
@@ -19,6 +19,6 @@ _rc.d ()
 		COMPREPLY=($(cd /etc/rc.d && compgen -f -X 'functions*' "$cur"|sort))
 	fi
 }
-complete -F _rc.d rc.d
+complete -F _rc_d rc.d
 
 # vim: set ts=2 sw=2 ft=sh noet:
