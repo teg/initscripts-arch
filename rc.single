@@ -23,6 +23,9 @@ if [[ $PREVLEVEL != N ]]; then
 
 	# Start/trigger UDev, load MODULES and settle UDev
 	udevd_modprobe single
+	
+	# Removing leftover files
+	remove_leftover
 fi
 
 run_hook single_end
