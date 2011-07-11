@@ -169,7 +169,7 @@ in_array() {
 	local needle=$1; shift
 	local item
 	for item; do
-		[[ ${item#@} = $needle ]] && return 0
+		[[ $item = $needle ]] && return 0
 	done
 	return 1 # Not Found
 }
