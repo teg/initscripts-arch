@@ -417,6 +417,20 @@ mount_all() {
 	mount -a -t "nosysfs,no${NETFS//,/,no}" -O no_netdev
 }
 
+remove_leftover() {
+	stat_busy "Removing Leftover Files"
+		rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.[^.]* /tmp/..?* /var/run/daemons
+		[[ ! -L /var/lock ]] && rm -rf /var/lock/*
+		if [[ ! -L /var/run && -d /var/run ]]; then
+			find /var/run/ \! -type d -delete
+			ln -s /run/daemons /var/run/daemons
+		fi
+		install -Tm 0664 -o root -g utmp <(:) /var/run/utmp
+		# Keep {x,k,g}dm happy with xorg
+		mkdir -m 1777 /tmp/.{X11,ICE}-unix
+	stat_done
+}
+
 bootlogd_stop() {
 	[[ -f /run/bootlogd.pid ]] || return 0
 	touch /var/log/boot

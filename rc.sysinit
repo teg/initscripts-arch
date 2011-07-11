@@ -226,17 +226,8 @@ RANDOM_SEED=/var/lib/misc/random-seed
 	status "Initializing Random Seed" \
 		cp $RANDOM_SEED /dev/urandom
 
-stat_busy "Removing Leftover Files"
-	rm -rf /etc/{nologin,shutdownpid} /forcefsck /tmp/* /tmp/.[^.]* /tmp/..?* /var/run/daemons
-	[[ ! -L /var/lock ]] && rm -rf /var/lock/*
-	if [[ ! -L /var/run && -d /var/run ]]; then
-		find /var/run/ \! -type d -delete
-		ln -s /run/daemons /var/run/daemons
-	fi
-	install -Tm 0664 -o root -g utmp <(:) /var/run/utmp
-	# Keep {x,k,g}dm happy with xorg
-	mkdir -m 1777 /tmp/.{X11,ICE}-unix
-stat_done
+# Remove leftover files
+remove_leftover
 
 if [[ $HOSTNAME ]]; then
 	stat_busy "Setting Hostname: $HOSTNAME"
