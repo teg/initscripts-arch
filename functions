@@ -272,7 +272,7 @@ stop_all_daemons() {
 	for daemon in /run/daemons/*; do
 		[[ -f $daemon ]] || continue
 		daemon=${daemon##*/}
-		in_array "$daemon" "${DAEMONS[@]}" || stop_daemon "$daemon"
+		ck_autostart "$daemon" && stop_daemon "$daemon"
 	done
 
 	# Shutdown daemons in reverse order
