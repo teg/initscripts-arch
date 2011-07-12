@@ -39,7 +39,7 @@ calc_columns () {
 	if [[ -t 1 ]]; then
 		SAVE_POSITION="\e[s"
 		RESTORE_POSITION="\e[u"
-		DEL_TEXT="\e[$(($STAT_COL+4))G"
+		DEL_TEXT="\e[$((STAT_COL+4))G"
 	else
 		SAVE_POSITION=""
 		RESTORE_POSITION=""
@@ -158,7 +158,7 @@ status() {
 	shift
 	"$@" &>/dev/null
 	local ret=$?
-	(( $ret == 0 )) && stat_done || stat_fail
+	(( ret == 0 )) && stat_done || stat_fail
 	return $ret
 }
 
