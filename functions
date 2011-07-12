@@ -196,9 +196,9 @@ have_daemon() {
 
 # Check if $1 is started at boot
 ck_autostart() {
-	local d
-	for d in "${DAEMONS[@]}"; do
-		[[ $1 = "${d#@}" ]] && return 1
+	local daemon
+	for daemon in "${DAEMONS[@]}"; do
+		[[ $1 = "${daemon#@}" ]] && return 1
 	done
 	return 0
 }
@@ -276,10 +276,11 @@ stop_all_daemons() {
 	done
 
 	# Shutdown daemons in reverse order
-	local i
+	local i daemon
 	for (( i=${#DAEMONS[@]}-1; i>=0; i-- )); do
 		[[ ${DAEMONS[i]} = '!'* ]] && continue
-		ck_daemon "${DAEMONS[i]#@}" || stop_daemon "${DAEMONS[i]#@}"
+		daemon=${DAEMONS[i]#@}
+		ck_daemon "$daemon" || stop_daemon "$daemon"
 	done
 }
 
