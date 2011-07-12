@@ -20,9 +20,9 @@ calc_columns () {
 		USECOLOR=""
 	elif [[ -t 0 ]]; then
 		# stty will fail when stdin isn't a terminal
-		STAT_COL="$(stty size)"
+		STAT_COL=$(stty size)
 		# stty gives "rows cols"; strip the rows number, we just want columns
-		STAT_COL="${STAT_COL##* }"
+		STAT_COL=${STAT_COL##* }
 	elif tput cols &>/dev/null; then
 		# is /usr/share/terminfo already mounted, and TERM recognized?
 		STAT_COL=$(tput cols)
@@ -50,7 +50,7 @@ calc_columns () {
 calc_columns
 
 # disable colors on broken terminals
-TERM_COLORS="$(tput colors 2>/dev/null)"
+TERM_COLORS=$(tput colors 2>/dev/null)
 if (( $? != 3 )); then
 	case $TERM_COLORS in
 		*[!0-9]*) USECOLOR="";;
@@ -76,16 +76,16 @@ fi
 # set colors
 if [[ $USECOLOR = [yY][eE][sS] ]]; then
 	if tput setaf 0 &>/dev/null; then
-		C_CLEAR="$(tput sgr0)"                      # clear text
-		C_MAIN="${C_CLEAR}$(tput bold)"        # main text
-		C_OTHER="${C_MAIN}$(tput setaf 4)"     # prefix & brackets
-		C_SEPARATOR="${C_MAIN}$(tput setaf 0)" # separator
-		C_BUSY="${C_CLEAR}$(tput setaf 6)"     # busy
-		C_FAIL="${C_MAIN}$(tput setaf 1)"      # failed
-		C_DONE="${C_MAIN}"                          # completed
-		C_BKGD="${C_MAIN}$(tput setaf 5)"      # backgrounded
-		C_H1="${C_MAIN}"                            # highlight text 1
-		C_H2="${C_MAIN}$(tput setaf 6)"        # highlight text 2
+		C_CLEAR=$(tput sgr0)                      # clear text
+		C_MAIN=${C_CLEAR}$(tput bold)        # main text
+		C_OTHER=${C_MAIN}$(tput setaf 4)     # prefix & brackets
+		C_SEPARATOR=${C_MAIN}$(tput setaf 0) # separator
+		C_BUSY=${C_CLEAR}$(tput setaf 6)     # busy
+		C_FAIL=${C_MAIN}$(tput setaf 1)      # failed
+		C_DONE=${C_MAIN}                          # completed
+		C_BKGD=${C_MAIN}$(tput setaf 5)      # backgrounded
+		C_H1=${C_MAIN}                            # highlight text 1
+		C_H2=${C_MAIN}$(tput setaf 6)        # highlight text 2
 	else
 		C_CLEAR="\e[m"          # clear text
 		C_MAIN="\e[;1m"         # main text
@@ -93,9 +93,9 @@ if [[ $USECOLOR = [yY][eE][sS] ]]; then
 		C_SEPARATOR="\e[1;30m"  # separator
 		C_BUSY="\e[;36m"        # busy
 		C_FAIL="\e[1;31m"       # failed
-		C_DONE="${C_MAIN}"      # completed
+		C_DONE=${C_MAIN}        # completed
 		C_BKGD="\e[1;35m"       # backgrounded
-		C_H1="${C_MAIN}"        # highlight text 1
+		C_H1=${C_MAIN}          # highlight text 1
 		C_H2="\e[1;36m"         # highlight text 2
 	fi
 fi
@@ -169,7 +169,7 @@ in_array() {
 	local needle=$1; shift
 	local item
 	for item; do
-		[[ $item = $needle ]] && return 0
+		[[ $item = "${needle}" ]] && return 0
 	done
 	return 1 # Not Found
 }
@@ -198,7 +198,7 @@ have_daemon() {
 ck_autostart() {
 	local d
 	for d in "${DAEMONS[@]}"; do
-		[[ "$1" = ${d#@} ]] && return 1
+		[[ $1 = "${d#@}" ]] && return 1
 	done
 	return 0
 }
@@ -247,11 +247,11 @@ get_pid() {
 
 # Check if PID-file $1 is still the active PID-file for command $2
 ck_pidfile() {
-	if [[ -f "$1" ]]; then
+	if [[ -f $1 ]]; then
 		local fpid ppid
 		read -r fpid <"$1"
-		ppid=$(get_pid $2)
-		[[ "$fpid" = "$ppid" ]] && return 0
+		ppid=$(get_pid "$2")
+		[[ $fpid = "${ppid}" ]] && return 0
 	fi
 	return 1
 }
@@ -279,7 +279,7 @@ stop_all_daemons() {
 	local i
 	for (( i=${#DAEMONS[@]}-1; i>=0; i-- )); do
 		[[ ${DAEMONS[i]} = '!'* ]] && continue
-		ck_daemon ${DAEMONS[i]#@} || stop_daemon ${DAEMONS[i]#@}
+		ck_daemon "${DAEMONS[i]#@}" || stop_daemon "${DAEMONS[i]#@}"
 	done
 }
 
@@ -374,7 +374,7 @@ NETFS="nfs,nfs4,smbfs,cifs,codafs,ncpfs,shfs,fuse,fuseblk,glusterfs,davfs,fuse.g
 
 # Check local filesystems
 fsck_all() {
-	fsck -A -T -C$FSCK_FD -a -t "no${NETFS//,/,no},noopts=_netdev" $FORCEFSCK
+	fsck -A -T -C"$FSCK_FD" -a -t "no${NETFS//,/,no},noopts=_netdev" $FORCEFSCK
 	return $?
 }
 
@@ -482,7 +482,7 @@ if (( RC_FUNCTIONS_HOOK_FUNCS_DEFINED != 1 )); then
 
 	add_hook() {
 		[[ $1 && $2 ]] || return 1
-		hook_funcs["$1"]+=" $2"
+		hook_funcs[$1]+=" $2"
 	}
 
 	run_hook() {
@@ -505,8 +505,8 @@ set_consolefont() {
 		[[ $CONSOLEMAP && ${LOCALE,,} =~ utf ]] && CONSOLEMAP=""
 		local i
 		for i in /dev/tty[0-9]*; do
-			setfont ${CONSOLEMAP:+-m ${CONSOLEMAP}} \
-				$CONSOLEFONT -C ${i} &>/dev/null
+			setfont ${CONSOLEMAP:+-m "${CONSOLEMAP}"} \
+				"$CONSOLEFONT" -C ${i} &>/dev/null
 		done
 	if (( $? )); then
 		stat_fail

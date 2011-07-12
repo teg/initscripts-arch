@@ -96,14 +96,14 @@ if [[ -f /etc/crypttab && $CS ]] && grep -q ^[^#] /etc/crypttab; then
 			# $3 = password
 			# $4 = options
 			stat_append "${1}.."
-			local open=create a="$1" b="$2" failed=0
+			local open=create a=$1 b=$2 failed=0
 			# Ordering of options is different if you are using LUKS vs. not.
 			# Use ugly swizzling to deal with it.
 			# isLuks only gives an exit code but no output to stdout or stderr.
 			if $CS isLuks "$2" 2>/dev/null; then
 				open=luksOpen
-				a="$2"
-				b="$1"
+				a=$2
+				b=$1
 			fi
 			case $3 in
 				SWAP)
@@ -179,7 +179,7 @@ declare -r FORCEFSCK
 run_hook sysinit_prefsck
 if [[ -x $(type -P fsck) ]]; then
 	stat_busy "Checking Filesystems"
-		fsck_all >|${FSCK_OUT:-/dev/stdout} 2>|${FSCK_ERR:-/dev/stdout}
+		fsck_all >|"${FSCK_OUT:-/dev/stdout}" 2>|"${FSCK_ERR:-/dev/stdout}"
 	declare -r fsckret=$?
 	(( fsckret <= 1 )) && stat_done || stat_fail
 else
