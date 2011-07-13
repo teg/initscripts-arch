@@ -11,8 +11,6 @@ printhl "Arch Linux\n"
 printhl "${C_H2}http://www.archlinux.org"
 printsep
 
-run_hook sysinit_start
-
 # mount /proc, /sys, /run, /dev, /run/lock, /dev/pts, /dev/shm (the api filesystems)
 mountpoint -q /proc    || mount -n -t proc proc /proc -o nosuid,noexec,nodev
 mountpoint -q /sys     || mount -n -t sysfs sys /sys -o nosuid,noexec,nodev
@@ -30,6 +28,8 @@ mountpoint -q /dev/shm || mount -n /dev/shm &>/dev/null \
 # make sure nothing can open files rw on root which would block a remount
 findmnt / --options ro &>/dev/null ||
 	status "Mounting Root Read-Only" mount -n -o remount,ro /
+
+run_hook sysinit_start
 
 # start up our mini logger until syslog takes over
 minilogd
