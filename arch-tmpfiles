@@ -5,9 +5,46 @@
 # Control creation, deletion, and cleaning of volatile and temporary files
 #
 
+warninvalid() {
+	printf "arch-tmpfiles: ignoring invalid entry on line %d of \`%s'\n" "$LINENUM" "$FILE"
+	(( ++error ))
+} >&2
+
+checkparams() {
+	local parmreq=$1; shift
+	local path=$1 mode=$2 uid=$3 gid=$4
+
+	# parmcount must be >= parmreq
+	if (( $# < parmreq )); then
+		return 1
+	fi
+
+	# mode must be valid octal and 3 or 4 digits
+	if [[ $mode && ! $mode =~ ^[0-7]{3,4}$ ]]; then
+		return 1
+	fi
+
+	# uid must be numeric or a valid user name
+	if [[ $uid && $uid != +([[:digit:]]) ]] && ! getent passwd "$uid" >/dev/null; then
+		return 1
+	fi
+
+	# gid must be numeric or a valid group name
+	if [[ $gid && $gid != +([[:digit:]]) ]] && ! getent group "$gid" >/dev/null; then
+		return 1
+	fi
+
+	return 0
+}
+
 _f() {
 	# Create a file if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if ! checkparams 4 "$@"; then
+		warninvalid
+		return
+	fi
 
 	if [[ ! -e $path ]]; then
 		install -m"$mode" -o"$uid" -g"$gid" <(:) "$path"
@@ -18,12 +55,22 @@ _F() {
 	# Create or truncate a file
 	local path=$1 mode=$2 uid=$3 gid=$4
 
+	if ! checkparams 4 "$@"; then
+		warninvalid
+		return
+	fi
+
 	install -m"$mode" -o"$uid" -g"$gid" <(:) "$path"
 }
 
 _d() {
 	# Create a directory if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if ! checkparams 4 "$@"; then
+		warninvalid
+		return
+	fi
 
 	if [[ ! -d "$path" ]]; then
 		install -d -m"$mode" -o"$uid" -g"$gid" "$path"
@@ -34,6 +81,11 @@ _D() {
 	# Create or empty a directory
 	local path=$1 mode=$2 uid=$3 gid=$4
 
+	if ! checkparams 4 "$@"; then
+		warninvalid
+		return
+	fi
+
 	if [[ -d $path ]]; then
 		find "$path" -mindepth 1 -maxdepth 1 -xdev -print0 | xargs -r0 rm -rf
 	fi
@@ -43,6 +95,11 @@ _D() {
 _p() {
 	# Create a named pipe (FIFO) if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if ! checkparams 4 "$@"; then
+		warninvalid
+		return
+	fi
 
 	if [[ ! -p "$path" ]]; then
 		mkfifo -m$mode "$path"
@@ -66,6 +123,11 @@ _r() {
 	local path
 	local -a paths=($1)
 
+	if ! checkparams 1 "$@"; then
+		warninvalid
+		return
+	fi
+
 	for path in "${paths[@]}"; do
 		if [[ -f $path ]]; then
 			rm -f "$path"
@@ -81,6 +143,11 @@ _R() {
 	local path
 	local -a paths=($1)
 
+	if ! checkparams 1 "$@"; then
+		warninvalid
+		return
+	fi
+
 	for path in "${paths[@]}"; do
 		[[ -d $path ]] && rm -rf --one-file-system "$path"
 	done
@@ -92,7 +159,8 @@ shopt -s nullglob
 set -E
 trap '(( ++error ))' ERR
 
-declare -i error=0
+declare -i error=0 LINENO=0
+declare FILE=
 declare -A fragments
 declare -a tmpfiles_d=(
 	/usr/lib/tmpfiles.d/*.conf
@@ -104,15 +172,15 @@ declare -a tmpfiles_d=(
 # directories, on a per file basis.
 # Example: `/etc/tmpfiles.d/foo.conf' supersedes `/usr/lib/tmpfiles.d/foo.conf'.
 for path in "${tmpfiles_d[@]}"; do
-	fragments[${path##*/}]=${path%/*}
+	[[ -f $path ]] && fragments[${path##*/}]=${path%/*}
 done
 
 # loop through the gathered fragments, sorted globally by filename.
 # `/run/tmpfiles/foo.conf' will always be read after `/etc/tmpfiles.d/bar.conf'
 while read -d '' fragment; do
-	declare -i i=0
+	LINENUM=0
 
-	printf -v file '%s/%s' "${fragments[$fragment]}" "$fragment"
+	printf -v FILE '%s/%s' "${fragments[$fragment]}" "$fragment"
 
 	### FILE FORMAT ###
 	# XXX: We ignore the final 'Age' parameter
@@ -123,7 +191,7 @@ while read -d '' fragment; do
 	# omit read's -r flag to honor escapes here, so that whitespace can be
 	# escaped for paths. We will _not_ honor quoted paths.
 	while read -a line; do
-		(( ++i ))
+		(( ++LINENUM ))
 
 		# skip over comments and empty lines
 		if (( ! ${#line[*]} )) || [[ ${line[0]:0:1} = '#' ]]; then
@@ -132,8 +200,7 @@ while read -d '' fragment; do
 
 		# whine about invalid entries
 		if ! type -t _${line[0]} >/dev/null; then
-			printf "arch-tmpfiles: skipping malformed entry on line %d of \`%s'\n" "$i" "$file"
-			(( ++error ))
+			warninvalid
 			continue
 		fi
 
@@ -148,7 +215,7 @@ while read -d '' fragment; do
 		[[ ${line[4]} = '-' ]] && line[4]=0
 
 		_${line[0]} "${line[@]:1}"
-	done <"$file"
+	done <"$FILE"
 done < <(printf '%s\0' "${!fragments[@]}" | sort -z)
 
 exit $error
