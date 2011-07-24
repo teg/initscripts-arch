@@ -1,0 +1,156 @@
+#!/bin/bash
+#
+# /usr/lib/initscripts/arch-tmpfiles
+#
+# Control creation, deletion, and cleaning of volatile and temporary files
+#
+
+_f() {
+	# Create a file if it doesn't exist yet
+	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if [[ ! -e $path ]]; then
+		install -m"$mode" -o"$uid" -g"$gid" <(:) "$path"
+	fi
+}
+
+_F() {
+	# Create or truncate a file
+	local path=$1 mode=$2 uid=$3 gid=$4
+
+	install -m"$mode" -o"$uid" -g"$gid" <(:) "$path"
+}
+
+_d() {
+	# Create a directory if it doesn't exist yet
+	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if [[ ! -d "$path" ]]; then
+		install -d -m"$mode" -o"$uid" -g"$gid" "$path"
+	fi
+}
+
+_D() {
+	# Create or empty a directory
+	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if [[ -d $path ]]; then
+		find "$path" -mindepth 1 -maxdepth 1 -xdev -print0 | xargs -r0 rm -rf
+	fi
+	install -d -m"$mode" -o"$uid" -g"$gid" "$path"
+}
+
+_p() {
+	# Create a named pipe (FIFO) if it doesn't exist yet
+	local path=$1 mode=$2 uid=$3 gid=$4
+
+	if [[ ! -p "$path" ]]; then
+		mkfifo -m$mode "$path"
+		chown "$uid:$gid" "$path"
+	fi
+}
+
+_x() {
+	# Ignore a path during cleaning. Use this type to exclude paths from clean-up as
+	# controlled with the Age parameter. Note that lines of this type do not
+	# influence the effect of r or R lines. Lines of this type accept shell-style
+	# globs in place of of normal path names.
+	:
+	# XXX: we don't implement this
+}
+
+_r() {
+	# Remove a file or directory if it exists. This may not be used to remove
+	# non-empty directories, use R for that. Lines of this type accept shell-style
+	# globs in place of normal path names.
+	local path
+	local -a paths=($1)
+
+	for path in "${paths[@]}"; do
+		if [[ -f $path ]]; then
+			rm -f "$path"
+		elif [[ -d $path ]]; then
+			rmdir "$path"
+		fi
+	done
+}
+
+_R() {
+	# Recursively remove a path and all its subdirectories (if it is a directory).
+	# Lines of this type accept shell-style globs in place of normal path names.
+	local path
+	local -a paths=($1)
+
+	for path in "${paths[@]}"; do
+		[[ -d $path ]] && rm -rf --one-file-system "$path"
+	done
+}
+
+shopt -s nullglob
+
+# catch errors in functions so we can exit with something meaningful
+set -E
+trap '(( ++error ))' ERR
+
+declare -i error=0
+declare -A fragments
+declare -a tmpfiles_d=(
+	/usr/lib/tmpfiles.d/*.conf
+	/etc/tmpfiles.d/*.conf
+	/run/tmpfiles.d/*.conf
+)
+
+# directories declared later in the tmpfiles_d array will override earlier
+# directories, on a per file basis.
+# Example: `/etc/tmpfiles.d/foo.conf' supersedes `/usr/lib/tmpfiles.d/foo.conf'.
+for path in "${tmpfiles_d[@]}"; do
+	fragments[${path##*/}]=${path%/*}
+done
+
+# loop through the gathered fragments, sorted globally by filename.
+# `/run/tmpfiles/foo.conf' will always be read after `/etc/tmpfiles.d/bar.conf'
+while read -d '' fragment; do
+	declare -i i=0
+
+	printf -v file '%s/%s' "${fragments[$fragment]}" "$fragment"
+
+	### FILE FORMAT ###
+	# XXX: We ignore the final 'Age' parameter
+	# 0    1              2    3    4    5
+	# Type Path           Mode UID  GID  Age
+	# d    /run/user      0755 root root 10d
+
+	# omit read's -r flag to honor escapes here, so that whitespace can be
+	# escaped for paths. We will _not_ honor quoted paths.
+	while read -a line; do
+		(( ++i ))
+
+		# skip over comments and empty lines
+		if (( ! ${#line[*]} )) || [[ ${line[0]:0:1} = '#' ]]; then
+			continue
+		fi
+
+		# whine about invalid entries
+		if ! type -t _${line[0]} >/dev/null; then
+			printf "arch-tmpfiles: skipping malformed entry on line %d of \`%s'\n" "$i" "$file"
+			(( ++error ))
+			continue
+		fi
+
+		# fall back on defaults when parameters are passed as '-'
+		if [[ ${line[2]} = '-' ]]; then
+			case ${line[0]} in
+				p|f|F) line[2]=0644 ;;
+				d|D) line[2]=0755 ;;
+			esac
+		fi
+		[[ ${line[3]} = '-' ]] && line[3]=0
+		[[ ${line[4]} = '-' ]] && line[4]=0
+
+		_${line[0]} "${line[@]:1}"
+	done <"$file"
+done < <(printf '%s\0' "${!fragments[@]}" | sort -z)
+
+exit $error
+
+# vim: set ts=2 sw=2 noet:
