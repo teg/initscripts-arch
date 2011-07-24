@@ -426,7 +426,7 @@ remove_leftover() {
 			find /var/run/ \! -type d -delete
 			ln -s /run/daemons /var/run/daemons
 		fi
-		/usr/lib/initscripts/arch-tmpfiles && stat_done || stat_fail
+		/usr/lib/initscripts/arch-tmpfiles --create --remove && stat_done || stat_fail
 }
 
 bootlogd_stop() {
