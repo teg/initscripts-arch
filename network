@@ -18,7 +18,7 @@ need_legacy() {
 }
 
 deprecated() {
-	printf "${C_FAIL}Warning:${C_CLEAR} This functionality is deprecated.\n"
+	printf "${C_FAIL}Warning:${C_CLEAR} Your network settings are deprecated.\n"
 	printf "  Please refer to /etc/rc.conf on how to define a single wired\n"
 	printf "  connection, or use a utility such as netcfg.\n"
 }
