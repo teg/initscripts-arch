@@ -5,6 +5,7 @@ DIRS := \
 	/etc/rc.d/functions.d \
 	/etc/logrotate.d \
 	/sbin \
+	/etc/tmpfiles.d \
 	/usr/lib/tmpfiles.d \
 	/usr/lib/initscripts \
 	/etc/bash_completion.d \
