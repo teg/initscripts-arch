@@ -49,7 +49,7 @@ _f() {
 	fi
 
 	if [[ ! -e $path ]]; then
-		install -m"$mode" -o"$uid" -g"$gid" <(:) "$path"
+		install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 	fi
 }
 
@@ -64,7 +64,7 @@ _F() {
 		return
 	fi
 
-	install -m"$mode" -o"$uid" -g"$gid" <(:) "$path"
+	install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 }
 
 _d() {
