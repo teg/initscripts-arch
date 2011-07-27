@@ -218,7 +218,7 @@ ck_depends() {
 
 start_daemon_bkgd() {
 	stat_bkgd "Starting $1"
-	have_daemon "$1" && (start_daemon "$1") &>/dev/null &
+	(start_daemon "$1") >/dev/null &
 }
 
 stop_daemon() {
