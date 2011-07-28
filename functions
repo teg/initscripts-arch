@@ -531,7 +531,7 @@ need_root() {
 # Quit script if it's not running by root
 # This can be disabled in scripts sourcing functions by setting NEED_ROOT=0
 # A local call to need_root can be done to ensure part of script need root privilege
-(( ${NEED_ROOT:-1} == 1 )) && need_root
+(( ${NEED_ROOT:-0} == 1 )) && need_root
 
 # End of file
 # vim: set ts=2 sw=2 noet:
