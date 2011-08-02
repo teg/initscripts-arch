@@ -78,21 +78,48 @@ fi
 [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&
 	status "Deactivating LVM2 groups" vgchange --sysinit -a n &>/dev/null
 
-status "Remounting Root Filesystem Read-only" \
+if [[ -x /run/initramfs/shutdown ]]; then
+	# make /run/initrafs a mount
+	mount --bind /run/initramfs /run/initramfs
+
+	# in case someone has shared our mountpoints, unshare them
+	mount --make-private /run/initramfs
+	mount --make-private /
+
+	# bind all api mounts
+	mkdir -p /run/initramfs/{sys,proc,dev,run,oldroot}
+	mount --bind /sys /run/initramfs/sys
+	mount --bind /proc /run/initramfs/proc
+	mount --bind /dev /run/initramfs/dev
+	mount --bind /run /run/initramfs/run
+
+	# enter shutdownramfs
+	cd /run/initramfs
+	pivot_root . oldroot
+
+	#reexec init
+	cp /oldroot/sbin/init /sbin
+	/oldroot/sbin/init u
+
+	# run /shutdown in the new root
+	exec chroot . /shutdown </dev/console >/dev/console 2>&1
+else
+	status "Remounting Root Filesystem Read-only" \
 	mount -n -o remount,ro /
 
-run_hook shutdown_poweroff
+	run_hook shutdown_poweroff
 
-# Power off or reboot
-printsep
-if [[ $RUNLEVEL = 0 ]]; then
-	printhl "${C_H2}POWER OFF"
-	poweroff -d -f -h -i
-else
-	printhl "${C_H2}REBOOTING"
-	# if kexec is installed and a kernel is loaded, use it
-	[[ -x $(type -P kexec) ]] && kexec -e &>/dev/null
-	reboot -d -f -i
+	# Power off or reboot
+	printsep
+	if [[ $RUNLEVEL = 0 ]]; then
+		printhl "${C_H2}POWER OFF"
+		poweroff -d -f -h -i
+	else
+		printhl "${C_H2}REBOOTING"
+		# if kexec is installed and a kernel is loaded, use it
+		[[ -x $(type -P kexec) ]] && kexec -e &>/dev/null
+		reboot -d -f -i
+	fi
 fi
 
 # End of file
