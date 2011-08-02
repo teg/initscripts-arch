@@ -35,6 +35,10 @@ run_hook sysinit_start
 minilogd
 bootlogd -p /run/bootlogd.pid
 
+if [[ ! -a /usr/lib ]] ; then
+  printf "${C_FAIL}/usr is on a separate partition. This is not supported.${C_OTHER}\n"
+fi
+
 HWCLOCK_PARAMS="--systz"
 case $HARDWARECLOCK in
 	"") ;;
