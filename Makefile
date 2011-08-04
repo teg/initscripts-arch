@@ -4,6 +4,7 @@ DIRS := \
 	/etc/conf.d \
 	/etc/rc.d/functions.d \
 	/etc/logrotate.d \
+	/etc/profile.d \
 	/usr/sbin \
 	/etc/tmpfiles.d \
 	/usr/lib/tmpfiles.d \
@@ -22,6 +23,7 @@ install: minilogd installdirs
 	install -m644 -t $(DESTDIR)/etc/logrotate.d bootlog
 	install -m644 -t $(DESTDIR)/etc/rc.d functions
 	install -m755 -t $(DESTDIR)/etc/rc.d hwclock network netfs
+	install -m755 -t $(DESTDIR)/etc/profile.d locale.sh
 	install -m755 -t $(DESTDIR)/usr/sbin minilogd rc.d
 	install -m755 -t $(DESTDIR)/usr/lib/initscripts arch-tmpfiles
 	install -m644 tmpfiles.conf $(DESTDIR)/usr/lib/tmpfiles.d/arch.conf
