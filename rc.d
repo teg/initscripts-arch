@@ -69,8 +69,8 @@ case $1 in
 			if [[ -x "/etc/rc.d/$i" ]]; then
 				env -i "${ENV[@]}" "/etc/rc.d/$i" "$action"
 			else
-				printf "${C_OTHER}:: ${C_FAIL}Error: ${C_DONE}Daemon script \`%s' does not exist or is not executable.${C_CLEAR}\n" \
-					"$i"
+				printf "${C_FAIL}:: ${C_DONE}Daemon ${C_FAIL}$i${C_DONE} does not exist \
+or is not executable${C_CLEAR}\n"
 			fi
 			(( ret += !! $? ))  # clamp exit value to 0/1
 		done
