@@ -13,11 +13,7 @@ case "$1" in
 	start)
 		add_daemon hwclock;;
 	stop)
-		case $HARDWARECLOCK in
-			UTC) hwclock --adjust --utc;;
-			localtime) hwclock --adjust --localtime;;
-			"") hwclock --adjust;;
-		esac
+		hwclock --adjust $HWCLOCK_PARAMS
 		rm_daemon hwclock
 		;;
 	restart)
