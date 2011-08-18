@@ -7,7 +7,7 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 if [[ $1 == "start" ]]; then
 	if [[ $STARTING ]]; then
-		echo "A daemon is starting another daemon, this is unlikely to work as intended.\n"
+		echo "A daemon is starting another daemon, this is unlikely to work as intended."
 	else
 		export STARTING=1
 	fi
