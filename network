@@ -23,7 +23,21 @@ deprecated() {
 	printf "  connection, or use a utility such as netcfg.\n"
 }
 
+have_interface() {
+	if [[ -z $1 ]]; then
+		printf "\n${C_FAIL}Error:${C_CLEAR} \`interface' is undefined in /etc/rc.conf\n"
+		return 1
+	fi
+
+	if [[ ! -d /sys/class/net/$1 ]]; then
+		printf "\n${C_FAIL}Error:${C_CLEAR} unknown interface in /etc/rc.conf: \`%s'\n" "$1"
+		return 1
+	fi
+}
+
 network_up() {
+	have_interface "$interface" || return 1
+
 	ip link set dev $interface up || return 1
 
 	if [[ $address ]]; then
@@ -35,6 +49,8 @@ network_up() {
 }
 
 network_down() {
+	have_interface "$interface" || return 1
+
 	if [[ -f /var/run/dhcpcd-$interface.pid ]]; then
 		dhcpcd -k $interface || return 1
 	else
