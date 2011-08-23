@@ -79,6 +79,14 @@ fi
 	status "Deactivating LVM2 groups" vgchange --sysinit -a n &>/dev/null
 
 if [[ -x /run/initramfs/shutdown ]]; then
+
+	# decide what we want to do
+	if [[ $RUNLEVEL = 0 ]]; then
+		action="poweroff"
+	else
+		action="reboot"
+	fi
+
 	# make /run/initrafs a mount
 	mount --bind /run/initramfs /run/initramfs
 
@@ -102,8 +110,10 @@ if [[ -x /run/initramfs/shutdown ]]; then
 	/oldroot/sbin/init u
 
 	# run /shutdown in the new root
-	exec chroot . /shutdown </dev/console >/dev/console 2>&1
+	exec chroot . /shutdown $action </dev/console >/dev/console 2>&1
+
 else
+
 	status "Remounting Root Filesystem Read-only" \
 	mount -n -o remount,ro /
 
@@ -120,6 +130,7 @@ else
 		[[ -x $(type -P kexec) ]] && kexec -e &>/dev/null
 		reboot -d -f -i
 	fi
+
 fi
 
 # End of file
