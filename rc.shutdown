@@ -106,7 +106,6 @@ if [[ -x /run/initramfs/shutdown ]]; then
 	pivot_root . oldroot
 
 	#reexec init
-	cp /oldroot/sbin/init /sbin
 	/oldroot/sbin/init u
 
 	# run /shutdown in the new root
