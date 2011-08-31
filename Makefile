@@ -8,6 +8,8 @@ DIRS := \
 	/usr/sbin \
 	/etc/tmpfiles.d \
 	/usr/lib/tmpfiles.d \
+	/etc/sysctl.d \
+	/usr/lib/sysctl.d \
 	/usr/lib/initscripts \
 	/etc/bash_completion.d \
 	/usr/share/zsh/site-functions
@@ -25,7 +27,7 @@ install: minilogd installdirs
 	install -m755 -t $(DESTDIR)/etc/rc.d hwclock network netfs
 	install -m755 -t $(DESTDIR)/etc/profile.d locale.sh
 	install -m755 -t $(DESTDIR)/usr/sbin minilogd rc.d
-	install -m755 -t $(DESTDIR)/usr/lib/initscripts arch-tmpfiles
+	install -m755 -t $(DESTDIR)/usr/lib/initscripts arch-tmpfiles arch-sysctl
 	install -m644 tmpfiles.conf $(DESTDIR)/usr/lib/tmpfiles.d/arch.conf
 	install -m644 -T bash-completion $(DESTDIR)/etc/bash_completion.d/rc.d
 	install -m644 -T zsh-completion $(DESTDIR)/usr/share/zsh/site-functions/_rc.d
