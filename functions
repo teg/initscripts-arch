@@ -323,7 +323,7 @@ udevd_modprobe() {
 
 	# Load modules from the MODULES array defined in rc.conf
 	[[ -f /proc/modules ]] && (( ${#MODULES[*]} )) &&
-		status "Loading Modules" modprobe -ab "${MODULES[@]}"
+		status "Loading User-specified Modules" modprobe -ab "${MODULES[@]}"
 
 	status "Waiting for UDev uevents to be processed" \
 		udevadm settle --timeout=${UDEV_TIMEOUT:-30}
