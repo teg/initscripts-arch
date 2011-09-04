@@ -369,6 +369,23 @@ read_crypttab() {
 	return $failed
 }
 
+set_timezone() {
+	local tz=$1 zonefile=/usr/share/zoneinfo/$tz
+
+	[[ $tz ]] || return 1
+
+	if [[ ! -e $zonefile ]]; then
+		printf "error: \`%s' is not a valid timezone\n" "$tz"
+		return 1
+	fi
+
+	if [[ -L /etc/localtime && /etc/localtime -ef $zonefile ]]; then
+		return 0
+	fi
+
+	ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime
+}
+
 # Filesystem functions
 # These can be overridden/reused for customizations like shutdown/loop-fsck.
 NETFS="nfs,nfs4,smbfs,cifs,codafs,ncpfs,shfs,fuse,fuseblk,glusterfs,davfs,fuse.glusterfs"

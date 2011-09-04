@@ -221,9 +221,7 @@ run_hook sysinit_postmount
 
 status "Activating Swap" swapon -a
 
-[[ $TIMEZONE ]] &&
-	status "Configuring Time Zone" \
-		cp --remove-destination "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+[[ $TIMEZONE ]] && status "Configuring Time Zone" set_timezone "$TIMEZONE"
 
 RANDOM_SEED=/var/lib/misc/random-seed
 [[ -f $RANDOM_SEED ]] &&
