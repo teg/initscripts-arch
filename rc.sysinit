@@ -15,7 +15,7 @@ printsep
 mountpoint -q /proc    || mount -n -t proc proc /proc -o nosuid,noexec,nodev
 mountpoint -q /sys     || mount -n -t sysfs sys /sys -o nosuid,noexec,nodev
 mountpoint -q /run     || mount -n -t tmpfs run /run -o mode=0755,size=10M,nosuid,nodev
-mountpoint -q /dev     || mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid &>/dev/null \
+mountpoint -q /dev     || mount -n -t devtmpfs udev /dev -o mode=0755,size=10M,nosuid \
 	|| mount -n -t tmpfs udev /dev -o mode=0755,size=10M,nosuid
 mkdir -p -m 1777 /run/lock
 mkdir -p /dev/{pts,shm}
