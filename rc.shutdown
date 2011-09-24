@@ -19,6 +19,12 @@ run_hook shutdown_start
 
 stop_all_daemons
 
+status "Deactivating Swap" swapoff -a
+
+# stop monitoring of lvm2 groups before unmounting filesystems
+[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) ]] &&
+	status "Deactivating monitoring of LVM2 groups" vgchange --monitor n
+
 run_hook shutdown_prekillall
 
 kill_all
@@ -41,13 +47,6 @@ stat_done
 
 # Write to wtmp file before unmounting
 halt -w
-
-status "Deactivating Swap" swapoff -a
-
-# stop monitoring of lvm2 groups before unmounting filesystems
-[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&
-	status "Deactivating monitoring of LVM2 groups" \
-		vgchange --monitor n &>/dev/null
 
 # if we don't have devtmpfs support, /dev is mounted as tmpfs, so don't unmount it
 status "Unmounting Filesystems" \
