@@ -397,7 +397,12 @@ set_timezone() {
 		return 0
 	fi
 
-	ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime
+	# respect the user's decision to symlink or copy
+	if [[ -L /etc/localtime ]]; then
+		ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime
+	else
+		cp --remove-destination "/usr/share/zoneinfo/$tz" /etc/localtime
+	fi
 }
 
 # Filesystem functions
