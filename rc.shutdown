@@ -37,9 +37,7 @@ stat_busy "Saving Random Seed"
 	dd if=/dev/urandom of=$RANDOM_SEED count=1 bs=$POOL_SIZE &>/dev/null
 stat_done
 
-[[ $TIMEZONE ]] &&
-	status "Saving Time Zone" \
-		cp --remove-destination "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+[[ $TIMEZONE ]] && status "Configuring Time Zone" set_timezone "$TIMEZONE"
 
 # Write to wtmp file before unmounting
 halt -w
