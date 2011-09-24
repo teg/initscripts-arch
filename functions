@@ -284,28 +284,42 @@ stop_all_daemons() {
 	done
 }
 
-kill_all() {
-	# Terminate all processes
-	# and wait until killall5 reports all done or timeout
+# $1 - signal
+# $2 - iterations
+kill_all_wait() {
+	# Send SIGTERM/SIGKILL all processes and wait until killall5
+	# reports all done or timeout.
 	# Unfortunately killall5 does not support the 0 signal, so just
 	# use SIGCONT for checking (which should be ignored).
-	stat_busy "Sending SIGTERM To Processes"
-		local i
-		killall5 -15 ${omit_pids[@]/#/-o } &>/dev/null
-		for (( i=0; i<20 && $?!=2; i++ )); do
-			sleep .25 # 1/4 second
-			killall5 -18 ${omit_pids[@]/#/-o } &>/dev/null
-		done
-	stat_done
 
-	stat_busy "Sending SIGKILL To Processes"
-		local i
-		killall5 -9 ${omit_pids[@]/#/-o } &>/dev/null
-		for (( i=0; i<4 && $?!=2; i++ )); do
-			sleep .25 # 1/4 second
-			killall5 -18 ${omit_pids[@]/#/-o } &>/dev/null
-		done
-	stat_done
+	local i
+
+	killall5 -${1} ${omit_pids[@]/#/-o } &>/dev/null
+
+	for (( i=0; i<${2}; i++ )); do
+
+		sleep .25 # 1/4 second
+
+		# sending SIGCONT to processes to check if they are there
+		killall5 -18 ${omit_pids[@]/#/-o } &>/dev/null
+
+		if (( $? == 2 )); then
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+kill_all() {
+	stat_busy "Sending SIGTERM To Processes"
+		kill_all_wait 15 40
+		if (( $? == 0 )); then
+			stat_done
+		else
+			stat_fail
+			status "Sending SIGKILL To Processes" kill_all_wait 9 60
+		fi
 }
 
 # Start/trigger UDev, load MODULES and settle UDev
