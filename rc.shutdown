@@ -75,6 +75,8 @@ fi
 [[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) && -d /sys/block ]] &&
 	status "Deactivating LVM2 groups" vgchange --sysinit -a n &>/dev/null
 
+run_hook shutdown_poweroff
+
 if [[ -x /run/initramfs/shutdown ]]; then
 
 	# decide what we want to do
@@ -112,8 +114,6 @@ else
 
 	status "Remounting Root Filesystem Read-only" \
 	mount -n -o remount,ro /
-
-	run_hook shutdown_poweroff
 
 	# Power off or reboot
 	printsep
