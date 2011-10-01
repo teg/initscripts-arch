@@ -9,6 +9,7 @@ groups=('base')
 conflicts=('initscripts')
 provides=('initscripts=9999')
 backup=(etc/inittab etc/rc.conf etc/rc.local etc/rc.local.shutdown)
+makedepends=('asciidoc')
 depends=('glibc' 'bash' 'grep' 'coreutils' 'udev>=139-1' 'iproute2'
          'ncurses' 'kbd' 'findutils' 'sysvinit')
 optdepends=('net-tools: legacy networking support'
