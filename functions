@@ -67,8 +67,12 @@ unset TZ
 unset LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY \
       LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE \
       LC_MEASUREMENT LC_IDENTIFICATION LC_ALL
-if [[ $DAEMON_LOCALE = [yY][eE][sS] && $LOCALE ]]; then
-	export LANG="${LOCALE}"
+if [[ $DAEMON_LOCALE = [yY][eE][sS] ]]; then
+	if [ -r /etc/locale.conf ]; then
+		. /etc/locale.conf
+	else
+		export LANG="${LOCALE}"
+	fi
 else
 	export LANG=C
 fi
