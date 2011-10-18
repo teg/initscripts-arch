@@ -200,6 +200,7 @@ status "Remounting Root Read/Write" \
 # don't touch /etc/mtab if it is a symlink to /proc/self/mounts
 if [[ ! -L /etc/mtab ]]; then
 	stat_busy "Creating mtab"
+		rm -f /etc/mtab~* # delete any stale locks
 		if [[ -x $(type -P findmnt) && -e /proc/self/mountinfo ]]; then
 			findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS >| /etc/mtab
 		else
