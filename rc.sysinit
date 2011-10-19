@@ -237,6 +237,10 @@ if [[ $HOSTNAME ]]; then
 	echo "$HOSTNAME" >| /proc/sys/kernel/hostname && stat_done || stat_fail
 fi
 
+if [[ -s /etc/locale.conf ]]; then
+	. /etc/locale.conf
+	[[ $LANG ]] && LOCALE=$LANG
+fi
 if [[ ${LOCALE,,} =~ utf ]]; then
 	stat_busy "Setting Consoles to UTF-8 mode"
 		# UTF-8 consoles are default since 2.6.24 kernel
@@ -257,6 +261,12 @@ else
 		done
 		echo 0 >| /sys/module/vt/parameters/default_utf8
 	stat_done
+fi
+
+if [[ -s /etc/vconsole.conf ]]; then
+	. /etc/vconsole.conf
+	[[ $FONT ]] && CONSOLEFONT=$FONT
+	[[ $FONT_MAP ]] && CONSOLEMAP=$FONT_MAP
 fi
 [[ $KEYMAP ]] &&
 	status "Loading Keyboard Map: $KEYMAP" loadkeys -q $KEYMAP
