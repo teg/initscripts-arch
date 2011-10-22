@@ -37,6 +37,7 @@ stat_busy "Saving Random Seed"
 	POOL_FILE=/proc/sys/kernel/random/poolsize
 	if [[ -r $POOL_FILE ]]; then
 		read POOL_SIZE < $POOL_FILE
+		(( POOL_SIZE /= 8 ))
 	else
 		POOL_SIZE=512
 	fi
