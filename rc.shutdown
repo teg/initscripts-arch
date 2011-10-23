@@ -19,6 +19,8 @@ run_hook shutdown_start
 
 stop_all_daemons
 
+status "Shutting down UDev" udevadm control --exit
+
 status "Deactivating Swap" swapoff -a
 
 # stop monitoring of lvm2 groups before unmounting filesystems
