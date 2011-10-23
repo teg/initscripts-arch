@@ -332,7 +332,7 @@ kill_all() {
 udevd_modprobe() {
 	# $1 = where we are being called from.
 	# This is used to determine which hooks to run.
-	status "Starting UDev Daemon" udevd --daemon
+	status "Starting UDev Daemon" /lib/udev/udevd --daemon
 
 	run_hook "$1_udevlaunched"
 
