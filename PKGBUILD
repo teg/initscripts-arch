@@ -2,7 +2,7 @@ pkgname=initscripts-git
 pkgver=$(date +%s)
 pkgrel=$(git log -1 --pretty=format:%h)
 pkgdesc="System initialization/bootup scripts"
-arch=('i686' 'x86_64')
+arch=('any')
 url="http://www.archlinux.org"
 license=('GPL')
 groups=('base')

@@ -31,8 +31,7 @@ findmnt / --options ro &>/dev/null ||
 
 run_hook sysinit_start
 
-# start up our mini logger until syslog takes over
-minilogd
+# log all console messages
 bootlogd -p /run/bootlogd.pid
 
 if [[ ! -a /usr/lib ]] ; then

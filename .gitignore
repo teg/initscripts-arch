@@ -1,5 +1,3 @@
-minilogd
-minilogd.o
 tags
 *.tar.xz*
 pkg/

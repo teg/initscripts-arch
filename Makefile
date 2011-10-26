@@ -15,21 +15,19 @@ DIRS := \
 	/usr/share/zsh/site-functions \
 	/usr/share/man/man8
 
-all: minilogd doc
-
-minilogd: minilogd.o
+all: doc
 
 installdirs:
 	install -dm755 $(foreach DIR, $(DIRS), $(DESTDIR)$(DIR))
 
-install: minilogd installdirs doc
+install: installdirs doc
 	install -m644 -t $(DESTDIR)/etc inittab rc.conf
 	install -m755 -t $(DESTDIR)/etc rc.local rc.local.shutdown rc.multi rc.shutdown rc.single rc.sysinit
 	install -m644 -t $(DESTDIR)/etc/logrotate.d bootlog
 	install -m644 -t $(DESTDIR)/etc/rc.d functions
 	install -m755 -t $(DESTDIR)/etc/rc.d hwclock network netfs
 	install -m755 -t $(DESTDIR)/etc/profile.d locale.sh
-	install -m755 -t $(DESTDIR)/usr/sbin minilogd rc.d
+	install -m755 -t $(DESTDIR)/usr/sbin rc.d
 	install -m644 -t ${DESTDIR}/usr/share/man/man8 rc.d.8
 	install -m755 -t $(DESTDIR)/usr/lib/initscripts arch-tmpfiles arch-sysctl
 	install -m644 tmpfiles.conf $(DESTDIR)/usr/lib/tmpfiles.d/arch.conf
@@ -42,7 +40,7 @@ rc.d.8: rc.d.8.txt
 doc: rc.d.8
 
 clean:
-	rm -f minilogd minilogd.o rc.d.8
+	rm -f rc.d.8
 
 release:
 	git archive HEAD --prefix=initscripts-$(VER)/ | xz > initscripts-$(VER).tar.xz
