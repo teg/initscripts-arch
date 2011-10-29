@@ -19,20 +19,6 @@ run_hook shutdown_start
 
 stop_all_daemons
 
-status "Shutting down UDev" udevadm control --exit
-
-status "Deactivating Swap" swapoff -a
-
-# stop monitoring of lvm2 groups before unmounting filesystems
-[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) ]] &&
-	status "Deactivating monitoring of LVM2 groups" vgchange --monitor n
-
-run_hook shutdown_prekillall
-
-kill_all
-
-run_hook shutdown_postkillall
-
 stat_busy "Saving Random Seed"
 	RANDOM_SEED=/var/lib/misc/random-seed
 	install -TDm 0600 /dev/null $RANDOM_SEED
@@ -50,6 +36,26 @@ stat_done
 
 # Write to wtmp file before unmounting
 halt -w
+
+# stop monitoring of lvm2 groups before unmounting filesystems
+[[ $USELVM = [Yy][Ee][Ss] && -x $(type -P lvm) ]] &&
+	status "Deactivating monitoring of LVM2 groups" vgchange --monitor n
+
+# any future uevents can and should be ignored
+status "Shutting down UDev" udevadm control --exit
+
+run_hook shutdown_prekillall
+
+kill_all
+
+run_hook shutdown_postkillall
+
+# TODO: unmount any non-api partitions that are backed by swap, we don't want to
+#       move their contents into memory (waste of time and might caues OOM).
+
+# almost everything is dead now, so the swap should hopefully be relatively
+# empty, and quick to switch off
+status "Deactivating Swap" swapoff -a
 
 # if we don't have devtmpfs support, /dev is mounted as tmpfs, so don't unmount it
 status "Unmounting Filesystems" \
